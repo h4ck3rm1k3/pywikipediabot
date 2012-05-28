@@ -1184,7 +1184,7 @@ class PreloadingGenerator(object):
     def __init__(self, generator, pageNumber=60):
         self.wrapped_gen = generator
         self.pageNumber = pageNumber
-
+        self.data = []
     def __iter__(self):
         try:
             # this array will contain up to pageNumber pages and will be flushed
@@ -1220,7 +1220,8 @@ class PreloadingGenerator(object):
                                       if page.site() == site]
                 page_list = [page for page in page_list
                                   if page.site() != site]
-                pywikibot.getall(site, pagesThisSite)
+                data = pywikibot.getall(site, pagesThisSite)
+                self.data.append(data)
                 for page in pagesThisSite:
                     yield page
         except IndexError:

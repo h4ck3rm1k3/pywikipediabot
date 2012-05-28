@@ -430,6 +430,12 @@ not supported by PyWikipediaBot!"""
             raise
 
     @property
+    def raw(self):
+        """Return the raw data."""
+        return self._raw
+
+
+    @property
     def site(self):
         """Return the Site object for the wiki on which this Page resides."""
         return self._site
@@ -1007,6 +1013,7 @@ not supported by PyWikipediaBot!"""
                                        self.latestRevision())
 
     def latestRevision(self):
+        print "latestRevision"
         """Return the current revision id for this page."""
         if not self._permalink:
             # When we get the page with getall, the permalink is received
@@ -4067,6 +4074,7 @@ class _GetAll(object):
     def __init__(self, site, pages, throttle, force):
         self.site = site
         self.pages = []
+        self._data = []
         self.throttle = throttle
         self.force = force
         self.sleeptime = 15
@@ -4109,11 +4117,13 @@ class _GetAll(object):
                 if 'normalized' in data['query']:
                     self._norm = dict([(x['from'],x['to']) for x in data['query']['normalized']])
                 for vals in data['query']['pages'].values():
+                    print "Check %s" % vals
                     self.oneDoneApi(vals)
             else: #read pages via Special:Export
                 while True:
                     try:
                         data = self.getData()
+                        self._data.append(data)
                     except (socket.error, httplib.BadStatusLine, ServerError):
                         # Print the traceback of the caught exception
                         s = ''.join(traceback.format_exception(*sys.exc_info()))
@@ -4275,6 +4285,7 @@ class _GetAll(object):
     def getData(self):
         address = self.site.export_address()
         pagenames = [page.sectionFreeTitle() for page in self.pages]
+        print "pagenames %s" % pagenames
         # We need to use X convention for requested page titles.
         if self.site.lang == 'eo':
             pagenames = [encodeEsperantoX(pagetitle) for pagetitle in pagenames]
@@ -4298,10 +4309,14 @@ class _GetAll(object):
         # so we'll encode it back.
         data = data.encode(self.site.encoding())
         #get_throttle.setDelay(time.time() - now)
+
+#        print "Got data %s" % data
+
         return data
 
-    def oneDoneApi(self, data):
+    def oneDoneApi(self, data):        
         title = data['title']
+        print data
         if not ('missing' in data or 'invalid' in data):
             revisionId = data['lastrevid']
             rev = None
@@ -4324,6 +4339,7 @@ class _GetAll(object):
                     moveRestriction = revs['level']
 
         page = Page(self.site, title)
+        page.raw = data
         successful = False
         for page2 in self.pages:
             if hasattr(self, '_norm') and page2.sectionFreeTitle() in self._norm:
@@ -4453,6 +4469,7 @@ class _GetAll(object):
 
         #get_throttle.setDelay(time.time() - now)
         return query.GetData(params, self.site)
+import sys, traceback
 
 def getall(site, pages, throttle=True, force=False):
     """Bulk-retrieve a group of pages from site
@@ -4462,7 +4479,10 @@ def getall(site, pages, throttle=True, force=False):
 
     """
     # TODO: why isn't this a Site method?
+    print "HELP!"
+    traceback.print_exc(file=sys.stdout)
     pages = list(pages)  # if pages is an iterator, we need to make it a list
+    data = []
     output(u'Getting %d page%s %sfrom %s...'
            % (len(pages), (u'', u's')[len(pages) != 1],
               (u'', u'via API ')[site.has_api() and debug], site))
@@ -4474,18 +4494,25 @@ def getall(site, pages, throttle=True, force=False):
             if pagg == range(0, len(pages), limit)[-1]: #latest retrieve
                 k = pages[pagg:]
                 output(u'Getting pages %d - %d of %d...' % (pagg + 1, len(pages), len(pages)))
-                _GetAll(site, k, throttle, force).run()
+                obj = _GetAll(site, k, throttle, force) 
+                obj.run()
+                data.append(obj._data)
                 pages[pagg:] = k
             else:
                 k = pages[pagg:pagg + limit]
                 output(u'Getting pages %d - %d of %d...' % (pagg + 1, pagg + limit, len(pages)))
-                _GetAll(site, k, throttle, force).run()
+                obj=_GetAll(site, k, throttle, force) 
+                obj.run()
+                data.append(obj._data)
                 pages[pagg:pagg + limit] = k
             get_throttle(requestsize = len(pages) / 10) # one time to retrieve is 7.7 sec.
     else:
-        _GetAll(site, pages, throttle, force).run()
-
-
+        obj =_GetAll(site, pages, throttle, force) 
+        obj.run()
+        data.append(obj._data)
+#    self._data.append(data)
+    #print data
+    return data
 # Library functions
 
 def setAction(s):

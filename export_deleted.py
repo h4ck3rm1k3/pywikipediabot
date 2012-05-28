@@ -31,7 +31,16 @@ def push_zip (file):
     k.key = file
     k.set_contents_from_filename(file,
                                  cb=percent_cb, num_cb=10)
-    print "Uploaded %s" % filename
+    print "Uploaded %s" % file
+
+def GetXml (page):
+     headers = {'User-Agent': 'PythonWikipediaBot/1.0'} # Needs to fool Wikipedia so it will give us the file
+     params = urllib.urlencode({'title': 'Special:Export','pages': page.title(), 'action': 'submit', 'limit': limit, 'offset' : offset})
+     req = urllib2.Request(url='http://en.wikipedia.org/w/index.php',data=params, headers=headers)
+     fIN = urllib2.urlopen(req)
+     string =fIN.read()
+     fIN.close()
+     return string
 
 def Main () :
     site = pywikibot.getSite()
@@ -44,12 +53,24 @@ def Main () :
               'Candidates_for_speedy_deletion_for_unspecified_reason') :
         cat = catlib.Category(site, x)
         pages = cat.articlesList(False)
-        for Page in pagegenerators.PreloadingGenerator(pages,100):
-            outfile = "PAGES/%s.xml" % Page.urlname()
+        gen = pagegenerators.PreloadingGenerator(pages,100)
+        for Page in gen:
+            outfile = "PAGES/%s.txt" % Page.urlname()
             text= Page.get()
             sutf8 = text.encode('UTF-8')
             print outfile
             z.writestr(outfile,sutf8)
+        
+        count=0
+
+
+        for strings in gen.data:
+            for string in strings:
+                for string2 in string:
+                    count = count +1
+#                    sutf8 = string2.encode('UTF-8')
+                    z.writestr("RawFiles/%s%d.xml" % (x,count) ,string2)
+
             
     z.close()
     push_zip(zipfilename)
