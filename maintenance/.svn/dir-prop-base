@@ -1,8 +1,0 @@
-K 10
-svn:ignore
-V 28
-preferences.txt
-*.pyc
-*.bak
-
-END
