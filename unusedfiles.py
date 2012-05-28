@@ -13,10 +13,11 @@ Parameters:
 #
 # (C) Leonardo Gregianin, 2007
 # (C) Filnik, 2008
+# (c) xqt, 2011
 #
 # Distributed under the terms of the MIT license.
 #
-__version__ = '$Id: unusedfiles.py 8540 2010-09-12 18:09:11Z amir $'
+__version__ = '$Id: unusedfiles.py 9683 2011-10-30 10:50:42Z xqt $'
 #
 
 import wikipedia as pywikibot
@@ -44,8 +45,8 @@ template_to_the_image = {
     'fa': u'{{تصاویر بدون استفاده}}',
     }
 template_to_the_user = {
-    'en': u'\n\n{{img-sem-uso|%s}}',
-    'fa': u'\n\n{{اخطار به کاربر برای تصاویر بدون استفاده|%s}}--~~~~',
+    'en': u'\n\n{{img-sem-uso|%(title)s}}',
+    'fa': u'\n\n{{اخطار به کاربر برای تصاویر بدون استفاده|%(title)s}}--~~~~',
     'it': u'\n\n{{Utente:Filbot/Immagine orfana}}',
     }
 except_text = {
@@ -61,15 +62,21 @@ except_text = {
 
 def appendtext(page, apptext):
     global always
-    try:
+    if page.isRedirectPage():
+        page = page.getRedirectTarget()
+    if not page.exists():
+        if page.isTalkPage():
+            text = u''
+        else:
+            raise pywikibot.NoPage(u"Page '%s' does not exist" % page.title())
+    else:
         text = page.get()
-    except pywikibot.IsRedirectPage:
-        return
     # Here you can go editing. If you find you do not
     # want to edit this page, just return
-    text += apptext;
-    if text != page.get():
-        pywikibot.showDiff(page.get(),text)
+    oldtext = text
+    text += apptext
+    if text != oldtext:
+        pywikibot.showDiff(oldtext, text)
         if not always:
             choice = pywikibot.inputChoice(
                 u'Do you want to accept these changes?', ['Yes', 'No', 'All'],
@@ -104,13 +111,14 @@ def main():
            'http://' not in page.get():
             pywikibot.output(u'\n' + page.title())
             if template_image in page.get():
-                pywikibot.output(u"%s done already" % page.aslink())
+                pywikibot.output(u"%s done already"
+                                 % page.title(asLink=True))
                 continue
             appendtext(page, u"\n\n"+template_image)
             uploader = page.getFileVersionHistory().pop()[1]
             usertalkname = u'User Talk:%s' % uploader
             usertalkpage = pywikibot.Page(mysite, usertalkname)
-            msg2uploader = template_user % page.title()
+            msg2uploader = template_user % {'title': page.title()}
             appendtext(usertalkpage, msg2uploader)
 
 if __name__ == "__main__":

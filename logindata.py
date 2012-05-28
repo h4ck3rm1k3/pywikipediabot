@@ -1,8 +1,8 @@
-# -*- coding: utf-8  -*- 
+# -*- coding: utf-8  -*-
 
 # Usable example module: Use of pywikipedia as a
 # library.
-# 
+#
 # Looks up the path to pywikipedia (pywikipedia_path)
 # in a settings.py file. You'll need to provide that,
 # and/or refactor.
@@ -29,10 +29,10 @@ os.chdir(cwd)
 
 class LoginData:
     """An example class that uses pywikipedia as a library.
-    usage example: 
-    
+    usage example:
+
     from logindata import LoginData, pywikibot
-    target_wiki=LoginData( ... ) # for example, fill in from a settings file, or use code to generate, or ... 
+    target_wiki=LoginData( ... ) # for example, fill in from a settings file, or use code to generate, or ...
     site=target_wiki.login()
     page=pywikibot.Page(site,"Main Page")
     """
@@ -49,7 +49,7 @@ class LoginData:
         user='MY_BOT_USER',
         password='MY_SECRET_PASSWORD',
         RversionTab=None,
-        api_supported=False    
+        api_supported=False
         ):
         """
         paramaters:
@@ -71,7 +71,7 @@ class LoginData:
         self.user=user
         self.password=password
         self.family=base_family.Family(
-            name=name, 
+            name=name,
             protocol=protocol,
             server=server,
             scriptpath=scriptpath,
@@ -81,7 +81,7 @@ class LoginData:
             RversionTab=RversionTab,
             api_supported=api_supported)
         self.site=None
-    
+
     def login(self):
         """Attempt to log in on the site described
         by this class. Returns a pywikipedia site object"""

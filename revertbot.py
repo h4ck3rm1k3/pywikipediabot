@@ -8,7 +8,7 @@
 #
 # Distributed under the terms of the MIT license.
 #
-__version__ = '$Id: revertbot.py 8630 2010-10-09 19:32:57Z xqt $'
+__version__ = '$Id: revertbot.py 9683 2011-10-30 10:50:42Z xqt $'
 #
 
 import re
@@ -104,7 +104,8 @@ class BaseRevertBot(object):
 
         page = pywikibot.Page(self.site, item['title'])
         pywikibot.output(u"\n\n>>> \03{lightpurple}%s\03{default} <<<"
-                         % page.aslink(True, True))
+                         % page.title(asLink=True, forceInterwiki=True,
+                                      textlink=True))
         old = page.get()
         new = rev['*']
         pywikibot.showDiff(old, new)
@@ -116,7 +117,7 @@ class BaseRevertBot(object):
 
 
 class myRevertBot(BaseRevertBot):
-        
+
     def callback(self, item):
         if 'top' in item:
             page = pywikibot.Page(self.site, item['title'])

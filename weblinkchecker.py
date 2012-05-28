@@ -48,7 +48,7 @@ Furthermore, the following command line parameters are supported:
              the feature.
 -day         the first time found dead link longer than x day ago, it should
              probably be fixed or removed. if no set, default is 7 day.
-             
+
 All other parameters will be regarded as part of the title of a single page,
 and the bot will only work on that single page.
 
@@ -88,11 +88,11 @@ Syntax examples:
 
 #
 # (C) Daniel Herding, 2005
-# (C) Pywikipedia bot team, 2005-2010
+# (C) Pywikipedia bot team, 2005-2011
 #
 # Distributed under the terms of the MIT license.
 #
-__version__='$Id: weblinkchecker.py 8787 2010-12-22 22:09:36Z xqt $'
+__version__='$Id: weblinkchecker.py 9482 2011-08-29 16:32:37Z xqt $'
 
 import sys, re
 import codecs, pickle
@@ -214,6 +214,7 @@ ignorelist = [
     re.compile('.*[\./@]jpl\.nasa\.gov(/.*)?'), # bot rejected on the site
     re.compile('.*[\./@]itis\.gov(/.*)?'), # bot rejected on the site
     re.compile('.*[\./@]cev\.lu(/.*)?'), # bot rejected on the site
+    re.compile('.*[\./@]science\.ksc\.nasa\.gov(/.*)?'), # very slow response resulting in bot error
 ]
 
 def weblinksIn(text, withoutBracketed = False, onlyBracketed = False):
@@ -317,7 +318,7 @@ class LinkChecker(object):
                     % self.host)
                 conn = self.getConnection()
                 conn.request('HEAD', '/', None, self.header)
-                response = conn.getresponse()
+                self.response = conn.getresponse()
 
                 self.readEncodingFromResponse(response)
             except:
@@ -376,9 +377,9 @@ class LinkChecker(object):
             else:
                 conn.request('GET', '%s%s' % (self.path, self.query), None,
                              self.header)
-            response = conn.getresponse()
+            self.response = conn.getresponse()
             # read the server's encoding, in case we need it later
-            self.readEncodingFromResponse(response)
+            self.readEncodingFromResponse(self.response)
         except httplib.BadStatusLine:
             # Some servers don't seem to handle HEAD requests properly,
             # e.g. http://www.radiorus.ru/ which is running on a very old
@@ -388,9 +389,9 @@ class LinkChecker(object):
                 return self.resolveRedirect(useHEAD = False)
             else:
                 raise
-        if response.status >= 300 and response.status <= 399:
+        if self.response.status >= 300 and self.response.status <= 399:
             #print response.getheaders()
-            redirTarget = response.getheader('Location')
+            redirTarget = self.response.getheader('Location')
             if redirTarget:
                 try:
                     redirTarget.encode('ascii')
@@ -498,16 +499,16 @@ class LinkChecker(object):
             except socket.error, error:
                 return False, u'Socket Error: %s' % repr(error[1])
             try:
-                response = conn.getresponse()
+                self.response = conn.getresponse()
             except Exception, error:
                 return False, u'Error: %s' % error
             # read the server's encoding, in case we need it later
-            self.readEncodingFromResponse(response)
+            self.readEncodingFromResponse(self.response)
             # site down if the server status is between 400 and 499
-            alive = response.status not in range(400, 500)
-            if response.status in self.HTTPignore:
+            alive = self.response.status not in range(400, 500)
+            if self.response.status in self.HTTPignore:
                 alive = False
-            return alive, '%s %s' % (response.status, response.reason)
+            return alive, '%s %s' % (self.response.status, self.response.reason)
 
 class LinkCheckThread(threading.Thread):
     '''
@@ -814,6 +815,11 @@ def countLinkCheckThreads():
         if isinstance(thread, LinkCheckThread):
             i += 1
     return i
+
+def check(url):
+    """Peform a check on URL"""
+    c = LinkChecker(url)
+    return c.check()
 
 def main():
     gen = None

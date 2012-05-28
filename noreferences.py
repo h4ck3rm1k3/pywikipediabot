@@ -25,16 +25,20 @@ These command line parameters can be used to specify which pages to work on:
 All other parameters will be regarded as part of the title of a single page,
 and the bot will only work on that single page.
 
+If neither a page title nor a page generator is given, it takes all pages from
+the default maintenance category. 
+
 It is strongly recommended not to run this script over the entire article
 namespace (using the -start) parameter, as that would consume too much
 bandwidth. Instead, use the -xml parameter, or use another way to generate
 a list of affected articles
 """
 
-__version__='$Id: noreferences.py 8994 2011-02-20 17:03:15Z xqt $'
+__version__='$Id: noreferences.py 10134 2012-04-18 14:45:33Z xqt $'
 
 import re, sys
 import wikipedia as pywikibot
+from pywikibot import i18n
 import pagegenerators, catlib
 import editarticle
 
@@ -42,31 +46,6 @@ import editarticle
 # with the parameter -help.
 docuReplacements = {
     '&params;':     pagegenerators.parameterHelp,
-}
-
-# Summary messages in different languages
-msg = {
-    'ar': u'روبوت: إضافة وسم <references /> مفقود',
-    'be': u'Robot: дабаўлены адсутнічаючы тэг <references />',
-    'cs': u'Robot doplnil chybějící <references />',
-    'de': u'Bot: Trage fehlendes <references /> nach',
-    'en': u'Robot: Adding missing <references /> tag',
-    'eo': u'Roboto: Aldono de "<references />"',
-    'fa': u'ربات: برچسب <references /> فراموش شده‌است',
-    'fi': u'Botti lisäsi puuttuvan {{viitteet}}-mallineen',
-    'fr': u'Robot: Ajout de la balise <references /> manquante',
-    'he': u'בוט: מוסיף תגית <references /> חסרה',
-    'hu': u'Hiányzó {{Források}} pótlása',
-    'it': u'Bot: Aggiungo il tag <references /> mancante',
-    'ja': u'ロボットによる: <references /> タグの補完。',
-    'ko': u'봇: 이전에 없던 <references /> 추가',
-    'lt': u'robotas: Pridedama trūkstama <references /> žymė',
-    'nl': u'Bot: toevoeging ontbrekende <references /> tag',
-    'pdc':u'Waddefresse: Fehlendes <references /> dezu geduh',
-    'pl': u'Robot dodaje szablon {{przypisy}}',
-    'pt': u'Bot: Adicionando a tag <references />',
-    'ru': u'Robot: Добавлен отсутствующий тег <references />',
-    'zh': u'機器人: 增加遺失的 <references /> 標籤',
 }
 
 # References sections are usually placed before further reading / external
@@ -85,11 +64,17 @@ placeBeforeSections = {
         u'Reference',
         u'Poznámky',
     ],
+    'da': [              # no explicit policy on where to put the references
+        u'Eksterne links'
+    ],
     'de': [              # no explicit policy on where to put the references
-##        u'Literatur',
-##        u'Weblinks',
-##        u'Siehe auch',
-##        u'Weblink',      # bad, but common singular form of Weblinks
+        u'Literatur',
+        u'Weblinks',
+        u'Siehe auch',
+        u'Weblink',      # bad, but common singular form of Weblinks
+    ],
+    'dsb':[
+        u'Nožki',
     ],
     'en': [              # no explicit policy on where to put the references
         u'Further reading',
@@ -128,6 +113,9 @@ placeBeforeSections = {
         u'Liens externes',
         u'Voir aussi',
         u'Notes'
+    ],
+    'hsb':[
+        u'Nóžki',
     ],
     'hu': [
         u'Külső hivatkozások',
@@ -189,9 +177,15 @@ placeBeforeSections = {
     'sk': [
         u'Pozri aj',
     ],
+    'szl': [
+        u'Przipisy',
+        u'Připisy',
+    ],
     'zh': [
-        u'外部連结',
         u'外部链接',
+        u'外部連结',
+        u'外部連結',
+        u'外部连接',
     ],
 }
 
@@ -203,13 +197,21 @@ referencesSections = {
         u'مراجع',
         u'ملاحظات',
     ],
+    'da': [
+        u'Noter',
+    ],
     'de': [             #see [[de:WP:REF]]
         u'Einzelnachweise',
-        u'Fußnoten',
         u'Anmerkungen',
         u'Belege',
+        u'Endnoten',
+        u'Fußnoten',
+        u'Fuß-/Endnoten',
         u'Quellen',
         u'Quellenangaben',
+    ],
+    'dsb':[
+        u'Nožki',
     ],
     'en': [             # not sure about which ones are preferred.
         u'References',
@@ -245,12 +247,19 @@ referencesSections = {
     'he': [
         u'הערות שוליים',
     ],
+    'hsb':[
+        u'Nóžki',
+    ],
     'hu': [
         u'Források és jegyzetek',
         u'Források',
         u'Jegyzetek',
         u'Hivatkozások',
         u'Megjegyzések',
+    ],
+    'is': [
+        u'Heimildir',
+        u'Tilvísanir',
     ],
     'it': [
         u'Note',
@@ -295,17 +304,17 @@ referencesSections = {
     'sk': [
         u'Referencie',
     ],
+    'szl': [
+        u'Przipisy',
+        u'Připisy',
+    ],
     'zh': [
-        u'參考文獻',
-        u'参考文献',
         u'參考資料',
         u'参考资料',
+        u'參考文獻',
+        u'参考文献',
         u'資料來源',
         u'资料来源',
-        u'參見',
-        u'参见',
-        u'參閱',
-        u'参阅',
     ],
 }
 
@@ -315,6 +324,8 @@ referencesTemplates = {
     'wikipedia': {
         'ar': [u'Reflist', u'ثبت المراجع', u'قائمة المراجع'],
         'be': [u'Зноскі', u'Примечания', u'Reflist', u'Спіс заўваг', u'Заўвагі'],
+        'da': [u'Reflist'],
+        'dsb':[u'Referency'],
         'en': [u'Reflist', u'Refs', u'FootnotesSmall', u'Reference',
                u'Ref-list', u'Reference list', u'References-small', u'Reflink',
                u'Footnotes', u'FootnotesSmall'],
@@ -324,7 +335,9 @@ referencesTemplates = {
                u'پانویس', u'پانویس‌ها ', u'پانویس ۲', u'پانویس۲',u'فهرست منابع'],
         'fi': [u'Viitteet', u'Reflist'],
         'fr': [u'Références', u'Notes', u'References', u'Reflist'],
+        'hsb':[u'Referency'],
         'hu': [u'reflist', u'források', u'references', u'megjegyzések'],
+        'is': [u'reflist'],
         'it': [u'References'],
         'ja': [u'Reflist', u'脚注リスト'],
         'ko': [u'주석', u'Reflist'],
@@ -339,6 +352,7 @@ referencesTemplates = {
         'ru': [u'Reflist', u'Ref-list', u'Refs', u'Sources',
                u'Примечания', u'Список примечаний',
                u'Сноска', u'Сноски'],
+        'szl':[u'Przipisy', u'Připisy'],
         'zh': [u'Reflist'],
     },
 }
@@ -348,10 +362,15 @@ referencesTemplates = {
 referencesSubstitute = {
     'wikipedia': {
         'be': u'{{зноскі}}',
+        'da': u'{{reflist}}',
+        'dsb':u'{{referency}}',
         'fi': u'{{viitteet}}',
+        'hsb':u'{{referency}}',
         'hu': u'{{Források}}',
         'pl': u'{{Przypisy}}',
         'ru': u'{{примечания}}',
+        'szl':u'{{Przipisy}}',
+        'zh': u'{{reflist}}',
     },
 }
 
@@ -360,7 +379,18 @@ referencesSubstitute = {
 # like pl.wiki where {{Przypisy}} generates
 # == Przypisy ==
 # <references />
-noTitleRequired = [u'pl', u'be']
+noTitleRequired = [u'pl', u'be', u'szl']
+
+maintenance_category = {
+    'wikipedia': {
+        'be-x-old': u'Вікіпэдыя:Старонкі з адсутным сьпісам зносак',
+        'de': u'Wikipedia:Seite mit fehlendem References-Tag',
+        'en': u'Pages with missing references list',
+        'ja': u'Refタグがあるのにreferencesタグがないページ',
+        'simple': u'Wikipedia pages with broken references',
+        'zh': u'参考资料格式错误的页面',
+    },
+}
 
 class XmlDumpNoReferencesPageGenerator:
     """
@@ -390,7 +420,7 @@ class XmlDumpNoReferencesPageGenerator:
 
 class NoReferencesBot:
 
-    def __init__(self, generator, always = False):
+    def __init__(self, generator, always=False):
         self.generator = generator
         self.always = always
         self.site = pywikibot.getSite()
@@ -409,7 +439,7 @@ class NoReferencesBot:
         except KeyError:
             self.referencesText = u'<references />'
 
-    def lacksReferences(self, text, verbose = True):
+    def lacksReferences(self, text, verbose=True):
         """
         Checks whether or not the page is lacking a references tag.
         """
@@ -502,7 +532,11 @@ class NoReferencesBot:
         # won't work with nested templates
         # the negative lookahead assures that we'll match the last template
         # occurence in the temp text.
-        templatePattern  = r'{{((?!}}).)+?}}\s*'
+        ### fix me:
+        ### {{commons}} or {{commonscat}} are part of Weblinks section
+        ### * {{template}} is mostly part of a section
+        ### so templatePattern must be fixed
+        templatePattern  = r'\r\n{{((?!}}).)+?}}\s*'
         commentPattern   = r'<!--((?!-->).)*?-->\s*'
         metadataR = re.compile(r'(\r\n)?(%s|%s|%s|%s)$'
                                % (categoryPattern, interwikiPattern,
@@ -515,7 +549,7 @@ class NoReferencesBot:
             else:
                 break
         pywikibot.output(
-            u'Found no section that can be preceeded by a new references section. Placing it before interwiki links, categories, and bottom templates.')
+            u'Found no section that can be preceeded by a new references section.\nPlacing it before interwiki links, categories, and bottom templates.')
         index = len(tmpText)
         return self.createReferenceSection(oldText, index)
 
@@ -562,7 +596,7 @@ class NoReferencesBot:
         return
 
     def run(self):
-        comment = pywikibot.translate(self.site, msg)
+        comment = i18n.twtranslate(self.site, 'noreferences-add-tag')
         pywikibot.setAction(comment)
 
         for page in self.generator:
@@ -611,7 +645,7 @@ def main():
     for arg in pywikibot.handleArgs():
         if arg.startswith('-xml'):
             if len(arg) == 4:
-                xmlFilename = pywikibot.input(u'Please enter the XML dump\'s filename:')
+                xmlFilename = i18n.input('pywikibot-enter-xml-filename')
             else:
                 xmlFilename = arg[5:]
             gen = XmlDumpNoReferencesPageGenerator(xmlFilename)
@@ -632,9 +666,22 @@ def main():
     if not gen:
         gen = genFactory.getCombinedGenerator()
     if not gen:
+        site = pywikibot.getSite()
+        try:
+            cat = maintenance_category[site.family.name][site.lang]
+        except:
+            pass
+        else:
+            import catlib
+            if not namespaces:
+                namespaces = [0]
+            cat = catlib.Category(site, "%s:%s" % (site.category_namespace(),
+                                                   cat))
+            gen = pagegenerators.CategorizedPageGenerator(cat)
+    if not gen:
         pywikibot.showHelp('noreferences')
     else:
-        if namespaces != []:
+        if namespaces:
             gen =  pagegenerators.NamespaceFilterPageGenerator(gen, namespaces)
         preloadingGen = pagegenerators.PreloadingGenerator(gen)
         bot = NoReferencesBot(preloadingGen, always)

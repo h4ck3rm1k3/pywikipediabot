@@ -1,7 +1,7 @@
 # -*- coding: utf-8  -*-
 """
 """
-__version__ = '$Id: copyright_clean.py 8805 2010-12-26 16:43:08Z xqt $'
+__version__ = '$Id: copyright_clean.py 9683 2011-10-30 10:50:42Z xqt $'
 
 #
 # (C) Francesco Cosoleto, 2006
@@ -98,7 +98,7 @@ gen = pagegenerators.CategorizedPageGenerator(cat, recurse = True)
 
 for page in gen:
     data = page.get()
-    pywikibot.output(page.aslink())
+    pywikibot.output(page.title(asLink=True))
     output = ''
 
     #

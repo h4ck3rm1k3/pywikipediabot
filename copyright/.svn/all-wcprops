@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svnroot/pywikipedia/!svn/ver/4308/trunk/pywikipedia/copyright
+END
+exclusion_list.txt
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/pywikipedia/!svn/ver/3312/trunk/pywikipedia/copyright/exclusion_list.txt
+END
+site_protected_list.txt
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svnroot/pywikipedia/!svn/ver/4308/trunk/pywikipedia/copyright/site_protected_list.txt
+END

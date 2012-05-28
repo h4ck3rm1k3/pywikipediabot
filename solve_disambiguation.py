@@ -54,6 +54,15 @@ Command line options:
    -main       only check pages in the main namespace, not in the talk,
                wikipedia, user, etc. namespaces.
 
+   -first      Uses only the first link of every line on the disambiguation
+               page that begins with an asterisk. Useful if the page is full
+               of irrelevant links that are not subject to disambiguation.
+               You won't get all af them as options, just the first on each
+               line. For a moderated example see
+               http://en.wikipedia.org/wiki/Szerdahely
+               A really exotic one is
+               http://hu.wikipedia.org/wiki/Brabant_(egyértelműsítő lap)
+
    -start:XY   goes through all disambiguation pages in the category on your
                wiki that is defined (to the bot) as the category containing
                disambiguation pages, starting at XY. If only '-start' or
@@ -73,9 +82,9 @@ To complete a move of a page, one can use:
 # (C) Daniel Herding, 2004
 # (C) Andre Engels, 2003-2004
 # (C) WikiWichtel, 2004
-# (C) Pywikipedia team, 2003-2009
+# (C) Pywikipedia team, 2003-2012
 #
-__version__='$Id: solve_disambiguation.py 8950 2011-02-14 02:08:30Z amir $'
+__version__='$Id: solve_disambiguation.py 9881 2012-02-11 13:16:03Z xqt $'
 #
 # Distributed under the terms of the MIT license.
 #
@@ -88,263 +97,32 @@ import re, sys, codecs
 import wikipedia as pywikibot
 import editarticle
 import pagegenerators
-
+from pywikibot import i18n
 # Summary message when working on disambiguation pages
-msg = {
-    'als': u'Bot-unterstitzti Begriffsklärig: %s - Link uustuscht dur %s',
-    'ar': u'توضيح بمساعدة روبوت: %s - غير الوصلة أو الوصلات إلى %s',
-    'be-tarask': u'Аўтаматычнае выпраўленьне неадназначнасьцяў: %s — зьмененая спасылка(і) на %s',
-    'br': u'Kudenn diforc\'hañ diskoulmet dre ar robot : %s - cheñchet liamm(où) e %s',
-    'ca': u'Bot:Desambiguació assistida: %s - Canviant enllaç(os) per %s',
-    'cs': u'Odstranění linku na rozcestník [[%s]] s použitím robota - Změněn(y) odkaz(y) na %s',
-    'da': u'Retter flertydigt link til: %s - Ændrede link(s) til %s',
-    'de': u'Bot-unterstützte Begriffsklärung: %s - Link(s) ersetzt durch %s',
-    'en': u'Robot-assisted disambiguation: %s - Changed link(s) to %s',
-    'eo': u'Robota unusencigo: %s - Ŝanĝis ligo(j)n al %s',
-    'es': u'Bot:Desambiguación asistida: %s - Cambiando enlace(s) para %s',
-    'fa': u'ابهام زدایی به کمک ربات: %s - پیوند به [[%s]]',
-    'fi': u'Täsmennystä botin avulla: %s korvattiin link(e)illä %s',
-    'fr': u'Homonymie résolue à l’aide du robot: %s - Modifications du (des) lien(s) pour %s',
-    'frp': u'Homonimia solucionâ avouéc un robot : %s - Changements du (des) lim(s) por %s',
-    'he': u'תיקון קישור לדף פירושונים באמצעות בוט: %s – שינוי הקישור(ים) ל%s',
-    'hu': u'Bottal végzett egyértelműsítés: %s –> %s',
-    'ia': u'Disambiguation assistite per robot: %s - Changed link(s) to %s',
-    'it': u'Sistemazione automatica della disambigua: %s - Inversione di redirect %s',
-    'ja': u'ロボット補助による曖昧さ回避：　%s - リンクを%sに変更しました',
-    'kk': u'Айрықты мағыналарды бот көмегімен шешу: %s - Changed link(s) to %s',
-    'ko': u'로봇의 도움을 받아 동음이의 처리 : [[%s]] - %s 문서로 링크 걸음',
-    'lb': u'Bot-ënnerstetzten Homonymie: %s - Geännert(e) Link(en) op %s',
-    'lt': u'Nuorodų į nukrepiamąjį straipsnį keitimas: %s - Pakeistos nuorodos į %s',
-    'mk': u'Роботизирано појаснување: %s - Измена на врска/ки во %s',
-    'ne': u'रोबोट-सहायक अस्पष्ट: %s बाट - लिङ्क(हरु) लाइ %s मा परिवर्तन गरियो',
-    'nl': u'Botgeholpen doorverwijzing: [[%s]] - Verwijzing(en) gewijzigd naar %s',
-    'no': u'bot: Retter lenke til peker: %s - Endret lenke(r) til %s',
-    'pl': u'Wspomagane przez robota ujednoznacznienie: %s - Zmieniono link(i) %s',
-    'pt': u'Desambiguação assistida por bot: %s link(s) mudado(s) para %s',
-    'ru': u'Разрешение значений с помощью бота: %s - Changed link(s) to %s',
-    'sr': u'Решавање вишезначних одредница помоћу бота: %s - Changed link(s) to %s',
-    'sv': u'Länkar direkt till rätt artikel för: %s - Bytte länk(ar) till %s',
-    'tt-cyrl': u'Бот ярдәмендә мәгънәләр киңәйтелмәсе: %s - Changed link(s) to %s',
-    'uk': u'Виправлення посилання на багатозначність за допомогою бота: %s змінено на %s',
-    'vi': u'Rôbốt giúp định hướng: %s – Đổi liên kết thành %s',
-    }
+msg = 'solve_disambiguation-links-resolved'
 
 # Summary message when working on disambiguation pages and the link is removed
-msg_unlink = {
-    'als': u'Bot-unterstitzti Begriffsklärig: %s - Link uusegnuu',
-    'ar': u'توضيح بمساعدة روبوت: %s - أزال الوصلة أو الوصلات.',
-    'be-tarask': u'Аўтаматычнае выпраўленьне неадназначнасьцяў: %s — выдаленая спасылка(і).',
-    'br': u'Kudenn diforc\'hañ diskoulmet dre ar robot : %s - liamm(où) tennet.',
-    'ca': u'Desambiguació assistida: %s - Eliminant enllaç(os).',
-    'cs': u'Odstranění linku na rozcestník [[%s]] s použitím robota - Odstraněn(y) odkaz(y)',
-    'da': u'Retter flertydigt link til: %s - Fjernede link(s)',
-    'de': u'Bot-unterstützte Begriffsklärung: %s - Link(s) entfernt',
-    'en': u'Robot-assisted disambiguation: %s - Removed link(s).',
-    'eo': u'Robota unusencigo: %s - Forigis ligo(j)n',
-    'fa': u'ابهام زدایی به کمک ربات: حذف %s',
-    'fi': u'Täsmennystä botin avulla: %s - poistettiin linkkejä.',
-    'fr': u'Homonymie résolue à l’aide du robot: %s - Retrait du (des) lien(s)',
-    'frp': u'Homonimia solucionâ avouéc un robot : %s - Retrèt du (des) lim(s).',
-    'he': u'הסרת קישור לדף פירושונים באמצעות בוט: %s',
-    'hu': u'Bottal végzett egyértelműsítés: %s – hivatkozások eltávolítása',
-    'ia': u'Disambiguation assistite per robot: %s - Removed link(s).',
-    'it': u'Sistemazione automatica della disambigua: %s - Collegamenti rimossi',
-    'ja': u'ロボット補助による曖昧さ回避：　%s - リンクを除去しました',
-    'kk': u'Айрықты мағыналарды бот көмегімен шешу: %s - Removed link(s).',
-    'ko': u'로봇의 도움을 받아 동음이의 처리: [[%s]] - 링크 제거',
-    'lb': u'Bot-ënnerstetzten Homonymie: %s - Link(en) ewechgeholl',
-    'lt': u'Nuorodų į nukrepiamąjį straipsnį keitimas: %s - Pašalintos nuorodos',
-    'mk': u'Роботизирано појаснување: %s - Отстранување на врска/ки',
-    'ne': u'रोबोट-सहायक अस्पष्टता: %s लाइ - लिङ्क(हरु) हटाइयो',
-    'nl': u'Botgeholpen doorverwijzing: [[%s]] - Verwijzing(en) verwijderd',
-    'no': u'bot: Retter lenke til peker: %s - Fjernet lenke(r)',
-    'pl': u'Wspomagane przez robota ujednoznacznienie: %s - Usunięto link(i)',
-    'pt': u'Desambiguação assistida por bot: %s link(s) removido(s)',
-    'ru': u'Разрешение значений с помощью бота: %s - Removed link(s)',
-    'sr': u'Решавање вишезначних одредница помоћу бота: %s - Removed link(s)',
-    'sv': u'Länkar direkt till rätt artikel för: %s - Tog bort länk(ar)',
-    'tr': u'Robot yardımıyla anlam ayrımı: %s - Kaldırılan bağlantı(lar).',
-    'tt-cyrl': u'Бот ярдәмендә мәгънәләр киңәйтелмәсе: %s - Removed link(s)',
-    'uk': u'Виправлення посилання на багатозначність за допомогою бота: %s вилучено',
-    'vi': u'Rôbốt giúp định hướng: %s – Dời liên kết',
-    }
+msg_unlink = 'solve_disambiguation-links-removed'
 
 # Summary message when working on redirects
-msg_redir = {
-    'als': u'Bot-unterstitzti Wyterleitigsuflesig: %s - Link uustuscht dur %s',
-    'ar': u'توضيح بمساعدة روبوت: %s - غير الوصلة أو الوصلات إلى %s',
-    'be-tarask': u'Аўтаматычнае выпраўленьне неадназначнасьцяў: %s — зьмененая спасылка(і) на %s',
-    'br': u'Kudenn diforc\'hañ diskoulmet dre ar robot : %s - cheñchet liamm(où) e %s',
-    'ca': u'Desambiguació assistida: %s - Canviant enllaç(os) a %s',
-    'cs': u'Robot opravil přesměrování na %s - Změněn(y) odkaz(y) na %s',
-    'da': u'Retter flertydigt link til: %s - Ændrede link(s) til %s',
-    'de': u'Bot-unterstützte Weiterleitungsauflösung: %s - Link(s) ersetzt durch %s',
-    'en': u'Robot-assisted disambiguation: %s - Changed link(s) to %s',
-    'eo': u'Robota unusencigo: %s - Ŝanĝis ligo(j)n al %s',
-    'fa': u'ابهام زدایی به کمک ربات: %s - پیوند به [[%s]]',
-    'fi': u'Täsmennystä botin avulla: %s korvattiin link(e)illä %s',
-    'fr': u'Correction de lien vers redirect: %s - Modifications du (des) lien(s) pour %s',
-    'frp': u'Homonimia solucionâ avouéc un robot : %s - Changements du (des) lim(s) por %s',
-    'he': u'תיקון קישור לדף פירושונים באמצעות בוט: %s שונה ל%s',
-    'hu': u'Bottal végzett egyértelműsítés: %s –> %s',
-    'ia': u'Resolution de redirectiones assistite per robot: %s - Changed link(s) to %s',
-    'it': u'Sistemazione automatica del redirect: %s - Inversione di redirect %s',
-    'ja': u'ロボット補助による曖昧さ回避：　%s - リンクを%sに変更しました',
-    'kk': u'Айрықты мағыналарды бот көмегімен шешу: %s - Changed link(s) to %s',
-    'ko': u'로봇의 도움을 받아 동음이의 처리: [[%s]] - %s 문서로 링크 걸음',
-    'lb': u'Bot-ënnerstetzten Homonymie: %s - Geännert(e) Link(en) op %s',
-    'lt': u'Nuorodų į peradresavimo straipsnį keitimas: %s - Pakeistos nuorodos į %s',
-    'mk': u'Роботизирано појаснување: %s - Измена на врска/ки во %s',
-    'ne': u'रोबोट-सहायक अस्पष्ट: %s लाइ - लिङ्क(हरु) लाइ %s मा परिवर्तन गरियो',
-    'nl': u'Botgeholpen oplossing voor doorverwijzing: [[%s]] - Verwijzing(en) gewijzigd naar %s',
-    'no': u'bot: Endrer omdirigeringslenke: %s - Endret lenke(r) til %s',
-    'pl': u'Wspomagane przez robota ujednoznacznienie: %s - Zmieniono link(i) %s',
-    'pt': u'Desambiguação assistida por bot: %s link(s) mudados para %s',
-    'ru': u'Разрешение значений с помощью бота: %s - Changed link(s) to %s',
-    'sr': u'Решавање вишезначних одредница помоћу бота: %s - Changed link(s) to %s',
-    'sv': u'Länkar direkt till rätt artikel för: %s - Bytte länk(ar) till %s',
-    'tt-cyrl': u'Бот ярдәмендә мәгънәләр киңәйтелмәсе: %s - Changed link(s) to %s',
-    'uk': u'Виправлення посилання на багатозначність за допомогою бота: %s змінено на %s',
-    'vi': u'Rôbốt giúp định hướng: %s – Đổi liên kết thành %s',
-    }
+msg_redir = 'solve_disambiguation-redirect-resolved'
 
 # Summary message when working on redirects and the link is removed
-msg_redir_unlink = {
-    'als': u'Bot-unterstitzti Wyterleitigsuflesig: %s - Link uusegnuu',
-    'ar': u'توضيح بمساعدة روبوت: %s - أزال الوصلة أو الوصلات',
-    'be-tarask': u'Аўтаматычнае выпраўленьне неадназначнасьцяў: %s — выдаленая спасылка(і)',
-    'br': u'Kudenn diforc\'hañ diskoulmet dre ar robot : %s - liamm(où) tennet',
-    'ca': u'Desambiguació assistida: %s - Eliminant enllaç(os)',
-    'cs': u'Robot opravil přesměrování na %s - Odstraněn(y) odkaz(y)',
-    'da': u'Retter flertydigt link til: %s - Fjernede link(s)',
-    'de': u'Bot-unterstützte Weiterleitungsauflösung: %s - Link(s) entfernt',
-    'en': u'Robot-assisted disambiguation: %s - Removed link(s)',
-    'eo': u'Robota unusencigo: %s - Forigis ligo(j)n',
-    'fa': u'ابهام زدایی به کمک ربات: حذف %s',
-    'fi': u'Täsmennystä botin avulla: %s - poistettiin linkkejä',
-    'fr': u'Correction de lien vers redirect: %s - Retrait du (des) lien(s)',
-    'frp': u'Homonimia solucionâ avouéc un robot : %s - Retrèt du (des) lim(s)',
-    'he': u'הסרת קישור לדף פירושונים באמצעות בוט: %s',
-    'hu': u'Bottal támogatott egyértelműsítés: %s – hivatkozások eltávolítása',
-    'ia': u'Resolution de redirectiones assistite per robot: %s - Removed link(s).',
-    'it': u'Sistemazione automatica del redirect: %s - Collegamenti rimossi',
-    'ja': u'ロボット補助による曖昧さ回避：　%s - リンクを除去しました',
-    'kk': u'Айрықты мағыналарды бот көмегімен шешу: %s - Removed link(s).',
-    'ko': u'로봇의 도움을 받아 동음이의 처리: [[%s]] - 링크 제거',
-    'lb': u'Bot-ënnerstetzten Homonymie: %s - Link(en) ewechgeholl',
-    'lt': u'Nuorodų į peradresavimo straipsnį keitimas: %s - Pašalintos nuorodos',
-    'mk': u'Роботизирано појаснување: %s - Отстранување на врска/ки',
-    'ne': u'रोबोट-सहायक अस्पष्ट: %s लाइ - लिङ्क(हरु) हटाइयो',
-    'nl': u'Botgeholpen oplossing voor doorverwijzing: [[%s]] - Verwijzing(en) verwijderd',
-    'no': u'bot: Endrer omdirigeringslenke: %s - Fjernet lenke(r)',
-    'pl': u'Wspomagane przez robota ujednoznacznienie: %s - Usunięto link(i)',
-    'pt': u'Desambiguação assistida por bot: %s link(s) removidos',
-    'ru': u'Разрешение значений с помощью бота: %s - Removed link(s)',
-    'sr': u'Решавање вишезначних одредница помоћу бота: %s - Removed link(s)',
-    'sv': u'Länkar direkt till rätt artikel för: %s - Tog bort länk(ar)',
-    'tr': u'Robot yardımıyla anlam ayrımı: %s - Kaldırılan bağlantı(lar).',
-    'tt-cyrl': u'Бот ярдәмендә мәгънәләр киңәйтелмәсе: %s - Removed link(s)',
-    'uk': u'Виправлення посилання на багатозначність за допомогою бота: %s вилучено',
-    'vi': u'Rôbốt giúp định hướng: %s – Dời liên kết',
-    }
+msg_redir_unlink = 'solve_disambiguation-redirect-removed'
 
 # Disambiguation Needed template
 dn_template = {
     'en' : u'{{dn}}',
-    }
+}
 
 # Summary message when adding Disambiguation Needed template
-msg_dn = {
-    'als': u'Bot-unterstitzti Begriffsklärig: %s - brucht Ufmerksamkeit vun eme Expert',
-    'ar': u'توضيح بمساعدة روبوت: %s - التعليم كمحتاجة لانتباه خبير',
-    'be-tarask': u'Аўтаматычнае выпраўленьне неадназначнасьцяў: %s — пазначаная як патрабуючая увагі экспэртаў',
-    'br': u'Kudenn diforc\'hañ diskoulmet dre ar robot : %s - merket evel da vezañ pledet ganti gant ur mailh',
-    'en': u'Robot-assisted disambiguation: %s - Marked as needing expert attention',
-    'eo': u'Robota unusencigo: %s - Markis ke ĝi bezonas atenton de eksperto.',
-    'fa': u'ربات نیمه خودکار علامت زدن %s به عنوان نیازمند بررسی بیشتر',
-    'fr': u"Homonymie résolue à l’aide du robot : %s - marquée comme demandant l'attention d'un expert",
-    'frp': u'Homonimia solucionâ avouéc un robot : %s - Marcâ coment demandent l’atencion d’un èxpèrt',
-    'he': u'טיפול בפירושונים בעזרת רובוט: %s - סומן כדורש תשומת לב ממומחה',
-    'ia': u'Disambiguation con robot: %s - Marcate como necessitante le attention de un experto',
-    'ja': u'ロボット補助による曖昧さ回避：　%s - 専門家のチェックが必要として印付けしました',
-    'lb': u'Bot-assistéiert Homonymie: %s - markéiert fir duerch en Expert nogekuckt ze ginn',
-    'mk': u'Роботизирано појаснување: %s - Означено како „потребно внимание од стручњак“',
-    'ne': u'रोबोट-सहायक अस्पष्ट: %s लाइ - विशेषज्ञ को ध्यानाकर्षण गराउँदै',
-    'nl': u'Robotgeholpen disambiguatie: %s - heeft aandacht van een expert nodig',
-    'pl': u'Wspomagane robotem ujednoznacznienie – %s – oznaczone jako wymagające uwagi eksperta',
-    'pt': u'Desambiguação assistida por bot: %s - Marcada como necessitando de atenção especializada',
-    'ru': u'Неоднозначность с помощью робота: %s — помечена как требующая внимания эксперта',
-    'sr': u'Роботова вишезначна одредница: %s – означено као „потребна стручна пажња“',
-    'tt-cyrl': u'Робот ярдәмендә: %s — экспертның игътибарын сораучы дип билгеләнде',
-    'vi': u'Rôbốt giúp định hướng: %s – Đánh dấu là cần chuyên gia chú ý',
-    }
+msg_dn = 'solve_disambiguation-adding-dn-template'
 
 # Summary message when adding Disambiguation Needed template to a redirect link
-msg_redir_dn = {
-    'als': u'Bot-unterstitzti Begriffsklärig: %s - brucht Ufmerksamkeit vun eme Expert',
-    'ar': u'توضيح بمساعدة روبوت: %s - التعليم كمحتاجة لانتباه خبير',
-    'be-tarask': u'Аўтаматычнае выпраўленьне неадназначнасьцяў: %s — пазначаная як патрабуючая ўвагі экспэртаў',
-    'br': u'Kudenn diforc\'hañ diskoulmet dre ar robot : %s - merket evel da vezañ pledet ganti gant ur mailh',
-    'en': u'Robot-assisted disambiguation: %s - Marked as needing expert attention',
-    'eo': u'Robota unusencigo: %s - Markis ke ĝi bezonas atenton de eksperto.',
-    'fa': u'ربات نیمه خودکار علامت زدن %s به عنوان نیازمند بررسی بیشتر',
-    'fr': u"Homonymie résolue à l’aide du robot : %s - marquée comme demandant l'attention d'un expert",
-    'frp': u'Homonimia solucionâ avouéc un robot : %s - Marcâ coment demandent l’atencion d’un èxpèrt',
-    'he': u'טיפול בפירושונים בעזרת רובוט: %s - סומן כדורש תשומת לב ממומחה',
-    'ia': u'Disambiguation con robot: %s - Marcate como necessitante le attention de un experto',
-    'ja': u'ロボット補助による曖昧さ回避：　%s - 専門家のチェックが必要として印付けしました',
-    'lb': u'Bot-assistéiert Homonymie: %s - markéiert fir duerch en Expert nogekuckt ze ginn',
-    'mk': u'Роботизирано појаснување: %s - Означено како „потребно внимание од стручњак“',
-    'ne': u'रोबोट-सहायक अस्पष्ट: %s लाइ - विशेषज्ञ को ध्यानाकर्षण गराउँदै',
-    'nl': u'Robotgeholpen disambiguatie: %s - heeft aandacht van een expert nodig',
-    'pl': u'Wspomagane robotem ujednoznacznienie – %s – oznaczone jako wymagające uwagi eksperta',
-    'pt': u'Desambiguação assistida por bot: %s - Marcada como necessitando de atenção especializada',
-    'ru': u'Неоднозначность с помощью робота: %s — помечена как требующая внимания эксперта',
-    'tt-cyrl': u'Робот ярдәмендә: %s — экспертның игътибарын сораучы дип билгеләнде',
-    'vi': u'Rôbốt giúp định hướng: %s – Đánh dấu là cần chuyên gia chú ý',
-    }
+msg_redir_dn = 'solve_disambiguation-redirect-adding-dn-template'
 
 # Summary message to (unknown)
-unknown_msg = {
-    'als': u'(nit bekannt)',
-    'ar': u'(غير معروف)',
-    'be-tarask': u'(невядома)',
-    'bn': u'(অজানা)',
-    'br': u'(dianav)',
-    'ca': u'(desconegut)',
-    'en': u'(unknown)',
-    'eo': u'(nesciata)',
-    'fa': u'(نامعلوم)',
-    'fi': u'(tuntematon)',
-    'fr': u'(inconnu)',
-    'frp': u'(encognu)',
-    'he': u'(לא ידוע)',
-    'hsb': u'[njeznaty]',
-    'hu': u'(ismeretlen)',
-    'ia': u'(incognite)',
-    'ja': u'（不明）',
-    'ksh': u'(onbekannt)',
-    'ku-latn': u'(nenas)',
-    'lb': u'(onbekannt)',
-    'mk': u'(непозната)',
-    'ml': u'(അപരിചിതം)',
-    'ne': u'[अज्ञात]',
-    'nl': u'(onbekend)',
-    'no': u'(ukjent)',
-    'pl': u'(nieznana)',
-    'ps': u'(ناڅرګند)',
-    'pt': u'(desconhecido)',
-    'ro': u'(necunoscut)',
-    'ru': u'(неизвестно)',
-    'rue': u'(незнаме)',
-    'sr': u'(непознато)',
-    'sv': u'(okänd)',
-    'tr': u'(bilinmiyor)',
-    'tt-cyrl': u'(билгесез)',
-    'vi': u'(không rõ)',
-    'vo': u'(nesevädik)',
-    'zh-hans': u'（未知）',
-    }
+unknown_msg = 'solve_disambiguation-unknown-page'
 
 # disambiguation page name format for "primary topic" disambiguations
 # (Begriffsklärungen nach Modell 2)
@@ -500,6 +278,14 @@ ignore_title = {
         'fy': [
             u'Wikipedy:Fangnet',
         ],
+        'hu': [
+            #hu:Wikipédia:Kocsmafal (egyéb)#Hol nem kell egyértelműsíteni?
+            #2012-02-08
+            u'Wikipédia:(?!Sportműhely/Eddigi cikkeink).*',
+            u'.*\(egyértelműsítő lap\)$',
+            u'.*[Vv]ita:.*',
+            u'Szerkesztő:[^/]+$',
+        ],
         'ia': [
             u'Categoria:Disambiguation',
             u'Wikipedia:.+',
@@ -550,6 +336,7 @@ ignore_title = {
             u'Wikipedia:Wikipedianen met een encyclopedisch artikel',
             u'Wikipedia:Woorden die niet als zoekterm gebruikt kunnen worden',
             u'Overleg gebruiker:Taka(/.*)?',
+            u"Wikipedia:Links naar doorverwijspagina's/Artikelen",
          ],
         'pl': [
             u'Wikipedysta:.+',
@@ -593,6 +380,22 @@ def correctcap(link, text):
         return linklower
     else:
         return linkupper
+
+def firstlinks(page):
+    #Returns a list of first links of every line beginning with *
+    #When a disambpage is full of unnecessary links, this may be useful
+    #to sort out the relevant links. E.g. from line
+    #*[[Jim Smith (smith)|Jim Smith]] ([[1832]]-[[1932]]) [[English]] [[smith]]
+    #it returns only 'Jim Smith (smith)'
+    #Lines without an asterisk at the beginning will be disregarded.
+    #No check for page existence, it has already been done.
+    list = []
+    reg = re.compile(r'\*.*?\[\[(.*?)(\||\]\])')
+    for line in page.get().splitlines():
+        found = reg.match(line)
+        if found:
+            list.append(found.group(1))
+    return list
 
 class ReferringPageGeneratorWithIgnore:
     def __init__(self, disambPage, primary=False, minimum = 0):
@@ -688,7 +491,7 @@ class DisambiguationRobot(object):
     }
 
     def __init__(self, always, alternatives, getAlternatives, dnSkip, generator,
-                 primary, main_only, minimum = 0):
+                 primary, main_only, first_only, minimum = 0):
         self.always = always
         self.alternatives = alternatives
         self.getAlternatives = getAlternatives
@@ -696,6 +499,7 @@ class DisambiguationRobot(object):
         self.generator = generator
         self.primary = primary
         self.main_only = main_only
+        self.first_only = first_only
         self.minimum = minimum
 
         self.mysite = pywikibot.getSite()
@@ -752,6 +556,16 @@ class DisambiguationRobot(object):
         # are part of the word.
         # note that the definition of 'letter' varies from language to language.
         self.linkR = re.compile(r'\[\[(?P<title>[^\]\|#]*)(?P<section>#[^\]\|]*)?(\|(?P<label>[^\]]*))?\]\](?P<linktrail>' + linktrail + ')')
+
+    def firstize(self, page, links):
+        #This will remove a lot of silly redundant links from overdecorated
+        #disambiguation pages and leave the first link of each asterisked
+        #line only. This must be done if -first is used in command line.
+        titles = [firstcap(t) for t in firstlinks(page)]
+        for l in links[:]: #uses a copy because of remove!
+            if l.title() not in titles:
+                links.remove(l)
+        return links
 
     def treat(self, refPage, disambPage):
         """
@@ -1104,6 +918,8 @@ or press enter to quit:""")
                             primary_topic_format[self.mylang]
                             % disambPage.title())
                         links = disambPage2.linkedPages()
+                        if self.first_only:
+                            links = self.firstize(disambPage2, links)
                         links = [correctcap(l, disambPage2.get())
                                  for l in links]
                     except pywikibot.NoPage:
@@ -1116,6 +932,8 @@ u"Page does not exist, using the first link in page %s."
                 else:
                     try:
                         links = disambPage.linkedPages()
+                        if self.first_only:
+                            links = self.firstize(disambPage, links)
                         links = [correctcap(l, disambPage.get())
                                  for l in links]
                     except pywikibot.NoPage:
@@ -1137,7 +955,7 @@ u"Page does not exist, using the first link in page %s."
         targets = targets[:-2]
 
         if not targets:
-            targets = pywikibot.translate(self.mysite, unknown_msg)
+            targets = i18n.twtranslate(self.mysite, unknown_msg)
 
         # first check whether user has customized the edit comment
         if (self.mysite.family.name in pywikibot.config.disambiguation_comment
@@ -1160,25 +978,29 @@ u"Page does not exist, using the first link in page %s."
         elif disambPage.isRedirectPage():
             # when working on redirects, there's another summary message
             if unlink and not new_targets:
-                self.comment = pywikibot.translate(self.mysite,
-                                                   msg_redir_unlink) \
-                               % disambPage.title()
+                self.comment = i18n.twtranslate(self.mysite,
+                                                msg_redir_unlink,
+                                                {'from': disambPage.title()})
             elif dn and not new_targets:
-                self.comment = pywikibot.translate(self.mysite, msg_redir_dn) \
-                               % disambPage.title()
+                self.comment = i18n.twtranslate(self.mysite,
+                                                msg_redir_dn,
+                                                {'from': disambPage.title()})
             else:
-                self.comment = pywikibot.translate(self.mysite, msg_redir) \
-                               % (disambPage.title(), targets)
+                self.comment = i18n.twtranslate(self.mysite,
+                                                msg_redir,
+                                                {'from': disambPage.title(),
+                                                 'to': targets})
         else:
             if unlink and not new_targets:
-                self.comment = pywikibot.translate(self.mysite, msg_unlink) \
-                               % disambPage.title()
+                self.comment = i18n.twtranslate(self.mysite, msg_unlink,
+                                                {'from': disambPage.title()})
             elif dn and not new_targets:
-                self.comment = pywikibot.translate(self.mysite, msg_dn) \
-                               % disambPage.title()
+                self.comment = i18n.twtranslate(self.mysite, msg_dn,
+                                                {'from': disambPage.title()})
             else:
-                self.comment = pywikibot.translate(self.mysite, msg) \
-                               % (disambPage.title(), targets)
+                self.comment = i18n.twtranslate(self.mysite, msg,
+                                                {'from': disambPage.title(),
+                                                 'to': targets})
 
     def run(self):
         if self.main_only:
@@ -1205,7 +1027,7 @@ u"Page does not exist, using the first link in page %s."
             self.listAlternatives()
 
             gen = ReferringPageGeneratorWithIgnore(disambPage, self.primary,
-                                                   minimum = self.minimum)
+                                                   minimum=self.minimum)
             preloadingGen = pagegenerators.PreloadingGenerator(gen)
             for refPage in preloadingGen:
                 if not self.primaryIgnoreManager.isIgnored(refPage):
@@ -1231,6 +1053,8 @@ def main(*args):
     pageTitle = []
     primary = False
     main_only = False
+    #Shall we use only the first link from each asterisked line?
+    first_only = False
 
     # For sorting the linked pages, case can be ignored
     ignoreCase = False
@@ -1272,6 +1096,8 @@ def main(*args):
             dnSkip = True
         elif arg == '-main':
             main_only = True
+        elif arg == '-first':
+            first_only = True
         elif arg.startswith('-min:'):
             minimum = int(arg[5:])
         elif arg.startswith('-start'):
@@ -1311,7 +1137,7 @@ def main(*args):
         generator = iter([page])
 
     bot = DisambiguationRobot(always, alternatives, getAlternatives, dnSkip,
-                              generator, primary, main_only,
+                              generator, primary, main_only, first_only,
                               minimum=minimum)
     bot.run()
 

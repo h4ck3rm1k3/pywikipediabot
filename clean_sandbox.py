@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-This bot cleans a sandbox by replacing the current contents with predefined
-text.
+This bot cleans a (user) sandbox by replacing the current contents with
+predefined text.
 
 This script understands the following command-line arguments:
 
@@ -14,14 +14,14 @@ This script understands the following command-line arguments:
                    hours and limits it between 5 and 15 minutes.
                    The minimum delay time is 5 minutes.
 
-    -userlist      Use this parameter to run the script in the user name-
+    -user          Use this parameter to run the script in the user name-
                    space.
                    > ATTENTION: on most wiki THIS IS FORBIDEN FOR BOTS ! <
                    > (please talk with your admin first)                 <
                    Since it is considered bad style to edit user page with-
-                   out permission, you have to pass a page containing a
-                   list of user to process. Argument e.g. is given as
-                   "-userlist:Benutzer:DrTrigonBot/Diene_Mir\!".
+                   out permission, the 'user_sandboxTemplate' for given
+                   language has to be set-up (no fall-back will be used).
+                   All pages containing that template will get cleaned.
                    Please be also aware that the rules when to clean the
                    user sandbox differ from those for project sandbox.
 
@@ -32,7 +32,7 @@ This script understands the following command-line arguments:
 # (C) Andre Engels, 2007
 # (C) Siebrand Mazeland, 2007
 # (C) xqt, 2009
-# (C) Dr. Trigon, 2011
+# (C) Dr. Trigon, 2011-2012
 #
 # DrTrigonBot: http://de.wikipedia.org/wiki/Benutzer:DrTrigonBot
 # Clean User Sandbox Robot (clean_user_sandbox.py)
@@ -40,21 +40,23 @@ This script understands the following command-line arguments:
 #
 # Distributed under the terms of the MIT license.
 #
-__version__ = '$Id: clean_sandbox.py 8958 2011-02-15 16:48:42Z xqt $'
+__version__ = '$Id: clean_sandbox.py 10231 2012-05-20 19:56:01Z amir $'
 #
 
 import time
 import wikipedia as pywikibot
+from pywikibot import i18n
 
 content = {
     'commons': u'{{Sandbox}}\n<!-- Please edit only below this line. -->',
     'als':u'{{subst:/Vorlage}}',
-    'ar': u'{{من فضلك اترك هذا السطر ولا تعدله (عنوان ساحة التجربة)}}\n<!-- مرحبا! خذ راحتك في تجربة مهارتك في التنسيق والتحرير أسفل هذا السطر. هذه الصفحة لتجارب التعديل ، سيتم تفريغ هذه الصفحة كل 6 ساعات. -->',
+    'ar': u'{{عنوان الملعب}}\n<!-- مرحبا! خذ راحتك في تجربة مهارتك في التنسيق والتحرير أسفل هذا السطر. هذه الصفحة لتجارب التعديل ، سيتم تفريغ هذه الصفحة كل 12 ساعة. -->',
+    'az': u'<!--- LÜTFƏN, BU SƏTRƏ TOXUNMAYIN --->\n{{Qaralama dəftəri}}\n<!-- AŞAĞIDAKI XƏTTİN ALTINDAN YAZA BİLƏRSİNİZ --->',
     'bar':u'{{Bitte erst NACH dieser Zeile schreiben! (Begrüßungskasten)}}\r\n',
     'cs': u'{{subst:/uhrabat}}',
     'da': u'{{subst:Sandkasse tekst}}',
     'de': u'{{Bitte erst NACH dieser Zeile schreiben! (Begrüßungskasten)}}\r\n',
-    'en': u'{{Please leave this line alone (sandbox heading)}}\n<!-- Hello! Feel free to try your formatting and editing skills below this line. As this page is for editing experiments, this page will automatically be cleaned every 12 hours. -->',
+    'en': u'{{Sandbox heading}}\n<!-- Hello! Feel free to try your formatting and editing skills below this line. As this page is for editing experiments, this page will automatically be cleaned every 12 hours. -->',
     'fa': u'{{subst:User:Amirobot/sandbox}}',
     'fi': u'{{subst:Hiekka}}',
     'he': u'{{ארגז חול}}\n<!-- נא לערוך מתחת לשורה זו בלבד, תודה. -->',
@@ -63,6 +65,7 @@ content = {
     'ja': u'{{subst:サンドボックス}}',
     'ko': u'{{연습장 안내문}}',
     'ksh':u'{{subst:/Schablon}}',
+    'mzn':u'{{ویکی‌پدیا:چنگ‌مویی صفحه/پیغوم}}\n<!-- سلام!اگه خواننی شه دچی‌ین مهارتون وسه تمرین هاکنین بتوننی اینتا صفحه جا ایستفاده هاکنین، اته لطف هاکنین اینتا پیغوم ره شه بقیه رفقون وسه بیلین. اینتا صفحه هرچند ساعت ربوت جا پاک بونه.-->',
     'nds':u'{{subst:/Vörlaag}}',
     'nl': u'{{subst:Wikipedia:Zandbak/schoon zand}}',
     'nn': u'{{sandkasse}}\n<!-- Ver snill og IKKJE FJERN DENNE LINA OG LINA OVER ({{sandkasse}}) Nedanføre kan du derimot ha det artig og prøve deg fram! Lykke til! :-)  -->',
@@ -70,45 +73,20 @@ content = {
     'pl': u'{{Prosimy - NIE ZMIENIAJ, NIE KASUJ, NIE PRZENOŚ tej linijki - pisz niżej}}',
     'pt': u'<!--não apague esta linha-->{{página de testes}}<!--não apagar-->\r\n',
     'ru': u'{{/Пишите ниже}}\n<!-- Не удаляйте, пожалуйста, эту строку, тестируйте ниже -->',
+    'simple': u'{{subst:/Text}}',
+    'sco': u'Feel free tae test here',
     'sr': u'{{песак}}\n<!-- Молимо, испробавајте испод ове линије. Хвала. -->',
     'sv': u'{{subst:Sandlådan}}',
     'th': u'{{กระบะทราย}}\n<!-- กรุณาอย่าแก้ไขบรรทัดนี้ ขอบคุณครับ/ค่ะ -- Please leave this line as they are. Thank you! -->',
+    'tr': u'{{/Bu satırı değiştirmeden bırakın}}',
     'zh': u'{{subst:User:Sz-iwbot/sandbox}}\r\n',
-    }
-
-msg = {
-    'commons': u'Bot: This page will automatically be cleaned.',
-    'als':u'Bötli: Sandchaschte iigebnet.',
-    'ar': u'روبوت: هذه الصفحة سيتم تفريغها تلقائيا',
-    'bar':u'Bot: Spielwiesn gmaht.',
-    'cs': u'Uhrabání pískoviště',
-    'da': u'Bot: Nyt sand (fra[[Skabelon:Sandkasse tekst]])',
-    'de': u'Bot: Setze Spielwiese zurück.',
-    'en': u'Robot: Automatically cleaned',
-    'fa': u'ربات: صفحه به طور خودکار تميز شد',
-    'fi': u'Botti siivosi hiekkalaatikon.',
-    'he': u'בוט: דף זה ינוקה אוטומטית.',
-    'id': u'Bot: Tata ulang',
-    'it': u'Bot: pulitura sandbox',
-    'ja': u'ロボットによる: 砂場ならし',
-    'ko': u'로봇: 연습장 비움',
-    'ksh':u'Bot: allt Zeush fott gedunn.',
-    'nds':u'Bot: Speelwisch leddig maakt.',
-    'nl': u'Bot: automatisch voorzien van schoon zand.',
-    'no': u'bot: Rydder sandkassa.',
-    'pl': u'Robot czyści brudnopis',
-    'pt': u'Bot: Limpeza da página de testes',
-    'ru': u'Бот: очистка песочницы',
-    'sr': u'Чишћење песка',
-    'sv': u'Robot krattar sandlådan.',
-    'th': u'โรบอต: กำลังจะเก็บกวาดหน้านี้โดยอัตโนมัติ',
-    'zh': u'Bot: 本页被自动清理',
     }
 
 sandboxTitle = {
     'commons': u'Project:Sandbox',
     'als':u'Project:Sandchaschte',
-    'ar': u'Project:ساحة التجربة',
+    'ar': u'Project:ملعب',
+    'az': u'Vikipediya:Qaralama dəftəri',
     'bar':u'Project:Spielwiese',
     'cs': u'Project:Pískoviště',
     'da': u'Project:Sandkassen',
@@ -123,34 +101,52 @@ sandboxTitle = {
     'ja': u'Project:サンドボックス',
     'ko': u'Project:연습장',
     'ksh':u'Project:Shpillplaz',
+    'mzn':u'Project:چنگ‌مویی صفحه',
     'nds':u'Project:Speelwisch',
     'nl': u'Project:Zandbak',
     'no': u'Project:Sandkasse',
     'pl': u'Project:Brudnopis',
     'pt': u'Project:Página de testes',
     'ru': u'Project:Песочница',
+    'simple': u'Project:Sandbox',
+    'sco': u'Project:Saundpit',
     'sr': u'Project:Песак',
     'sv': u'Project:Sandlådan',
     'th': u'Project:ทดลองเขียน',
+    'tr': u'Vikipedi:Deneme tahtası',
     'zh': u'Project:沙盒',
     }
 
+user_content = {
+    'de': u'{{Benutzer:DrTrigonBot/Spielwiese}}',
+    }
+
+user_sandboxTemplate = {
+    'de': u'User:DrTrigonBot/Spielwiese',
+    }
+
 class SandboxBot:
-    def __init__(self, hours, no_repeat, delay, userlist):
+    def __init__(self, hours, no_repeat, delay, user):
         self.hours = hours
         self.no_repeat = no_repeat
         if delay == None:
             self.delay = min(15, max(5, int(self.hours *60)))
         else:
             self.delay = max(5, delay)
+        self.user = user
         self.site = pywikibot.getSite()
-        if userlist == None:
-            self.userlist = None
-        else:
-            self.userlist = [page.title().split(u'/')[0] for page in pywikibot.Page(self.site, userlist).linkedPages()]
+        if self.user:
+            localSandboxTitle = pywikibot.translate(self.site, user_sandboxTemplate)
+            localSandbox      = pywikibot.Page(self.site, localSandboxTitle)
+            content.update(user_content)
+            sandboxTitle[self.site.lang] = [item.title() \
+              for item in localSandbox.getReferences(onlyTemplateInclusion=True)]
+            if self.site.lang not in user_sandboxTemplate:
+                sandboxTitle[self.site.lang] = []
+                pywikibot.output(u'Not properly set-up to run in user namespace!')
 
     def run(self):
-        
+
         def minutesDiff(time1, time2):
             if type(time1) in [long, int]:
                 time1 = str(time1)
@@ -169,10 +165,6 @@ class SandboxBot:
             wait = False
             now = time.strftime("%d %b %Y %H:%M:%S (UTC)", time.gmtime())
             localSandboxTitle = pywikibot.translate(mySite, sandboxTitle)
-            IsUserSandbox = (self.userlist is not None)  # DrTrigonBot (Clean User Sandbox Robot)
-            if IsUserSandbox:
-                localSandboxTitle = u'%s/' + localSandboxTitle.split(u':')[-1]
-                localSandboxTitle = [localSandboxTitle % user for user in self.userlist]
             if type(localSandboxTitle) is list:
                 titles = localSandboxTitle
             else:
@@ -183,7 +175,8 @@ class SandboxBot:
                 try:
                     text = sandboxPage.get()
                     translatedContent = pywikibot.translate(mySite, content)
-                    translatedMsg = pywikibot.translate(mySite, msg)
+                    translatedMsg = i18n.twtranslate(mySite,
+                                                     'clean_sandbox-cleaned')
                     subst = 'subst:' in translatedContent
                     pos = text.find(translatedContent.strip())
                     if text.strip() == translatedContent.strip():
@@ -191,10 +184,10 @@ class SandboxBot:
                     elif subst and sandboxPage.userName() == mySite.loggedInAs():
                         pywikibot.output(u'The sandbox might be clean, no change necessary.')
                     elif pos <> 0 and not subst:
-                        if IsUserSandbox:
+                        if self.user:
                             endpos = pos + len(translatedContent.strip())
                             if (pos < 0) or (endpos == len(text)):
-                                pywikibot.output(u'The user sandbox is still clean or not set up, no change necessary.')
+                                pywikibot.output(u'The user sandbox is still clean, no change necessary.')
                             else:
                                 sandboxPage.put(text[:endpos], translatedMsg)
                                 pywikibot.output(u'Standard content was changed, user sandbox cleaned.')
@@ -230,7 +223,7 @@ class SandboxBot:
 def main():
     hours = 1
     delay = None
-    userlist = None
+    user  = False
     no_repeat = True
     for arg in pywikibot.handleArgs():
         if arg.startswith('-hours:'):
@@ -238,13 +231,13 @@ def main():
             no_repeat = False
         elif arg.startswith('-delay:'):
             delay = int(arg[7:])
-        elif arg.startswith('-userlist:'):
-            userlist = arg[10:]
+        elif arg == '-user':
+            user  = True
         else:
             pywikibot.showHelp('clean_sandbox')
             return
 
-    bot = SandboxBot(hours, no_repeat, delay, userlist)
+    bot = SandboxBot(hours, no_repeat, delay, user)
     try:
         bot.run()
     except KeyboardInterrupt:

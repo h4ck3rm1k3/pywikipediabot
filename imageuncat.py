@@ -4,9 +4,10 @@ Program to add uncat template to images without categories at commons.
 See imagerecat.py (still working on that one) to add these images to categories.
 
 """
-__version__ = '$Id: imageuncat.py 8658 2010-10-16 18:34:02Z multichill $'
+__version__ = '$Id: imageuncat.py 9482 2011-08-29 16:32:37Z xqt $'
 #
-#  (C) Multichill 2008
+# (C) Multichill 2008-2011
+# (C) Pywikipedia bot team, 2008-2011
 #
 # Distributed under the terms of the MIT license.
 #
@@ -19,13 +20,14 @@ from datetime import datetime
 from datetime import timedelta
 
 #Probably unneeded because these are hidden categories. Have to figure it out.
-ignoreCategories = [u'[[Category:CC-BY-SA-3.0]]',
-                    u'[[Category:GFDL]]',
-                    u'[[Category:Media for cleanup]]',
-                    u'[[Category:Media lacking a description]]',
-                    u'[[Category:Media lacking author information]]',
-                    u'[[Category:Media lacking a description]]',
-                    u'[[Category:Self-published work]]']
+ignoreCategories = [u'Category:CC-BY-SA-3.0',
+                    u'Category:GFDL',
+                    u'Category:Media for cleanup',
+                    u'Category:Media lacking a description',
+                    u'Category:Media lacking author information',
+                    u'Category:Media lacking a description',
+                    u'Category:Self-published work',
+                    u'Category:Uploaded with UploadWizard',]
 
 #Dont bother to put the template on a image with one of these templates
 skipTemplates = [u'Delete',
@@ -1252,7 +1254,7 @@ def recentChanges(site = None, delay=0, block=70):
     The delay is the amount of minutes to wait and the block is the timespan to return images in.
     Should probably be copied to somewhere else
     '''
-    
+
     result = []
     dateformat ="%Y-%m-%dT%H:%M:%SZ"
     rcstart = datetime.utcnow() + timedelta(minutes=-delay-block)
@@ -1293,9 +1295,14 @@ def isUncat(page):
     pywikibot.output(u'Working on '+ page.title())
 
     for category in page.categories():
-        if category not in ignoreCategories:
-            pywikibot.output(u'Got category ' + category.title())
-            return False
+        # Check if it's not a red link category
+        if category.exists():
+            # If the category is hidden -> ignore it, it's not a topic category
+            if not category.isHiddenCategory():
+                # Check if it's not a category to ignore
+                if category.title() not in ignoreCategories:
+                    pywikibot.output(u'Got category ' + category.title())
+                    return False
 
     for templateWithTrail in page.templates():
         #Strip of trailing garbage
@@ -1304,6 +1311,8 @@ def isUncat(page):
             # Already tagged with a template, skip it
             pywikibot.output(u'Already tagged, skip it')
             return False
+        elif template.startswith(u'Int:'):
+            pywikibot.output(u'Ignoring internationalization template ' + template)
         elif template in ignoreTemplates:
             # template not relevant for categorization
             pywikibot.output(u'Ignore ' + template)

@@ -12,7 +12,7 @@ The following parameters are supported:
         If not existing yet, it is created.
         If existing, it is updated.
 """
-__version__ = '$Id: statistics_in_wikitable.py 8730 2010-11-16 13:58:47Z xqt $'
+__version__ = '$Id: statistics_in_wikitable.py 9042 2011-03-13 10:14:47Z xqt $'
 #
 import time
 import wikipedia as pywikibot
@@ -119,13 +119,13 @@ class StatisticsBot:
 
     def date(self):
         return time.strftime('%Y/%m/%d', time.localtime(time.time()))
-    
+
     def outputall(self):
         list = self.dict.keys()
         list.sort()
         for name in self.dict:
             pywikibot.output("There are "+str(self.dict[name])+" "+name)
-    
+
     def idle(self, retry_idle_time):
         time.sleep(retry_idle_time)
         pywikibot.output(u"Starting in %i second..." % retry_idle_time)

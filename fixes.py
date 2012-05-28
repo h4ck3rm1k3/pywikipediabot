@@ -7,7 +7,7 @@ File containing all standard fixes
 #
 # (C) Pywikipedia team, 2008-2010
 #
-__version__ = '$Id: fixes.py 8365 2010-07-26 20:52:10Z huji $'
+__version__ = '$Id: fixes.py 9517 2011-09-08 20:48:36Z xqt $'
 #
 # Distributed under the terms of the MIT license.
 #
@@ -422,21 +422,7 @@ fixes = {
 
     'isbn': {
         'regex': True,
-        'msg': {
-            'ar': u'روبوت: تصليح صيغة ISBN',
-            'be': u'Бот: Карэкцыя ISBN фармату',
-            'cs': u'Oprava formátu ISBN',
-            'de': u'Bot: Korrigiere ISBN-Format',
-            'en': u'Robot: Fixing ISBN format',
-            'es': u'Arreglando formato ISBN',
-            'eo': u'Bot: Korekto de teksto en ISBN-formato',
-            'fa': u'ربات:تصحیح شابک',
-            'he': u'בוט: מתקן פורמט ISBN',
-            'ja': u'ロボットによる: ISBNフォーマット修正',
-            'ru': u'Бот: Коррекция ISBN формата',
-            'uk': u'Бот: Корекція ISBN формату',
-            'zh': u'機器人: 修正ISBN格式',
-        },
+        'msg': 'isbn-formatting', # use i18n translations
         'replacements': [
             # colon
             (r'ISBN: (\d+)', r'ISBN \1'),
@@ -465,12 +451,12 @@ fixes = {
     },
 
     #Corrections for Arabic Wikipedia and any Arabic wiki.
-    #python replace.py -always -start:! -fix:correct-ar
+    #python replace.py -fix:correct-ar -start:! -always
 
     'correct-ar': {
         'regex': True,
         'msg': {
-            'ar':u'تدقيق إملائي. 528 كلمة مستهدفة حاليًا.',
+            'ar':u'تدقيق إملائي',
         },
         'replacements': [
             #(u' ,', u' ،'), #FIXME: Do not replace comma in non-Arabic text, interwiki, image links or <math> syntax.
@@ -500,7 +486,6 @@ fixes = {
             (ur'\bأحدى\b', u'إحدى'),
             (ur'\bلاكن\b', u'لكن'),
             (ur'\bإثنان\b', u'اثنان'),
-            (ur'\bشيئ\b', u'شيء'),
             (ur'\bإحتياط\b', u'احتياط'),
             (ur'\bإقتباس\b', u'اقتباس'),
             (ur'\bادارة\b', u'إدارة'),
@@ -522,7 +507,7 @@ fixes = {
             (ur'\bاخي\b', u'أخي'),
             (ur'\bاحد\b', u'أحد'),
             (ur'\bاربعاء\b', u'أربعاء'),
-            #(ur'\bاول\b', u'أول'), #FIXME: Do not replace this (and all others) in interwiki links. This is an Arabic typo, but it is correct in Farsi.
+            (ur'\bاول\b', u'أول'),
             (ur'\b(ال|)اهم\b', ur'\1أهم'),
             (ur'\b(ال|)اثقل\b', ur'\1أثقل'),
             (ur'\b(ال|)امجد\b', ur'\1أمجد'),
@@ -565,7 +550,14 @@ fixes = {
             (ur'\b(ال|)(ا|أ)(رثوذكس|رثوذوكس)(ي|ية|يتان|يان|يين|يي|يون|يو|يات|)\b', ur'\1أرثوذكس\4'),
             (ur'\bإست(عمل|خدم|مر|مد|مال|عاض|قام|حال|جاب|قال|زاد|عان|طال)(ت|ا|وا|)\b', ur'است\1\2'),
             (ur'\bإست(حال|قال|طال|زاد|عان|قام|راح|جاب|عاض|مال)ة\b', ur'است\1ة'),
-        ]
+        ],
+        'exceptions': {
+            'inside-tags': [
+                'interwiki',
+                'math',
+                'ref',
+            ],
+        }
     },
     'specialpages': {
         'regex': False,

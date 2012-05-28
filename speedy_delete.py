@@ -25,7 +25,7 @@ NOTE: This script currently only works for the Wikipedia project.
 #
 # Distributed under the terms of the MIT license.
 #
-__version__ = '$Id: speedy_delete.py 8630 2010-10-09 19:32:57Z xqt $'
+__version__ = '$Id: speedy_delete.py 10220 2012-05-16 17:08:56Z alexsh $'
 #
 
 import wikipedia as pywikibot
@@ -409,7 +409,7 @@ class SpeedyRobot:
                 'rep':u'[[WP:CSD#G5]]: 經討論被刪除後又重新創建的內容',
                 'repa':u'[[WP:CSD#G5]]: 重複的文章',
                 'oprj':u'[[WP:CSD#G7]]: 內容來自其他中文計劃',
-                'move':u'[[WP:CSD#G8]]: 依[[Wikipedia:移動請求]]暫時刪除以進行移動或合併頁面之工作',
+                'move':u'[[WP:CSD#G8]]: 依[[Wikipedia:移動請求|移動請求]]暫時刪除以進行移動或合併頁面之工作',
                 'auth':u'[[WP:CSD#G10]]: 原作者請求',
                 'ad':u'[[WP:CSD#G11]]: 明顯的以廣告宣傳為目而建立的頁面',
                 'adc':u'[[WP:CSD#G11]]: 只有條目名稱中的人物或團體之聯絡資訊',
@@ -419,22 +419,22 @@ class SpeedyRobot:
                 'isol':u'[[WP:CSD#G15]]: 孤立頁面',
                 'isol-f':u'[[WP:CSD#G15]]: 孤立頁面-沒有對應檔案的檔案頁面',
                 'isol-sub':u'[[WP:CSD#G15]]: 孤立頁面-沒有對應母頁面的子頁面',
+                'tempcp':u'[[WP:CSD#G16]]: 臨時頁面依然侵權',
                 'cont':u'[[WP:CSD#A1]]: 非常短，而且沒有定義或內容。',
-                'nocont':u'[[WP:CSD#A2]]: 沒有內容',
+                'nocont':u'[[WP:CSD#A2]]: 內容只包括外部連接、參見、圖書參考、類別標籤、模板標籤、跨語言連接的條目',
                 'nc':u'[[WP:CSD#A3]]: 跨計劃內容',
                 'cn':u'[[WP:CSD#R2]]: 跨空間重定向',
                 'wr':u'[[WP:CSD#R3]]: 錯誤重定向',
-                'vdr':u'[[WP:CSD#R4]]: 故意破壞的結果',
                 'slr':u'[[WP:CSD#R5]]: 指向本身的重定向或循環的重定向',
-                'repi':u'[[WP:CSD#I1]]: 重複的檔案',
-                'lssd':u'[[WP:CSD#I3]]: 沒有版權或來源資訊，無法確認圖片是否符合方針要求',
-                'nls':u'[[WP:CSD#I3]]: 沒有版權模板，無法確認版權資訊',
-                'svg':u'[[WP:CSD#I5]]: 被高解析度與SVG檔案取代的圖片',
-                'ui':u'[[WP:CSD#I6]]: 圖片未使用且不自由',
-                'commons':u'[[WP:CSD#I7]]: 此圖片已存在於[[:commons:|維基共享資源]]',
+                'repi':u'[[WP:CSD#F1]]: 重複的檔案',
+                'lssd':u'[[WP:CSD#F3]]: 沒有版權或來源資訊，無法確認圖片是否符合方針要求',
+                'nls':u'[[WP:CSD#F3]]: 沒有版權模板，無法確認版權資訊',
+                'svg':u'[[WP:CSD#F5]]: 被高解析度與SVG檔案取代的圖片',
+                'ui':u'[[WP:CSD#F6]]: 圖片未使用且不自由',
+                'commons':u'[[WP:CSD#F7]]: 此圖片已存在於[[:commons:|維基共享資源]]',
                 'urs':u'[[WP:CSD#O1]]: 用戶請求刪除自己的用戶頁子頁面',
                 'anou':u'[[WP:CSD#O3]]: 匿名用戶的用戶討論頁，其中的內容不再有用',
-                'uc':u'[[WP:CSD#O5]]: 空類別',
+                'uc':u'[[WP:CSD#O4]]: 空類別',
                 'tmp':u'[[WP:CSD]]: 臨時頁面',
                 },
         },

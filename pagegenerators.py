@@ -18,16 +18,15 @@ These parameters are supported to specify which pages titles to print:
 #
 # Distributed under the terms of the MIT license.
 #
-__version__='$Id: pagegenerators.py 8981 2011-02-18 17:31:15Z xqt $'
+__version__='$Id: pagegenerators.py 10218 2012-05-16 15:10:55Z xqt $'
 
 import wikipedia as pywikibot
+from pywikibot import deprecate_arg, i18n
 import config
 
 import traceback
-import Queue
 import re
 import sys
-import threading
 import codecs
 
 import urllib, urllib2, time
@@ -74,8 +73,10 @@ parameterHelp = u"""\
                   across all namespaces.
 
 -namespace        Filter the page generator to only yield pages in the
--ns               specified namespaces.  Separate multiple namespace
-                  numbers with commas. Example "-ns:0,2,4"
+-ns               specified namespaces.  Separate multiple namespace numbers
+                  with commas. Example: -ns:"0,2,4" (Take care of quotation
+                  marks as comma may qualify as command line separator.)
+                  Will ask for namespaces if you write just -namespace or -ns.
 
 -interwiki        Work on the given page and all equivalent pages in other
                   languages. This can, for example, be used to fight
@@ -138,7 +139,7 @@ parameterHelp = u"""\
                   delimited with ";"
                   Example: -usercontribs:DumZiBoT;500
                   returns 500 distinct pages to work on.
-                  
+
 -<mode>log        Work on articles that were on a specified special:log.
                   You have options for every type of logs given by the
                   <mode> parameter which could be one of the following:
@@ -168,7 +169,7 @@ parameterHelp = u"""\
                   "-randomredirect:n" where n is the number of pages to be
                   returned, else 10 pages are returned.
 
--gorandom         Specifies that the robot should starting at the random pages 
+-gorandom         Specifies that the robot should starting at the random pages
                   returned by [[Special:Random]].
 
 -redirectonly     Work on redirect pages only, not their target pages.
@@ -208,91 +209,6 @@ except NameError:
   class GeneratorExit(Exception): pass
 
 
-class ThreadedGenerator(threading.Thread):
-    """Look-ahead generator class.
-
-    Runs a generator in a separate thread and queues the results; can
-    be called like a regular generator.
-
-    Subclasses should override self.generator, _not_ self.run
-
-    Important: the generator thread will stop itself if the generator's
-    internal queue is exhausted; but, if the calling program does not use
-    all the generated values, it must call the generator's stop() method to
-    stop the background thread.  Example usage:
-
-    >>> gen = ThreadedGenerator(target=foo)
-    >>> try:
-    ...     for data in gen:
-    ...         do_work(data)
-    ... finally:
-    ...     gen.stop()
-
-    """
-
-    def __init__(self, group=None, target=None, name="GeneratorThread",
-                 args=(), kwargs=None, qsize=65536):
-        """Constructor.  Takes same keyword arguments as threading.Thread.
-
-        target must be a generator function (or other callable that returns
-        an iterable object).
-
-        @param qsize: The size of the lookahead queue. The larger the qsize,
-        the more values will be computed in advance of use (which can eat
-        up memory and processor time).
-        @type qsize: int
-
-        """
-        if kwargs is None:
-            kwargs = {}
-        if target:
-            self.generator = target
-        if not hasattr(self, "generator"):
-            raise RuntimeError("No generator for ThreadedGenerator to run.")
-        self.args, self.kwargs = args, kwargs
-        threading.Thread.__init__(self, group=group, name=name)
-        self.queue = Queue.Queue(qsize)
-        self.finished = threading.Event()
-
-    def __iter__(self):
-        """Iterate results from the queue."""
-        if not self.isAlive() and not self.finished.isSet():
-            self.start()
-        # if there is an item in the queue, yield it, otherwise wait
-        while not self.finished.isSet():
-            try:
-                yield self.queue.get(True, 0.25)
-            except Queue.Empty:
-                pass
-            except KeyboardInterrupt:
-                self.stop()
-
-    def stop(self):
-        """Stop the background thread."""
-##        if not self.finished.isSet():
-##            pywikibot.output("DEBUG: signalling %s to stop." % self)
-        self.finished.set()
-
-    def run(self):
-        """Run the generator and store the results on the queue."""
-        self.__gen = self.generator(*self.args, **self.kwargs)
-        for result in self.__gen:
-            while True:
-                if self.finished.isSet():
-##                    pywikibot.output("DEBUG: %s received stop signal." % self)
-                    return
-                try:
-                    self.queue.put_nowait(result)
-                except Queue.Full:
-                    time.sleep(0.25)
-                    continue
-                break
-        # wait for queue to be emptied, then kill the thread
-        while not self.finished.isSet() and not self.queue.empty():
-            time.sleep(0.25)
-        self.stop()
-##        pywikibot.output("DEBUG: %s stopped because generator exhausted." % self)
-
 class GeneratorFactory(object):
     """Process command line arguments and return appropriate page generator.
     This factory is responsible for processing command line arguments
@@ -326,7 +242,7 @@ class GeneratorFactory(object):
     def getCategoryGen(self, arg, length, recurse=False):
         site = pywikibot.getSite()
         if len(arg) == length:
-            categoryname = pywikibot.input(u'Please enter the category name:')
+            categoryname = i18n.input('pywikibot-enter-category-name')
         else:
             categoryname = arg[length + 1:]
         categoryname = categoryname.replace('#', '|')
@@ -343,7 +259,7 @@ class GeneratorFactory(object):
     def setSubCategoriesGen(self, arg, length, recurse = False):
         site = pywikibot.getSite()
         if len(arg) == length:
-            categoryname = pywikibot.input(u'Please enter the category name:')
+            categoryname = i18n.input('pywikibot-enter-category-name')
         else:
             categoryname = arg[length + 1:]
 
@@ -373,8 +289,8 @@ class GeneratorFactory(object):
         if arg.startswith('-filelinks'):
             fileLinksPageTitle = arg[11:]
             if not fileLinksPageTitle:
-                fileLinksPageTitle = pywikibot.input(
-                    u'Links to which image page should be processed?')
+                fileLinksPageTitle = i18n.input(
+                                        'pywikibot-enter-file-links-processing')
             if fileLinksPageTitle.startswith(site.namespace(6)
                                              + ":"):
                 fileLinksPage = pywikibot.ImagePage(site,
@@ -409,7 +325,7 @@ class GeneratorFactory(object):
         elif arg.startswith('-interwiki'):
             title = arg[11:]
             if not title:
-                title = pywikibot.input(u'Which page should be processed?')
+                title = i18n.input('pywikibot-enter-page-processing')
             page = pywikibot.Page(site, title)
             gen = InterwikiPageGenerator(page)
         elif arg.startswith('-randomredirect'):
@@ -427,6 +343,7 @@ class GeneratorFactory(object):
                 gen = RecentchangesPageGenerator()
             else:
                 gen = RecentchangesPageGenerator(number = int(arg[15:]))
+            gen = DuplicateFilterPageGenerator(gen)
         elif arg.startswith('-file'):
             textfilename = arg[6:]
             if not textfilename:
@@ -513,13 +430,10 @@ class GeneratorFactory(object):
                 firstPageTitle = firstPage.title()
             namespace = pywikibot.Page(site, firstPageTitle).namespace()
             firstPageTitle = pywikibot.Page(site,
-                                 firstPageTitle).titleWithoutNamespace()
+                                 firstPageTitle).title(withNamespace=False)
             gen = AllpagesPageGenerator(firstPageTitle, namespace,
                                         includeredirects=False)
         elif arg.startswith('-start'):
-            if arg.startswith('-startxml'):
-                pywikibot.output(u'-startxml : wrong parameter')
-                sys.exit()
             firstPageTitle = arg[7:]
             if not firstPageTitle:
                 firstPageTitle = pywikibot.input(
@@ -528,9 +442,9 @@ class GeneratorFactory(object):
                 namespace = self.namespaces[0]
             else:
                 namespace = pywikibot.Page(site, firstPageTitle).namespace()
-            
+
             firstPageTitle = pywikibot.Page(site,
-                                 firstPageTitle).titleWithoutNamespace()
+                                 firstPageTitle).title(withNamespace=False)
             gen = AllpagesPageGenerator(firstPageTitle, namespace,
                                         includeredirects=False)
         elif arg.startswith('-redirectonly'):
@@ -540,7 +454,7 @@ class GeneratorFactory(object):
                     u'At which page do you want to start?')
             namespace = pywikibot.Page(site, firstPageTitle).namespace()
             firstPageTitle = pywikibot.Page(site,
-                                 firstPageTitle).titleWithoutNamespace()
+                                 firstPageTitle).title(withNamespace=False)
             gen = AllpagesPageGenerator(firstPageTitle, namespace,
                                         includeredirects='only')
         elif arg.startswith('-prefixindex'):
@@ -631,7 +545,7 @@ def PrefixingPageGenerator(prefix, namespace=None, includeredirects=True,
     prefixpage = pywikibot.Page(site, prefix)
     if namespace is None:
         namespace = prefixpage.namespace()
-    title = prefixpage.titleWithoutNamespace()
+    title = prefixpage.title(withNamespace=False)
     for page in site.prefixindex(prefix=title, namespace=namespace, includeredirects=includeredirects):
         yield page
 
@@ -769,6 +683,8 @@ def TextfilePageGenerator(filename=None, site=None):
         f.seek(0)
         for title in f:
             title = title.strip()
+            if '|' in title:
+                title = title[:title.index('|')]
             if title:
                 yield pywikibot.Page(site, title)
     f.close()
@@ -843,13 +759,13 @@ def ShortPagesPageGenerator(number = 100, repeat = False, site = None):
 def RandomPageGenerator(number = 10, site = None):
     if site is None:
         site = pywikibot.getSite()
-    for i in range(number):
+    for i in xrange(number):
         yield site.randompage()
 
 def RandomRedirectPageGenerator(number = 10, site = None):
     if site is None:
         site = pywikibot.getSite()
-    for i in range(number):
+    for i in xrange(number):
         yield site.randomredirectpage()
 
 def PagesFromTitlesGenerator(iterable, site=None):
@@ -961,7 +877,7 @@ class GoogleSearchPageGenerator:
             'q': query,
         }
         url += urllib.urlencode(params)
-        
+
         while True:
             try:
                 pywikibot.output(u'Querying Google AJAX Search API...') #, offset %i' % offset)
@@ -1107,14 +1023,17 @@ def NamespaceFilterPageGenerator(generator, namespaces, site = None):
     of the given namespaces.
 
     The namespace list can contain both integers (namespace numbers) and
-    strings/unicode strings (namespace names).
+    strings/unicode strings (namespace names). Namespace may also be a single
+    number or a single string.
     """
     # convert namespace names to namespace numbers
     if site is None:
         site = pywikibot.getSite()
+    if isinstance(namespaces, (int, basestring)):
+        namespaces = [namespaces]
     for i in xrange(len(namespaces)):
         ns = namespaces[i]
-        if isinstance(ns, unicode) or isinstance(ns, str):
+        if isinstance(ns, basestring):
             index = site.getNamespaceIndex(ns)
             if index is None:
                 raise ValueError(u'Unknown namespace: %s' % ns)
@@ -1194,10 +1113,7 @@ def RegexFilterPageGenerator(generator, regex, inverse=False, ignore_namespace=T
 
     for page in generator:
         # get the page title
-        if ignore_namespace:
-            title = page.titleWithoutNamespace()
-        else:
-            title = page.title()
+        title = page.title(withNamespace = not ignore_namespace)
 
         if inverse:
             # yield page if NOT matched by all regex
@@ -1234,6 +1150,15 @@ def CategoryGenerator(generator):
     for page in generator:
         yield catlib.Category(page.site(), page.title())
 
+def ImageGenerator(generator):
+    """
+    Wraps around another generator. Yields the same pages, but as Image
+    objects instead of Page objects. Makes sense only if it is ascertained
+    that only categories are being retrieved.
+    """
+    for page in generator:
+        yield pywikibot.ImagePage(page.site(), page.title())
+
 def PageWithTalkPageGenerator(generator):
     """
     Wraps around another generator. Yields the same pages, but for non-talk
@@ -1255,11 +1180,10 @@ class PreloadingGenerator(object):
     Operates asynchronously, so the next batch of pages is loaded in the
     background before the first batch is fully consumed.
     """
-    def __init__(self, generator, pageNumber=60, lookahead=10):
+    @deprecate_arg("lookahead", None)
+    def __init__(self, generator, pageNumber=60):
         self.wrapped_gen = generator
         self.pageNumber = pageNumber
-#        ThreadedGenerator.__init__(self, name="Preloading-Thread",
-#                                   qsize=lookahead)
 
     def __iter__(self):
         try:
@@ -1267,8 +1191,6 @@ class PreloadingGenerator(object):
             # after these pages have been preloaded and yielded.
             somePages = []
             for page in self.wrapped_gen:
-##                if self.finished.isSet():
-##                    return
                 somePages.append(page)
                 # We don't want to load too many pages at once using XML export.
                 # We only get a maximum number at a time.

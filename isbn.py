@@ -36,65 +36,15 @@ Furthermore, the following command line parameters are supported:
 
 """
 
-__version__='$Id: isbn.py 8918 2011-02-05 16:33:01Z xqt $'
+__version__='$Id: isbn.py 9360 2011-07-10 15:06:06Z xqt $'
 
+import sys, re
 import wikipedia as pywikibot
 import pagegenerators
-import sys, re
+from pywikibot import i18n
 
 docuReplacements = {
     '&params;': pagegenerators.parameterHelp,
-}
-
-# Summary messages in different languages
-msg = {
-    'af': u'Robot: Formatteer ISBN',
-    'als': u'Bot: ISBN formatiert',
-    'ar': u'روبوت: تهيئة ISBN',
-    'be-tarask': u'Робат: фарматаваньне ISBN',
-    'bn': u'রোবট: আইএসবিএন নম্বরের ফরম্যাট ঠিক করছে',
-    'br': u'Robot : O furmadiñ an ISBN',
-    'bs': u'Robot: Oblikovanje ISBN',
-    'da': u'Robot: Formaterer ISBN',
-    'de': u'Bot: Formatiere ISBN',
-    'el': u'Ρομπότ: Μορφοποίηση ISBN',
-    'en': u'Robot: Formatting ISBN',
-    'eo': u'Roboto: Aranĝis ISBN',
-    'fa': u'ربات:استانداردسازی شابک',
-    'fi': u'Botti muotoili ISBN-tunnuksen',
-    'fr': u'Robot : Mise en forme du ISBN',
-    'frp': u'Robot : misa en fôrma du ISBN',
-    'gl': u'Bot: Dou formato ISBN',
-    'he': u'בוט: מעצב ISBN',
-    'hsb': u'Boćik: ISBN so formatuje',
-    'hu': u'Bot: ISBN formázása',
-    'ia': u'Robot: Formatation ISBN',
-    'id': u'Bot: Memformat ISBN',
-    'it': u'Bot: Formatto ISBN',
-    'ja': u'ロボットによる ISBN の書式化',
-    'ksh': u'Bot: ISBN zerääsch jemaat.',
-    'lb': u'Bot: ISBN formatéiert',
-    'lt': u'Robotas: Formatuojamas ISBN',
-    'mk': u'Робот: Форматирам ISBN',
-    'ms': u'Bot: Memformatkan ISBN',
-    'ne': u'रोबोट: ISBN मिलाउँदै',
-    'nl': u'Robot: ISBN opgemaakt',
-    'nn': u'robot: formaterer ISBN',
-    'no': u'robot: Formaterer ISBN',
-    'pl': u'Robot sformatował numer ISBN',
-    'pt': u'Robô: A formatar o ISBN',
-    'ro': u'Robot: Formatat codul ISBN',
-    'ru': u'Робот: преобразование ISBN',
-    'rue': u'Робот: Форматованя ISBN',
-    'sl': u'Robot: Oblikovanje ISBN',
-    'sr': u'Робот: обликовање ISBN-а',
-    'sv': u'Robot: Formaterar ISBN',
-    'tr': u'Robot: ISBN biçimlendirmesi',
-    'tt-cyrl': u'Робот: ISBN үзләштерү',
-    'uk': u'Робот: Форматування ISBN',
-    'vi': u'Rôbốt: Định dạng ISBN',
-    'zh': u'機器人：ISBN格式化',
-    'zh-hans': u'机器人：ISBN格式化',
 }
 
 # Maps each group number to the list of its publisher number ranges.
@@ -1216,13 +1166,13 @@ class IsbnBot:
                 page.put(text)
             except pywikibot.NoPage:
                 pywikibot.output(u"Page %s does not exist?!"
-                                 % page.aslink())
+                                 % page.title(asLink=True))
             except pywikibot.IsRedirectPage:
                 pywikibot.output(u"Page %s is a redirect; skipping."
-                                 % page.aslink())
+                                 % page.title(asLink=True))
             except pywikibot.LockedPage:
                 pywikibot.output(u"Page %s is locked?!"
-                                 % page.aslink())
+                                 % page.title(asLink=True))
 
 
 class InvalidIsbnException(pywikibot.Error):
@@ -1427,7 +1377,7 @@ class IsbnBot:
         self.format = format
         self.always = always
         self.isbnR = re.compile(r'(?<=ISBN )(?P<code>[\d\-]+[Xx]?)')
-        self.comment = pywikibot.translate(pywikibot.getSite(), msg)
+        self.comment = i18n.twtranslate(pywikibot.getSite(), 'isbn-formatting')
 
     def treat(self, page):
         try:
@@ -1447,11 +1397,11 @@ class IsbnBot:
                 newText = self.isbnR.sub(_hyphenateIsbnNumber, newText)
             self.save(page, newText)
         except pywikibot.NoPage:
-            pywikibot.output(u"Page %s does not exist?!" % page.aslink())
+            pywikibot.output(u"Page %s does not exist?!" % page.title(asLink=True))
         except pywikibot.IsRedirectPage:
-            pywikibot.output(u"Page %s is a redirect; skipping." % page.aslink())
+            pywikibot.output(u"Page %s is a redirect; skipping." % page.title(asLink=True))
         except pywikibot.LockedPage:
-            pywikibot.output(u"Page %s is locked?!" % page.aslink())
+            pywikibot.output(u"Page %s is locked?!" % page.title(asLink=True))
 
     def save(self, page, text):
         if text != page.get():

@@ -32,15 +32,16 @@ Furthermore, the following command line parameters are supported:
 #
 # (C) Leonardo Gregianin, 2006
 # (C) Andreas J. Schwab, 2007
-# (C) Pywikipedia bot team, 2006-2010
+# (C) Pywikipedia bot team, 2006-2011
 #
 # Distributed under the terms of the MIT license.
 #
 
-__version__='$Id: movepages.py 8629 2010-10-09 16:11:46Z xqt $'
+__version__='$Id: movepages.py 9692 2011-10-30 15:03:29Z xqt $'
 
 import sys, re
 import wikipedia as pywikibot
+from pywikibot import i18n
 import pagegenerators
 
 # This is required for the text that is shown when you run this script
@@ -85,9 +86,10 @@ class MovePagesBot:
         try:
             msg = self.summary
             if not msg:
-                msg = pywikibot.translate(pywikibot.getSite(), summary)
+                msg = i18n.twtranslate(pywikibot.getSite(), 'movepages-moving')
             pywikibot.output(u'Moving page %s to [[%s]]'
-                             % (page.title(asLink=True), newPageTitle))
+                             % (page.title(asLink=True),
+                                newPageTitle))
             page.move(newPageTitle, msg, throttle=True,
                       leaveRedirect=self.noredirect)
         except pywikibot.NoPage:
@@ -108,7 +110,7 @@ class MovePagesBot:
         if self.skipredirects and page.isRedirectPage():
             pywikibot.output(u'Page %s is a redirect; skipping.' % page.title())
             return
-        pagetitle = page.titleWithoutNamespace()
+        pagetitle = page.title(withNamespace=False)
         namesp = page.site().namespace(page.namespace())
         if self.appendAll:
             newPageTitle = (u'%s%s%s'
@@ -182,7 +184,7 @@ class MovePagesBot:
                 self.replacePattern = pywikibot.input(
                     u'Enter the replace pattern:')
                 self.regex=re.compile(searchPattern)
-                if page.title() == page.titleWithoutNamespace():
+                if page.title() == page.title(withNamespace=False):
                     newPageTitle = self.regex.sub(self.replacePattern,
                                                   page.title())
                 else:
@@ -191,7 +193,7 @@ class MovePagesBot:
                         % namesp, ['yes', 'no'], ['y', 'n'])
                     if choice2 == 'y':
                         newPageTitle = self.regex.sub(
-                            self.replacePattern, page.titleWithoutNamespace())
+                            self.replacePattern, page.title(withNamespace=False))
                         noNamespace = True
                     else:
                         newPageTitle = self.regex.sub(self.replacePattern,
@@ -304,7 +306,7 @@ def main():
                            skipredirects, summary)
         bot.run()
     elif not fromToPairs:
-        pywikibot.showHelp('movepages')
+        pywikibot.showHelp()
 
 if __name__ == '__main__':
     try:

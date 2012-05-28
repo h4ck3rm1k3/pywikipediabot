@@ -30,7 +30,7 @@ and the bot will only work on that single page.
 #
 # Distributed under the terms of the MIT license.
 #
-__version__='$Id: selflink.py 8630 2010-10-09 19:32:57Z xqt $'
+__version__='$Id: selflink.py 9146 2011-04-06 16:04:58Z xqt $'
 #
 
 import re, sys
@@ -50,6 +50,7 @@ docuReplacements = {
 msg = {
     'ar':u'روبوت: إزالة وصلات ذاتية',
     'cs':u'Robot odstranil odkaz na název článku',
+    'da':u'Bot: fjerner selvreference',
     'de':u'Bot: Entferne Selbstlinks',
     'en':u'Robot: Removing selflinks',
     'es':u'Bot: Eliminando enlaces al mismo artículo',
@@ -132,7 +133,7 @@ class SelflinkBot:
         except pywikibot.InvalidTitle, err:
             pywikibot.output(u'Warning: %s' % err)
             return text, False
-            
+
         # Check whether the link found is to the current page itself.
         if linkedPage != page:
             # not a self-link

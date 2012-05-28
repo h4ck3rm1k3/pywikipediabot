@@ -1,8 +1,8 @@
-﻿#!/usr/bin/python
+#!/usr/bin/python
 # -*- coding: utf-8  -*-
 
 """Unit tests for userlib.py"""
-__version__ = '$Id$'
+__version__ = '$Id: test_userlib.py 9043 2011-03-13 10:25:08Z xqt $'
 
 import unittest
 import test_utils

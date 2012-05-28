@@ -1,6 +1,6 @@
 # -*- coding: utf-8  -*-
 
-__version__ = '$Id: commons_family.py 8963 2011-02-16 08:34:10Z xqt $'
+__version__ = '$Id: commons_family.py 10205 2012-05-11 16:34:51Z shizhao $'
 
 import family
 
@@ -13,11 +13,10 @@ class Family(family.Family):
         self.langs = {
             'commons': 'commons.wikimedia.org',
         }
-        if family.config.SSL_connection:
-            self.langs['commons'] = None
 
         self.namespaces[4] = {
             '_default': [u'Commons', 'Project'],
+            'commons': [u'Commons', u'COM'],
         }
         self.namespaces[5] = {
             '_default': [u'Commons talk', 'Project talk'],
@@ -42,9 +41,11 @@ class Family(family.Family):
         }
         self.namespaces[106] = {
             '_default': [u'Institution'],
+            'commons': [u'Institution', u'Museum'],
         }
         self.namespaces[107] = {
             '_default': [u'Institution talk'],
+            'commons': [u'Institution talk', u'Museum talk'],
         }
 
         self.interwiki_forward = 'wikipedia'
@@ -75,10 +76,6 @@ class Family(family.Family):
             'meta', 'mediawiki', 'test', 'incubator', 'species',
         ]
 
-
-    def version(self, code):
-        return '1.17wmf1'
-
     def dbName(self, code):
         return 'commonswiki_p'
 
@@ -86,14 +83,6 @@ class Family(family.Family):
         return ('commons', 'commons')
 
     if family.config.SSL_connection:
-        def hostname(self, code):
-            return 'secure.wikimedia.org'
 
         def protocol(self, code):
             return 'https'
-
-        def scriptpath(self, code):
-            return '/wikipedia/commons/w'
-
-        def nicepath(self, code):
-            return '/wikipedia/commons/wiki/'

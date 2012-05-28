@@ -31,6 +31,7 @@ mediawiki_messages.py  : Access to the various translations of the MediaWiki
                          software interface.
 pagegenerators.py      : Generator pages.
 userlib.py             : Library to work with users, their pages and talk pages.
+apispec.py             : Library to handle special pages through API
 BeautifulSoup.py       : is a Python HTML/XML parser designed for quick
                          turnaround projects like screen-scraping. See
                          more:
@@ -124,6 +125,8 @@ makecat.py             : Given an existing or new category, find pages for that
                          category.
 movepages.py           : Bot page moves to another title.
 nowcommons.py          : This bot can delete images with NowCommons template.
+ndashredir.py          : Creates hyphenated redirects to articles with n dash 
+                         or m dash in their title.
 pagefromfile.py        : This bot takes its input from a file that contains a
                          number of pages to be put on the wiki.
 piper.py               : Pipes article text through external program(s) on
@@ -174,7 +177,6 @@ welcome.py             : Script to welcome new users.
 
 === Directories ===
 
-archive                : Contains old bots. Maybe they not run no more
 category               :
 copyright              : Contains information retrieved by copyright.py
 deadlinks              : Contains information retrieved by weblinkchecker.py

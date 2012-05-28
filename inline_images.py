@@ -22,7 +22,7 @@ All other parameters will be regarded as a page title; in this case, the bot
 will only touch a single page.
 """
 
-__version__='$Id: inline_images.py 8755 2010-12-03 21:20:20Z purodha $'
+__version__='$Id: inline_images.py 9683 2011-10-30 10:50:42Z xqt $'
 
 import sys, re
 import wikipedia as pywikibot
@@ -74,11 +74,12 @@ class InlineImagesRobot:
                 #if text != originalText:
                 #    page.put(text)
             except pywikibot.NoPage:
-                print "Page %s does not exist?!" % page.aslink()
+                print "Page %s does not exist?!" % page.title(asLink=True)
             except pywikibot.IsRedirectPage:
-                print "Page %s is a redirect; skipping." % page.aslink()
+                print "Page %s is a redirect; skipping." \
+                      % page.title(asLink=True)
             except pywikibot.LockedPage:
-                print "Page %s is locked?!" % page.aslink()
+                print "Page %s is locked?!" % page.title(asLink=True)
 
 def main():
     #page generator

@@ -49,11 +49,11 @@ subdirectory.
 """
 #
 # (C) Rob W.W. Hooft, 2003
-# (C) Pywikipedia bot team, 2003-2010
+# (C) Pywikipedia bot team, 2003-2011
 #
 # Distributed under the terms of the MIT license.
 #
-__version__='$Id: login.py 8114 2010-04-19 20:52:19Z xqt $'
+__version__='$Id: login.py 9692 2011-10-30 15:03:29Z xqt $'
 
 import re, os, query
 import urllib2
@@ -125,7 +125,7 @@ class LoginManager:
                         return True
             else:
                 for linkedPage in botListPage.linkedPages():
-                    if linkedPage.titleWithoutNamespace() == self.username:
+                    if linkedPage.title(withNamespace=False) == self.username:
                         return True
             return False
         else:

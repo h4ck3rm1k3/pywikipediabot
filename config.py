@@ -3,11 +3,11 @@
 # (C) Rob W.W. Hooft, 2003
 #     parts by holger@trillke.net 2002/03/18
 #     Purodha Blissenbach (Modifier), 2010
-# (C) Pywikipedia bot team, 2007-2010
+# (C) Pywikipedia bot team, 2007-2012
 #
 # Distributed under the terms of the MIT license.
 #
-__version__ = '$Id: config.py 8813 2010-12-29 22:27:03Z xqt $'
+__version__ = '$Id: config.py 10224 2012-05-20 09:44:29Z xqt $'
 
 import os, re
 import sys as __sys
@@ -74,7 +74,7 @@ authenticate = {}
 
 #    Secure Connection to all Wikimedia Projects
 SSL_connection = False
-    
+
 # password_file = ".passwd"
 # A password file with default passwords. For more information, please
 # see LoginManager.readPassword in login.py.
@@ -108,6 +108,19 @@ except:
     #we get "StdioOnnaStick instance has no attribute 'encoding'"
     console_encoding = None
 
+# The encoding the user would like to see text transliterated to. This can be
+# set to a charset (e.g. 'ascii', 'iso-8859-1' or 'cp850'), and we will output
+# only characters that exist in that charset. However, the characters will be
+# output using console_encoding. 
+# If this is not defined on Windows, we emit a Warning explaining the user
+# to either switch to a Unicode-able font and use
+#    transliteration_target = None
+# or to keep using raster fonts and set
+#    transliteration_target = console_encoding
+# After emitting the warning, this last option will be set.
+
+transliteration_target = 'not set'
+
 # The encoding in which textfiles are stored, which contain lists of page
 # titles. The most used is: 'utf-8'. 'utf-8-sig' recognizes BOM but it is
 # available on Python 2.5 or higher. For a complete list please see:
@@ -116,6 +129,10 @@ textfile_encoding = 'utf-8'
 
 # tkinter isn't yet ready
 userinterface = 'terminal'
+
+# i18n setting for user interface language
+# default is config.mylang or 'en'
+userinterface_lang = None
 
 # Should we transliterate characters that do not exist in the console
 # character set?
@@ -459,11 +476,23 @@ use_diskcache = False
 # up to 30 minutes)
 retry_on_fail = True
 
+# Defines what actions the bots are NOT allowed to do (e.g. 'edit') on wikipedia
+# servers. Allows simulation runs of bots to be carried out without changing any
+# page on the server side. This setting may be overridden in user_config.py.
+actions_to_block = ['edit', 'watch', 'move', 'delete', 'undelete', 'protect',
+                    'emailuser']
+
 # How many pages should be put to a queue in asynchroneous mode.
 # If maxsize is <= 0, the queue size is infinite.
 # Increasing this value will increase memory space but could speed up
 # processing. As higher this value this effect will decrease.
 max_queue_size = 64
+
+############## TEMPORARY SETTINGS ##############
+# Temporary solution for 2012 version survey, search for this key
+# in wikipedia.py
+import sys # Just for the next line, remove them together
+suppresssurvey = (sys.version >= '2.7.2')
 
 # End of configuration section
 # ============================
@@ -581,6 +610,17 @@ if console_encoding is None:
         console_encoding = 'cp850'
     else:
         console_encoding = 'iso-8859-1'
+
+# Fix up transliteration_target
+if transliteration_target == 'not set':
+    if __sys.platform == 'win32':
+        transliteration_target = console_encoding
+        print "WARNING: Running on Windows and transliteration_target is not set."
+        print "Please see http://www.mediawiki.org/wiki/Manual:Pywikipediabot/Windows"
+    else:
+        transliteration_target = None
+elif transliteration_target in ('None', 'none'):
+    transliteration_target = None
 
 # Save base_dir for use by other modules
 base_dir = _base_dir

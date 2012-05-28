@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svnroot/pywikipedia/!svn/ver/9053/trunk/pywikipedia/commonsdelinker
+END
+plugins.txt
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/pywikipedia/!svn/ver/5675/trunk/pywikipedia/commonsdelinker/plugins.txt
+END
+delinker.py
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/pywikipedia/!svn/ver/9053/trunk/pywikipedia/commonsdelinker/delinker.py
+END
+image_replacer.py
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svnroot/pywikipedia/!svn/ver/9053/trunk/pywikipedia/commonsdelinker/image_replacer.py
+END
+threadpool.py
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/pywikipedia/!svn/ver/9053/trunk/pywikipedia/commonsdelinker/threadpool.py
+END
+checkusage.py
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/pywikipedia/!svn/ver/9053/trunk/pywikipedia/commonsdelinker/checkusage.py
+END
+delinker.txt
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/pywikipedia/!svn/ver/5070/trunk/pywikipedia/commonsdelinker/delinker.txt
+END

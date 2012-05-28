@@ -1,6 +1,6 @@
 # -*- coding: utf-8  -*-
 
-__version__ = '$Id: test_family.py 8970 2011-02-16 11:57:50Z xqt $'
+__version__ = '$Id: test_family.py 10140 2012-04-20 16:08:24Z xqt $'
 
 import family
 
@@ -19,9 +19,23 @@ class Family(family.Family):
 
         self.namespaces[4] = {
             '_default': [u'Wikipedia', self.namespaces[4]['_default']],
+            'test': [u'Wikipedia', u'WP'],
         }
         self.namespaces[5] = {
             '_default': [u'Wikipedia talk', self.namespaces[5]['_default']],
+            'test': [u'Wikipedia talk', u'WT'],
+        }
+        self.namespaces[90] = {
+            '_default': u'Thread',
+        }
+        self.namespaces[91] = {
+            '_default': u'Thread talk',
+        }
+        self.namespaces[92] = {
+            '_default': u'Summary',
+        }
+        self.namespaces[93] = {
+            '_default': u'Summary talk',
         }
         self.namespaces[100] = {
             '_default': u'Hilfe',
@@ -125,14 +139,17 @@ class Family(family.Family):
         self.namespaces[133] = {
             '_default': u'نقاش المساعدة',
         }
+        self.namespaces[1198] = {
+            '_default': u'Translations',
+        }
+        self.namespaces[1199] = {
+            '_default': u'Translations talk',
+        }
         self.interwiki_forward = 'wikipedia'
         self.cross_projects = [
             'wikipedia', 'wiktionary', 'wikibooks', 'wikiquote', 'wikisource', 'wikinews', 'wikiversity',
             'meta', 'mediawiki', 'incubator', 'commons', 'species',
         ]
-
-    def version(self, code):
-        return '1.17wmf1'
 
     def shared_image_repository(self, code):
         return ('commons', 'commons')

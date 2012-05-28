@@ -2,23 +2,45 @@
 # -*- coding: utf-8  -*-
 
 '''
-This module contains code to store Wiktionary content in Python objects.
-The objects can output the content again in Wiktionary format by means of the wikiWrap methods
+This module contains code to store Wiktionary content in Python objects. The
+objects can output the content again in Wiktionary format by means of the
+wikiWrap methods
 
-I'm currently working on a parser that can read the textual version in the various Wiktionary formats and store what it finds in the Python objects.
+I'm currently working on a parser that can read the textual version in the
+various Wiktionary formats and store what it finds in the Python objects.
 
-The data dictionaries will be moved to a separate file, later on. Right now it's practical to have everything together. They also still need to be expanded to contain more languages and more Wiktionary formats. Right now I like to keep everything together to keep my sanity.
+The data dictionaries will be moved to a separate file, later on. Right now it's
+practical to have everything together. They also still need to be expanded to
+contain more languages and more Wiktionary formats. Right now I like to keep
+everything together to keep my sanity.
 
-The code is still very much alpha level and the scope of what it can do is still rather limited, only 3 parts of speech, only 2 different Wiktionary output formats, only langnames matrix for about 8 languages. On of the things on the todo list is to harvest the content of this matrix dictionary from the various Wiktionary projects. GerardM put them all in templates already.
+The code is still very much alpha level and the scope of what it can do is still
+rather limited, only 3 parts of speech, only 2 different Wiktionary output
+formats, only langnames matrix for about 8 languages. On of the things on the
+todo list is to harvest the content of this matrix dictionary from the various
+Wiktionary projects. GerardM put them all in templates already.
 '''
 
-__version__='$Id: wiktionary.py 6744 2009-04-28 05:35:32Z nicdumz $'
+__version__='$Id: wiktionary.py 9386 2011-07-16 09:57:25Z xqt $'
 
 #from editarticle import EditArticle
 #import wikipedia
 import copy
 
-isolangs = ['af','sq','ar','an','hy','ast','tay','ay','az','bam','eu','bn','my','bi','bs','br','bg','sro','ca','zh','chp','rmr','co','dgd','da','de','eml','en','eo','et','fo','fi','fr','cpf','fy','fur','gl','ka','el','gu','hat','haw','he','hi','hu','io','ga','is','gil','id','ia','it','ja','jv','ku','kok','ko','hr','lad','la','lv','ln','li','lt','lb','src','ma','ms','mg','mt','mnc','mi','mr','mh','mas','myn','mn','nah','nap','na','nds','no','ny','oc','uk','oen','grc','pau','pap','pzh','fa','pl','pt','pa','qu','rap','roh','ra','ro','ja-ro','ru','smi','sm','sa','sc','sco','sr','sn','si','sk','sl','so','sov','es','scn','su','sw','tl','tt','th','ti','tox','cs','che','tn','tum','tpn','tr','ts','tvl','ur','vi','vo','wa','cy','be','wo','xh','zu','sv']
+isolangs = ['af', 'sq', 'ar', 'an', 'hy', 'ast', 'tay', 'ay', 'az', 'bam', 'eu',
+            'bn', 'my', 'bi', 'bs', 'br', 'bg', 'sro', 'ca', 'zh', 'chp', 'rmr',
+            'co', 'dgd', 'da', 'de', 'eml', 'en', 'eo', 'et', 'fo', 'fi', 'fr',
+            'cpf', 'fy', 'fur', 'gl', 'ka', 'el', 'gu', 'hat', 'haw', 'he',
+            'hi', 'hu', 'io', 'ga', 'is', 'gil', 'id', 'ia', 'it', 'ja', 'jv',
+            'ku', 'kok', 'ko', 'hr', 'lad', 'la', 'lv', 'ln', 'li', 'lt', 'lb',
+            'src', 'ma', 'ms', 'mg', 'mt', 'mnc', 'mi', 'mr', 'mh', 'mas',
+            'myn', 'mn', 'nah', 'nap', 'na', 'nds', 'no', 'ny', 'oc', 'uk',
+            'oen', 'grc', 'pau', 'pap', 'pzh', 'fa', 'pl', 'pt', 'pa', 'qu',
+            'rap', 'roh', 'ra', 'ro', 'ja-ro', 'ru', 'smi', 'sm', 'sa', 'sc',
+            'sco', 'sr', 'sn', 'si', 'sk', 'sl', 'so', 'sov', 'es', 'scn', 'su',
+            'sw', 'tl', 'tt', 'th', 'ti', 'tox', 'cs', 'che', 'tn', 'tum',
+            'tpn', 'tr', 'ts', 'tvl', 'ur', 'vi', 'vo', 'wa', 'cy', 'be', 'wo',
+            'xh', 'zu', 'sv',]
 
 wiktionaryformats = {
     'nl': {
@@ -99,7 +121,7 @@ langnames = {
         'eo' : u'Esperanto',
         'es' : u'Spaans',
         },
-     'de':    {
+    'de':    {
         'translingual' : u'???',
         'nl' : u'Niederländisch',
         'en' : u'Englisch',
@@ -109,7 +131,7 @@ langnames = {
         'eo' : u'Esperanto',
         'es' : u'Spanisch',
         },
-     'en':    {
+    'en':    {
         'translingual' : u'Translingual',
         'nl' : u'Dutch',
         'en' : u'English',
@@ -129,7 +151,7 @@ langnames = {
         'eo' : u'Esperanto',
         'es' : u'Hispana',
         },
-     'ia':    {
+    'ia':    {
         'translingual' : u'translingual',
         'nl' : u'nederlandese',
         'en' : u'anglese',

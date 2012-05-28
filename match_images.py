@@ -15,7 +15,7 @@ Expect the code to change a lot!
 #
 # Distributed under the terms of the MIT license.
 #
-__version__ = '$Id: match_images.py 7650 2009-11-15 13:17:01Z alexsh $'
+__version__ = '$Id: match_images.py 9042 2011-03-13 10:14:47Z xqt $'
 
 import sys, math, StringIO
 import wikipedia, config
@@ -26,13 +26,13 @@ def matchImagePages(imagePageA, imagePageB):
     This functions expects two image page objects.
     It will return True if the image are the same and False if the images are not the same
     '''
-   
+
     imageA = getImageFromImagePage(imagePageA)
     imageB = getImageFromImagePage(imagePageB)
 
     (imA_width, imA_height) = imageA.size
     (imB_width, imB_height) = imageB.size
-   
+
     imageB = imageB.resize((imA_width, imA_height))
 
     imageA_topleft = imageA.crop((0,0, int(imA_width/2), int(imA_height/2)))
@@ -94,23 +94,23 @@ def matchImages(imageA, imageB):
     histogramA = imageA.histogram()
     histogramB = imageB.histogram()
 
-    totalMatch = 0 
+    totalMatch = 0
     totalPixels = 0
-    
+
     if not (len(histogramA)==len(histogramB)):
         return 0
-    
+
     for i in range(0, len(histogramA)):
         totalMatch = totalMatch + min(histogramA[i], histogramB[i])
         totalPixels = totalPixels + max(histogramA[i], histogramB[i])
 
     if (totalPixels==0):
         return 0;
-    
+
     return float(totalMatch)/float(totalPixels)*100
 
 
-            
+
 def main():
     site = wikipedia.getSite(u'commons', u'commons')
 
@@ -121,7 +121,7 @@ def main():
     familyA = u''
     familyB = u''
     langA = u''
-    langB = u''   
+    langB = u''
     imagePageA = None
     imagePageB = None
 
@@ -155,7 +155,7 @@ def main():
         imageTitleA=images[0]
         imageTitleB=images[1]
 
-    if not (imageTitleA == u''):      
+    if not (imageTitleA == u''):
         if not (langA == u''):
             if not (familyA == u''):
                 imagePageA = wikipedia.ImagePage(wikipedia.getSite(langA, familyA), imageTitleA)
@@ -176,7 +176,7 @@ def main():
     if (imagePageA and imagePageB):
         matchImagePages(imagePageA, imagePageB)
 
-    
+
 if __name__ == "__main__":
     try:
         main()

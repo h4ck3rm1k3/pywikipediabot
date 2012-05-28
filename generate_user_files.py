@@ -1,10 +1,9 @@
 # -*- coding: utf-8  -*-
 """ Script to create user files (user-config.py, user-fixes.py) """
-__version__ = '$Id: generate_user_files.py 8637 2010-10-10 01:52:32Z xqt $'
+__version__ = '$Id: generate_user_files.py 9081 2011-03-14 17:07:16Z saper $'
 
 import codecs, os, re, sys
 
-base_dir = ''
 console_encoding = sys.stdout.encoding
 
 if console_encoding is None or sys.platform == 'cygwin':
@@ -41,7 +40,7 @@ def file_exists(filename):
         return True
     return False
 
-def create_user_config():
+def create_user_config(base_dir):
     _fnc = os.path.join(base_dir, "user-config.py")
     if not file_exists(_fnc):
         known_families = re.findall(r'(.+)_family.py\b',
@@ -66,7 +65,7 @@ def create_user_config():
         #
         # I don't like this solution. Temporary for me.
         #
-        f = codecs.open("config.py", "r", "utf-8")
+        f = codecs.open(os.path.join(base_dir, "config.py"), "r", "utf-8")
         cpy = f.read()
         f.close()
 
@@ -113,7 +112,7 @@ usernames['%s']['%s'] = u'%s'
         f.close()
         print("'%s' written." % _fnc)
 
-def create_user_fixes():
+def create_user_fixes(base_dir):
     _fnf = os.path.join(base_dir, "user-fixes.py")
     if not file_exists(_fnf):
         f = codecs.open(_fnf, "w", "utf-8")
@@ -143,11 +142,11 @@ if __name__ == "__main__":
     print("3: The two files")
     choice = raw_input("What do you do? ")
     if choice == "1":
-        create_user_config()
+        create_user_config('')
     if choice == "2":
-        create_user_fixes()
+        create_user_fixes('')
     if choice == "3":
-        create_user_config()
-        create_user_fixes()
+        create_user_config('')
+        create_user_fixes('')
     if not choice in "123":
         print("Nothing to do")

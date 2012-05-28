@@ -1,7 +1,7 @@
 # -*- coding: utf-8  -*-
 import family
 
-__version__ = '$Id: wikiquote_family.py 9006 2011-02-25 07:15:28Z xqt $'
+__version__ = '$Id: wikiquote_family.py 10253 2012-05-26 12:46:40Z xqt $'
 
 # The Wikimedia family that is known as Wikiquote
 
@@ -11,83 +11,151 @@ class Family(family.Family):
         self.name = 'wikiquote'
 
         self.languages_by_size = [
-            'en', 'pl', 'it', 'de', 'ru', 'pt', 'sk', 'es', 'bg', 'bs', 'tr',
-            'cs', 'fr', 'sl', 'he', 'lt', 'el', 'id', 'zh', 'fa', 'hu', 'uk',
-            'eo', 'fi', 'nl', 'sv', 'no', 'nn', 'ja', 'hy', 'et', 'ca', 'ar',
-            'li', 'cy', 'hr', 'ka', 'ko', 'sr', 'ro', 'ku', 'gl', 'ml', 'az',
-            'is', 'th', 'te', 'da', 'eu', 'af', 'sq', 'vi', 'hi', 'la', 'br',
-            'mr', 'be', 'ast', 'ta', 'uz', 'ang', 'zh-min-nan', 'ur', 'gu',
-            'su', 'lb', 'kn', 'wo', 'ky', 'am', 'co',
+            'en', 'pl', 'it', 'fr', 'ru', 'de', 'pt', 'es', 'sk', 'bg', 'cs',
+            'bs', 'tr', 'sl', 'he', 'eo', 'lt', 'el', 'uk', 'id', 'zh', 'fa',
+            'hu', 'fi', 'nl', 'sv', 'li', 'no', 'nn', 'ja', 'az', 'hy', 'ca',
+            'et', 'ar', 'hr', 'cy', 'ka', 'ko', 'ml', 'gl', 'sr', 'ro', 'ku',
+            'te', 'th', 'is', 'eu', 'da', 'af', 'sq', 'vi', 'ta', 'hi', 'la',
+            'br', 'be', 'mr', 'uz', 'ur', 'zh-min-nan', 'gu', 'su', 'lb', 'kn',
+            'wo', 'ky', 'co', 'am',
         ]
 
-        if family.config.SSL_connection:
-            self.langs = dict([(lang, None) for lang in self.languages_by_size])
-        else:
-            self.langs = dict([(lang, '%s.wikiquote.org' % lang) for lang in self.languages_by_size])
+        self.langs = dict([(lang, '%s.wikiquote.org' % lang) for lang in self.languages_by_size])
+
+        # Override defaults
+        self.namespaces[3]['fr'] = [u'Discussion utilisateur', u'Discussion Utilisateur']
+        self.namespaces[2]['fr'] = [u'Utilisateur']
+        self.namespaces[12]['nl'] = [u'Help']
+        self.namespaces[3]['pt'] = [u'Utilizador Discussão', u'Usuário Discussão', u'Utilizadora Discussão']
+        self.namespaces[2]['pt'] = [u'Utilizador', u'Usuário', u'Utilizadora']
+        self.namespaces[3]['ca'] = [u'Usuari Discussió']
+        self.namespaces[2]['ca'] = [u'Usuari']
+        self.namespaces[13]['de'] = [u'Hilfe Diskussion']
+        self.namespaces[12]['de'] = [u'Hilfe']
+        self.namespaces[13]['da'] = [u'Hjælp diskussion', u'Hjælp-diskussion']
+        self.namespaces[9]['da'] = [u'MediaWiki diskussion', u'MediaWiki-diskussion']
+        self.namespaces[11]['hi'] = [u'साँचा वार्ता']
+        self.namespaces[10]['hi'] = [u'साँचा']
+        self.namespaces[15]['hi'] = [u'श्रेणी वार्ता']
+        self.namespaces[14]['hi'] = [u'श्रेणी']
+        self.namespaces[3]['hi'] = [u'सदस्य वार्ता']
+        self.namespaces[2]['hi'] = [u'सदस्य']
+        self.namespaces[9]['hi'] = [u'मीडियाविकि वार्ता']
+        self.namespaces[8]['hi'] = [u'मीडियाविकि']
+        self.namespaces[3]['cs'] = [u'Diskuse s uživatelem', u'Uživatel diskuse', u'Uživatelka diskuse', u'Diskuse s uživatelkou']
+        self.namespaces[2]['cs'] = [u'Uživatel', u'Uživatelka']
+        self.namespaces[10]['zh'] = [u'Template', u'模板', u'样板', u'樣板']
+        self.namespaces[12]['zh'] = [u'Help', u'帮助', u'幫助']
+        self.namespaces[14]['zh'] = [u'Category', u'分类', u'分類']
+        self.namespaces[9]['ro'] = [u'Discuție MediaWiki', u'Discuţie MediaWiki']
+        self.namespaces[3]['pl'] = [u'Dyskusja użytkownika', u'Dyskusja użytkowniczki']
+        self.namespaces[2]['pl'] = [u'Użytkownik', u'Użytkowniczka']
 
         # Most namespaces are inherited from family.Family.
         # Translation used on all wikis for the different namespaces.
         # (Please sort languages alphabetically)
         # You only need to enter translations that differ from _default.
         self.namespaces[4] = {
-            '_default': [u'Wikiquote', self.namespaces[4]['_default']],
-            'ar': u'ويكي الاقتباس',
-            'bg': u'Уикицитат',
-            'br': u'Wikiarroud',
-            'bs': u'Wikicitati',
-            'ca': u'Viquidites',
-            'cs': u'Wikicitáty',
-            'el': u'Βικιφθέγματα',
-            'eo': u'Vikicitaro',
-            'et': u'Vikitsitaadid',
-            'fa': u'ویکی‌گفتاورد',
-            'fi': u'Wikisitaatit',
+            '_default': self.namespaces[4]['_default'],
+            'af': u'Wikiquote',
+            'am': u'Wikiquote',
+            'ang': u'Wikiquote',
+            'ar': [u'ويكي الاقتباس', u'Wikiquote'],
+            'az': [u'Vikisitat', u'Wikiquote'],
+            'be': u'Wikiquote',
+            'bg': [u'Уикицитат', u'Wikiquote'],
+            'br': [u'Wikiarroud', u'Wikiquote'],
+            'bs': [u'Wikicitati', u'Wikiquote'],
+            'ca': [u'Viquidites', u'Wikiquote'],
+            'co': u'Wikiquote',
+            'cs': [u'Wikicitáty', u'WC', u'WQ', u'Wikiquote'],
+            'cy': u'Wikiquote',
+            'da': u'Wikiquote',
+            'de': [u'Wikiquote', u'WQ'],
+            'el': [u'Βικιφθέγματα', u'Wikiquote'],
+            'en': u'Wikiquote',
+            'eo': [u'Vikicitaro', u'Wikiquote'],
+            'es': u'Wikiquote',
+            'et': [u'Vikitsitaadid', u'Wikiquote'],
+            'eu': u'Wikiquote',
+            'fa': [u'ویکی‌گفتاورد', u'Wikiquote'],
+            'fi': [u'Wikisitaatit', u'Wikiquote'],
+            'fr': u'Wikiquote',
             'ga': u'Vicísliocht',
-            'he': u'ויקיציטוט',
-            'hr': u'Wikicitat',
-            'hu': u'Wikidézet',
-            'hy': u'Վիքիքաղվածք',
-            'is': u'Wikivitnun',
+            'gl': u'Wikiquote',
+            'gu': u'Wikiquote',
+            'he': [u'ויקיציטוט', u'Wikiquote'],
+            'hi': u'Wikiquote',
+            'hr': [u'Wikicitat', u'Wikiquote'],
+            'hu': [u'Wikidézet', u'Wikiquote'],
+            'hy': [u'Վիքիքաղվածք', u'Wikiquote'],
+            'id': u'Wikiquote',
+            'is': [u'Wikivitnun', u'Wikiquote'],
+            'it': u'Wikiquote',
+            'ja': u'Wikiquote',
             'ka': [u'ვიკიციტატა', u'Wikiquote'],
             'kk': u'Уикидәйек',
-            'ko': u'위키인용집',
-            'la': u'Vicicitatio',
-            'ml': u'വിക്കി ചൊല്ലുകൾ',
-            'pl': u'Wikicytaty',
-            'ro': u'Wikicitat',
-            'ru': u'Викицитатник',
-            'sk': u'Wikicitáty',
-            'sl': u'Wikinavedek',
-            'th': u'วิกิคำคม',
-            'tr': u'Vikisöz',
-            'uk': u'Вікіцитати',
-            'ur': u'وکی اقتباسات',
-            'uz': u'Vikiiqtibos',
-            'zh': [u'Wikiquote', u'维基语录'],
+            'kn': u'Wikiquote',
+            'ko': [u'위키인용집', u'인'],
+            'ku': u'Wikiquote',
+            'ky': u'Wikiquote',
+            'la': [u'Vicicitatio', u'Wikiquote'],
+            'lb': u'Wikiquote',
+            'li': u'Wikiquote',
+            'lt': u'Wikiquote',
+            'ml': [u'വിക്കി ചൊല്ലുകൾ', u'Wikiquote'],
+            'mr': u'Wikiquote',
+            'nl': u'Wikiquote',
+            'nn': u'Wikiquote',
+            'no': u'Wikiquote',
+            'pl': [u'Wikicytaty', u'Wikiquote'],
+            'pt': u'Wikiquote',
+            'ro': [u'Wikicitat', u'Wikiquote'],
+            'ru': [u'Викицитатник', u'ВЦ'],
+            'sk': [u'Wikicitáty', u'Wikiquote'],
+            'sl': [u'Wikinavedek', u'Wikiquote'],
+            'sq': u'Wikiquote',
+            'sr': u'Wikiquote',
+            'su': u'Wikiquote',
+            'sv': u'Wikiquote',
+            'ta': [u'விக்கிமேற்கோள்', u'Wikiquote', u'விக்கிபீடியா'],
+            'te': u'Wikiquote',
+            'th': [u'วิกิคำคม', u'Wikiquote'],
+            'tr': [u'Vikisöz', u'Wikiquote'],
+            'uk': [u'Вікіцитати', u'ВЦ'],
+            'ur': [u'وکی اقتباسات', u'Wikiquote'],
+            'uz': [u'Vikiiqtibos', u'Wikiquote'],
+            'vi': u'Wikiquote',
+            'wo': u'Wikiquote',
+            'zh': u'Wikiquote',
+            'zh-min-nan': u'Wikiquote',
         }
 
         self.namespaces[5] = {
-            '_default': [u'Wikiquote talk', self.namespaces[5]['_default']],
+            '_default': self.namespaces[5]['_default'],
             'af': u'Wikiquotebespreking',
             'als': u'Wikiquote Diskussion',
             'am': u'Wikiquote ውይይት',
+            'ang': u'Wikiquote talk',
             'ar': u'نقاش ويكي الاقتباس',
             'ast': u'Wikiquote alderique',
-            'az': u'Wikiquote müzakirəsi',
+            'az': [u'Vikisitat müzakirəsi', u'Wikiquote talk'],
             'be': u'Wikiquote размовы',
             'bg': u'Уикицитат беседа',
             'bm': u'Discussion Wikiquote',
             'br': u'Kaozeadenn Wikiarroud',
             'bs': u'Razgovor s Wikicitatima',
             'ca': u'Viquidites Discussió',
-            'cs': u'Diskuse k Wikicitátům',
+            'co': u'Wikiquote talk',
+            'cs': [u'Diskuse k Wikicitátům', u'Wikiquote diskuse', u'Wikiquote talk', u'Wikicitáty diskuse'],
             'cy': u'Sgwrs Wikiquote',
             'da': [u'Wikiquote diskussion', u'Wikiquote-diskussion'],
             'de': u'Wikiquote Diskussion',
             'el': u'Βικιφθέγματα συζήτηση',
+            'en': u'Wikiquote talk',
             'eo': [u'Vikicitaro-Diskuto', u'Vikicitaro diskuto'],
-            'es': u'Wikiquote Discusión',
-            'et': u'Vikitsitaatide arutelu',
+            'es': u'Wikiquote discusión',
+            'et': [u'Vikitsitaatide arutelu', u'Vikitsitaadid arutelu'],
             'eu': u'Wikiquote eztabaida',
             'fa': u'بحث ویکی‌گفتاورد',
             'fi': u'Keskustelu Wikisitaateista',
@@ -98,17 +166,18 @@ class Family(family.Family):
             'he': u'שיחת ויקיציטוט',
             'hi': u'Wikiquote वार्ता',
             'hr': u'Razgovor Wikicitat',
-            'hu': u'Wikidézet-vita',
+            'hu': [u'Wikidézet-vita', u'Wikidézet vita'],
             'hy': u'Վիքիքաղվածքի քննարկում',
             'id': u'Pembicaraan Wikiquote',
             'is': u'Wikivitnunspjall',
             'it': u'Discussioni Wikiquote',
-            'ja': u'Wikiquote・トーク',
+            'ja': [u'Wikiquote・トーク', u'Wikiquote‐ノート'],
             'ka': [u'ვიკიციტატა განხილვა', u'Wikiquote განხილვა'],
             'kk': u'Уикидәйек талқылауы',
             'kn': u'Wikiquote ಚರ್ಚೆ',
             'ko': u'위키인용집토론',
             'ku': u'Wikiquote nîqaş',
+            'ky': u'Wikiquote talk',
             'la': u'Disputatio Vicicitationis',
             'lb': u'Wikiquote Diskussioun',
             'li': u'Euverlèk Wikiquote',
@@ -122,15 +191,15 @@ class Family(family.Family):
             'pl': u'Dyskusja Wikicytatów',
             'pt': u'Wikiquote Discussão',
             'qu': u'Wikiquote rimanakuy',
-            'ro': u'Discuție Wikicitat',
+            'ro': [u'Discuție Wikicitat', u'Discuţie Wikicitat'],
             'ru': u'Обсуждение Викицитатника',
-            'sk': u'Diskusia k Wikicitátom',
+            'sk': [u'Diskusia k Wikicitátom', u'Komentár k Wikipédii'],
             'sl': u'Pogovor o Wikinavedku',
             'sq': u'Wikiquote diskutim',
-            'sr': u'Разговор о Wikiquote',
+            'sr': [u'Разговор о Wikiquote', u'Razgovor o Wikiquote'],
             'su': u'Obrolan Wikiquote',
             'sv': u'Wikiquotediskussion',
-            'ta': u'Wikiquote பேச்சு',
+            'ta': [u'விக்கிமேற்கோள் பேச்சு', u'விக்கிபீடியா பேச்சு'],
             'te': u'Wikiquote చర్చ',
             'th': u'คุยเรื่องวิกิคำคม',
             'tr': u'Vikisöz tartışma',
@@ -140,8 +209,9 @@ class Family(family.Family):
             'uz': u'Vikiiqtibos munozarasi',
             'vi': u'Thảo luận Wikiquote',
             'vo': u'Bespik dö Wikiquote',
-            'wo': u'Wikiquote waxtaan',
-            'zh': [u'Wikiquote talk', u'维基语录讨论'],
+            'wo': [u'Wikiquote waxtaan', u'Discussion Wikiquote'],
+            'zh': u'Wikiquote talk',
+            'zh-min-nan': u'Wikiquote talk',
         }
 
         self.namespaces[100] = {
@@ -205,46 +275,41 @@ class Family(family.Family):
 
         # Global bot allowed languages on http://meta.wikimedia.org/wiki/Bot_policy/Implementation#Current_implementation
         self.cross_allowed = [
-            'af','am','ang','ar','ast','az','bg','bs','ca','cs','da','el','es','eu','fa','fr','fi','he','hu','hy','id','it',
-            'ka','ko','la','lt','nl','nn','no','pt','ro','simple','sv','vi','zh'
+            'af', 'am', 'ar', 'az', 'be', 'bg', 'br', 'bs', 'ca', 'cs', 'da',
+            'el', 'eo', 'es', 'et', 'eu', 'fa', 'fi', 'fr', 'gl', 'he', 'hi',
+            'hu', 'hy', 'id', 'is', 'it', 'ja', 'ka', 'kn', 'ku', 'la', 'li',
+            'lt', 'ml', 'nl', 'nn', 'no', 'pt', 'ro', 'ru', 'sk', 'sl', 'sq',
+            'sr', 'su', 'sv', 'te', 'tr', 'uk', 'uz', 'vi', 'zh', 'zh-min-nan',
         ]
+
         # CentralAuth cross avaliable projects.
         self.cross_projects = [
-            'wikipedia', 'wiktionary', 'wikibooks', 'wikisource', 'wikinews', 'wikiversity', 
-            'meta', 'mediawiki', 'test', 'incubator', 'commons', 'species'
+            'wiktionary', 'wikibooks', 'wikiquote', 'wikisource', 'wikinews',
+            'wikiversity', 'meta', 'mediawiki', 'test', 'incubator', 'commons',
+            'species',
         ]
+
         # Which languages have a special order for putting interlanguage links,
         # and what order is it? If a language is not in interwiki_putfirst,
         # alphabetical order on language code is used. For languages that are in
         # interwiki_putfirst, interwiki_putfirst is checked first, and
-        # languages are put in the order given there. All other languages are put
-        # after those, in code-alphabetical order.
-
-        alphabetic = ['af','am','ang','ar','roa-rup','ast','az','bn',
-                    'zh-min-nan','bg','be','bs','br','ca','chr','co','cs','cy',
-                    'da','de','als','et','el','en','es','eo','eu','fa','fr',
-                    'fy','ga','gv','gu','gd','gl','ko','hy','hi','hr','io',
-                    'id','ia','is','it','he','jv','kn','ka','ks','csb','kk',
-                    'ky','sw','ku','la','lb','lt','li','hu','mk','mg','ml',
-                    'mi','mr','zh-cfr','mn','nah','na','nl','ja','no','nb',
-                    'nn','oc','om','nds','uz','pl','pt','ro','ru','sa','st',
-                    'sq','si','simple','sk','sl','sr','su','fi','sv','ta','tt',
-                    'te','th','ur','vi','tpi','tr','uk','vo','yi','yo','wo',
-                    'za','zh','zh-cn','zh-tw']
-
+        # languages are put in the order given there. All other languages are
+        # put after those, in code-alphabetical order.
         self.interwiki_putfirst = {
-            'en': alphabetic,
-            'fi': alphabetic,
-            'fr': alphabetic,
+            'en': self.alphabetic,
+            'fi': self.alphabetic,
+            'fr': self.alphabetic,
             'he': ['en'],
             'hu': ['en'],
-            'pl': alphabetic,
-            'simple': alphabetic,
-            'pt': alphabetic,
+            'pl': self.alphabetic,
+            'simple': self.alphabetic,
+            'pt': self.alphabetic,
         }
 
         self.obsolete = {
             'als': None, # http://meta.wikimedia.org/wiki/Proposals_for_closing_projects/Closure_of_Alemannic_Wikiquote
+            'ang': None, # https://bugzilla.wikimedia.org/show_bug.cgi?id=29150
+            'ast': None, # https://bugzilla.wikimedia.org/show_bug.cgi?id=28964
             'bm': None, # http://meta.wikimedia.org/wiki/Proposals_for_closing_projects/Closure_of_Bambara_Wikiquote
             'cr': None, # http://meta.wikimedia.org/wiki/Proposals_for_closing_projects/Closure_of_Nehiyaw_Wikiquote
             'dk': 'da',
@@ -270,9 +335,6 @@ class Family(family.Family):
             'zh-cn': 'zh'
         }
 
-    def version(self, code):
-        return '1.17wmf1'
-
     def code2encodings(self, code):
         """
         Return a list of historical encodings for a specific language wikipedia
@@ -288,14 +350,6 @@ class Family(family.Family):
         return ('commons', 'commons')
 
     if family.config.SSL_connection:
-        def hostname(self, code):
-            return 'secure.wikimedia.org'
 
         def protocol(self, code):
             return 'https'
-
-        def scriptpath(self, code):
-            return '/%s/%s/w' % (self.name, code)
-
-        def nicepath(self, code):
-            return '/%s/%s/wiki/' % (self.name, code)

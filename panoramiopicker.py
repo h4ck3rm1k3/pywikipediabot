@@ -9,14 +9,14 @@ Tool to copy a Panoramio set to Commons
 #
 # Distributed under the terms of the MIT license.
 #
-__version__ = '$Id: panoramiopicker.py 8676 2010-10-21 07:42:44Z xqt $'
+__version__ = '$Id: panoramiopicker.py 9042 2011-03-13 10:14:47Z xqt $'
 
 import sys, urllib, re,  StringIO, hashlib, base64, time
 try:
     #For Python 2.6 newer
     import json
     if not hasattr(json, 'loads'):
-        # 'json' can also be the name in for 
+        # 'json' can also be the name in for
         # http://pypi.python.org/pypi/python-json
         raise ImportError
 except ImportError:
@@ -89,8 +89,8 @@ def getLicense(photoInfo=None):
                 # Does Panoramio have more license options?
 
     return photoInfo
-        
-        
+
+
 
 def getFilename(photoInfo=None, site=pywikibot.getSite(u'commons', u'commons'),
                 project=u'Panoramio'):
@@ -114,7 +114,7 @@ def getFilename(photoInfo=None, site=pywikibot.getSite(u'commons', u'commons'),
                 i = i + 1
             else:
                 return u'%s - %s - %s (%s).jpg' % (project, username, title,
-                                                   str(i))            
+                                                   str(i))
     else:
         return u'%s - %s - %s.jpg' % (project, username, title)
 
@@ -123,7 +123,7 @@ def cleanUpTitle(title):
     the page might not be allowed by the software.
 
     '''
-    title = title.strip()   
+    title = title.strip()
     title = re.sub(u"[<{\\[]", u"(", title)
     title = re.sub(u"[>}\\]]", u")", title)
     title = re.sub(u"[ _]?\\(!\\)", u"", title)
@@ -139,14 +139,14 @@ def cleanUpTitle(title):
     title = re.sub(u"--+", u"-", title)
     title = re.sub(u",,+", u",", title)
     title = re.sub(u"[-,^]([.]|$)", u"\\1", title)
-    title = title.replace(u" ", u"_")   
+    title = title.replace(u" ", u"_")
     return title
- 
+
 
 def getDescription(photoInfo=None, panoramioreview=False, reviewer=u'',
                      override=u'', addCategory=u''):
     '''
-    Build description for the image. 
+    Build description for the image.
     '''
 
     desc = u''
@@ -166,14 +166,14 @@ def getDescription(photoInfo=None, panoramioreview=False, reviewer=u'',
 
     if override:
         desc = desc + override
-    else:    
+    else:
         if photoInfo.get(u'license')==u'by-sa':
             desc = desc + u'{{Cc-by-sa-3.0}}\n'
         if panoramioreview:
             desc = desc + u'{{Panoramioreview|%s|{{subst:CURRENTYEAR}}-{{subst:CURRENTMONTH}}-{{subst:CURRENTDAY2}}}}\n' % (reviewer,)
         else:
             desc = desc + u'{{Panoramioreview}}\n'
-        
+
     desc = desc + u'\n'
     cats = u''
     if addCategory:
@@ -188,14 +188,14 @@ def getDescription(photoInfo=None, panoramioreview=False, reviewer=u'',
             desc = desc + u'[[Category:%s]]\n' % (cat,)
     if not cats:
         desc = desc + u'{{subst:Unc}}\n'
-    
+
     return desc % photoInfo
 
 def processPhoto(photoInfo=None, panoramioreview=False, reviewer=u'',
                  override=u'', addCategory=u'', autonomous=False):
     ''' Process a single Panoramio photo '''
-  
-   
+
+
     if isAllowedLicense(photoInfo) or override:
         #Should download the photo only once
         photo = downloadPhoto(photoInfo.get(u'photo_file_url'))
@@ -209,7 +209,7 @@ def processPhoto(photoInfo=None, panoramioreview=False, reviewer=u'',
             pywikibot.output(filename)
             description = getDescription(photoInfo, panoramioreview,
                                          reviewer, override, addCategory)
-            
+
             pywikibot.output(description)
             if not autonomous:
                 (newDescription, newFilename, skip) = Tkdialog(
@@ -234,7 +234,7 @@ def processPhoto(photoInfo=None, panoramioreview=False, reviewer=u'',
                                          verifyDescription=False)
                 bot.upload_image(debug=False)
                 return 1
-    return 0 
+    return 0
 
 
 class Tkdialog:
@@ -246,7 +246,7 @@ class Tkdialog:
 
         self.root.title(filename)
         self.photoDescription = photoDescription
-        self.filename = filename 
+        self.filename = filename
         self.photo = photo
         self.skip=False
         self.exit=False
@@ -255,14 +255,14 @@ class Tkdialog:
         # The image
         self.image=self.getImage(self.photo, 800, 600)
         self.imagePanel=Label(self.root, image=self.image)
-        
+
         self.imagePanel.image = self.image
-        
+
         # The filename
         self.filenameLabel=Label(self.root,text=u"Suggested filename")
         self.filenameField=Entry(self.root, width=100)
         self.filenameField.insert(END, filename)
-        
+
         # The description
         self.descriptionLabel=Label(self.root,text=u"Suggested description")
         self.descriptionScrollbar=Scrollbar(self.root, orient=VERTICAL)
@@ -270,20 +270,20 @@ class Tkdialog:
         self.descriptionField.insert(END, photoDescription)
         self.descriptionField.config(state=NORMAL, height=12, width=100, padx=0, pady=0, wrap=WORD, yscrollcommand=self.descriptionScrollbar.set)
         self.descriptionScrollbar.config(command=self.descriptionField.yview)
-        
+
         # The buttons
         self.okButton=Button(self.root, text="OK", command=self.okFile)
         self.skipButton=Button(self.root, text="Skip", command=self.skipFile)
-        
+
         ## Start grid
 
         # The image
         self.imagePanel.grid(row=0, column=0, rowspan=11, columnspan=4)
- 
+
         # The buttons
         self.okButton.grid(row=11, column=1, rowspan=2)
         self.skipButton.grid(row=11, column=2, rowspan=2)
-       
+
         # The filename
         self.filenameLabel.grid(row=13, column=0)
         self.filenameField.grid(row=13, column=1, columnspan=3)
@@ -299,7 +299,7 @@ class Tkdialog:
         image.thumbnail((width, height))
         imageTk = ImageTk.PhotoImage(image)
         return imageTk
-    
+
     def okFile(self):
         ''' The user pressed the OK button. '''
         self.filename=self.filenameField.get()
@@ -343,7 +343,7 @@ def getPhotos(photoset=u'', start_id='', end_id='', interval=100):
                 pywikibot.output(u'Got an IOError, let\'s try again')
             except socket.timeout:
                 pywikibot.output(u'Got a timeout, let\'s try again')
-        
+
         metadata = json.loads(contents)
         count = metadata.get(u'count') # Useless?
         photos = metadata.get(u'photos')
@@ -381,12 +381,12 @@ def main():
     autonomous = False
     totalPhotos = 0
     uploadedPhotos = 0
-    
+
     # Do we mark the images as reviewed right away?
     if config.panoramio ['review']:
         panoramioreview = config.panoramio['review']
-    else:    
-        panoramioreview = False       
+    else:
+        panoramioreview = False
 
     # Set the Panoramio reviewer
     if config.panoramio['reviewer']:
@@ -398,9 +398,9 @@ def main():
         reviewer = config.usernames['commons']['commons']
     else:
         reviewer = u''
-    
+
     # Should be renamed to overrideLicense or something like that
-    override = u''     
+    override = u''
     for arg in pywikibot.handleArgs():
         if arg.startswith('-set'):
             if len(arg) == 4:
@@ -418,7 +418,7 @@ def main():
                 end_id = pywikibot.input(
                     u'What is the id of the photo you want to end at?')
             else:
-                end_id = arg[8:]                
+                end_id = arg[8:]
         elif arg.startswith('-tags'):
             if len(arg) == 5:
                 tags = pywikibot.input(
@@ -431,7 +431,7 @@ def main():
             if len(arg) == 9:
                 reviewer = pywikibot.input(u'Who is the reviewer?')
             else:
-                reviewer = arg[10:]      
+                reviewer = arg[10:]
         elif arg.startswith('-override'):
             if len(arg) == 9:
                 override = pywikibot.input(u'What is the override text?')
@@ -444,7 +444,7 @@ def main():
             else:
                 addCategory = arg[13:]
         elif arg == '-autonomous':
-            autonomous = True            
+            autonomous = True
 
     if photoset:
         for photoInfo in getPhotos(photoset, start_id, end_id):
@@ -459,7 +459,7 @@ def main():
     pywikibot.output(u'Finished running')
     pywikibot.output(u'Total photos: ' + str(totalPhotos))
     pywikibot.output(u'Uploaded photos: ' + str(uploadedPhotos))
-    
+
 if __name__ == "__main__":
     try:
         main()

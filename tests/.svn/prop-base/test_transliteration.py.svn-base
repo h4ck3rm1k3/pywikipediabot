@@ -1,0 +1,13 @@
+K 13
+svn:eol-style
+V 6
+native
+K 20
+svn:executable *.txt
+V 117
+svn:eol-style=native *.png = svn:mime-type=image/png *.jpg = svn:mime-type=image/jpeg Makefile = svn:eol-style=native
+K 12
+svn:keywords
+V 167
+Id *.c = svn:eol-style=native *.cpp = svn:eol-style=native *.h = svn:eol-style=native *.dsp = svn:eol-style=CRLF *.dsw = svn:eol-style=CRLF *.sh = svn:eol-style=native
+END

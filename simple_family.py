@@ -1,8 +1,8 @@
-# -*- coding: utf-8  -*- 
+# -*- coding: utf-8  -*-
 
 # ============================================
-# NOTE FOR USERS: Unlike the Family files in 
-# the family # directory, you do not need to 
+# NOTE FOR USERS: Unlike the Family files in
+# the family # directory, you do not need to
 # edit this file to configure anything.
 # ============================================
 
@@ -15,17 +15,17 @@ import sys #, settings    # No such module settings
 #if settings.pywikipedia_path not in sys.path:
 #    sys.path.append(settings.pywikipedia_path)
 
-import config, family, urllib   
-class Family(family.Family): 
+import config, family, urllib
+class Family(family.Family):
     """Friendlier version of the pywikipedia family class.
     We can use this in conjunction with none-pywikipedia
     config files.
-    
+
     Note that this just handles most common cases.
     If you run into a special case, you'll have to fall back
     to your regular pywikipedia.
     """
-    
+
     def __init__(self,
         name='MY_NAME_FOR_THIS_SERVER',
         protocol='http',
@@ -34,9 +34,9 @@ class Family(family.Family):
         version='1.13.2',
         lang='en',
         encoding='utf-8',
-        api_supported=False,    
+        api_supported=False,
         RversionTab=None    # very rare beast, you probably won't need it.
-        ):              
+        ):
         """name: arbitrary name. Pick something easy to remember
         protocol: http|https
         server: dns address or ip address
@@ -49,7 +49,7 @@ class Family(family.Family):
         RversionTab: Magic. See superclass for information.
         """
 
-        family.Family.__init__(self) 
+        family.Family.__init__(self)
         self.name = name        # REQUIRED; replace with actual name
 
         self.langs = {                # REQUIRED
@@ -77,7 +77,7 @@ class Family(family.Family):
         return self._scriptpath
 
     def apipath(self, code):
-        """returns whether or not this wiki 
+        """returns whether or not this wiki
         """
         if self._api_supported:
             return '%s/api.php' % self.scriptpath(code)

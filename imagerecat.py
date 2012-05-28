@@ -24,10 +24,11 @@ The following command line parameters are supported:
                 wps : Work on all wikipedia's
 
 """
-__version__ = '$Id: imagerecat.py 8673 2010-10-20 15:51:56Z multichill $'
+__version__ = '$Id: imagerecat.py 9692 2011-10-30 15:03:29Z xqt $'
 #
-#  (C) Multichill 2008
-#   
+#  (C) Multichill 2008-2011
+#  (C) Pywikipedia bot team, 2008-2011
+#
 #   Distributed under the terms of the MIT license.
 #
 #
@@ -58,12 +59,12 @@ def initLists():
     blacklistPage = pywikibot.Page(pywikibot.getSite(u'commons', u'commons'),
                                    u'User:Multichill/Category_blacklist')
     for cat in blacklistPage.linkedPages():
-        category_blacklist.append(cat.titleWithoutNamespace())
+        category_blacklist.append(cat.title(withNamespace=False))
 
     countryPage = pywikibot.Page(pywikibot.getSite(u'commons', u'commons'),
                                  u'User:Multichill/Countries')
     for country in countryPage.linkedPages():
-        countries.append(country.titleWithoutNamespace())
+        countries.append(country.title(withNamespace=False))
     return
 
 def categorizeImages(generator, onlyFilter, onlyUncat):
@@ -79,7 +80,7 @@ def categorizeImages(generator, onlyFilter, onlyUncat):
 
             if (onlyUncat and not(u'Uncategorized' in imagepage.templates())):
                 pywikibot.output(u'No Uncategorized template found')
-            else:                
+            else:
                 currentCats = getCurrentCats(imagepage)
                 if onlyFilter:
                     commonshelperCats = []
@@ -94,12 +95,12 @@ def categorizeImages(generator, onlyFilter, onlyUncat):
                         pywikibot.output(u' Found new cat: ' + cat);
                     saveImagePage(imagepage, newcats, usage, galleries,
                                   onlyFilter)
-            
+
 def getCurrentCats(imagepage):
     ''' Get the categories currently on the image '''
     result = []
     for cat in imagepage.categories():
-        result.append(cat.titleWithoutNamespace())
+        result.append(cat.title(withNamespace=False))
     return list(set(result))
 
 def getCommonshelperCats(imagepage):
@@ -117,9 +118,20 @@ def getCommonshelperCats(imagepage):
     lang = site.language()
     family = site.family.name
     if lang==u'commons' and family==u'commons':
-        parameters = urllib.urlencode({'i' : imagepage.titleWithoutNamespace().encode('utf-8'), 'r' : 'on', 'go-clean' : 'Find+Categories', 'p' : search_wikis, 'cl' : hint_wiki})
+        parameters = urllib.urlencode(
+            {'i' : imagepage.title(withNamespace=False).encode('utf-8'),
+             'r' : 'on',
+             'go-clean' : 'Find+Categories',
+             'p' : search_wikis,
+             'cl' : hint_wiki})
     elif family==u'wikipedia':
-        parameters = urllib.urlencode({'i' : imagepage.titleWithoutNamespace().encode('utf-8'), 'r' : 'on', 'go-move' : 'Find+Categories', 'p' : search_wikis, 'cl' : hint_wiki, 'w' : lang})
+        parameters = urllib.urlencode(
+            {'i' : imagepage.title(withNamespace=False).encode('utf-8'),
+             'r' : 'on',
+             'go-move' : 'Find+Categories',
+             'p' : search_wikis,
+             'cl' : hint_wiki,
+             'w' : lang})
     else:
         #Cant handle other sites atm
         return ([], [], [])
@@ -251,7 +263,7 @@ def getUsage(use):
     project = ''
     article = ''
     usageRe = re.compile(
-        '^(?P<lang>([\w]+))\.(?P<project>([\w]+))\.org:(?P<articles>\s(.*))')
+        '^(?P<lang>([\w-]+))\.(?P<project>([\w]+))\.org:(?P<articles>\s(.*))')
     matches = usageRe.search(use)
     if matches:
         if (matches.group('lang')):
@@ -302,7 +314,9 @@ def followRedirects(categories):
         categoryPage = pywikibot.Page(pywikibot.getSite(u'commons', u'commons'),
                                       cat, defaultNamespace=14)
         if categoryPage.isCategoryRedirect():
-            result.append(categoryPage.getCategoryRedirectTarget().titleWithoutNamespace())
+            result.append(
+                categoryPage.getCategoryRedirectTarget().title(
+                    withNamespace=False))
         else:
             result.append(cat)
     return result
@@ -334,8 +348,8 @@ def filterCountries(categories):
                 pywikibot.getSite(u'commons', u'commons'), u'Category:' + bc)
             for subcategory in category.subcategories():
                 for country in listCountries:
-                    if (subcategory.titleWithoutNamespace().endswith(country)):
-                        result.append(subcategory.titleWithoutNamespace())
+                    if (subcategory.title(withNamespace=False).endswith(country)):
+                        result.append(subcategory.title(withNamespace=False))
     return list(set(result))
 
 
@@ -367,7 +381,7 @@ def filterParents(categories):
 
 def saveImagePage(imagepage, newcats, usage, galleries, onlyFilter):
     ''' Remove the old categories and add the new categories to the image. '''
-    newtext = pywikibot.removeCategoryLinks(imagepage.get(), imagepage.site())    
+    newtext = pywikibot.removeCategoryLinks(imagepage.get(), imagepage.site())
     if not(onlyFilter):
         newtext = removeTemplates(newtext)
         newtext = newtext + getCheckCategoriesTemplate(usage, galleries,
@@ -402,9 +416,9 @@ def getCheckCategoriesTemplate(usage, galleries, ncats):
     result = u'{{Check categories|year={{subst:CURRENTYEAR}}|month={{subst:CURRENTMONTHNAME}}|day={{subst:CURRENTDAY}}\n'
     usageCounter = 1
     for (lang, project, article) in usage:
-        result += u'|lang%d=' % (usageCounter, lang)
-        result += u'|wiki%d=' % (usageCounter, project)
-        result += u'|article%d=' % (usageCounter, article)
+        result += u'|lang%d=%s' % (usageCounter, lang)
+        result += u'|wiki%d=%s' % (usageCounter, project)
+        result += u'|article%d=%s' % (usageCounter, article)
         result += u'\n'
         usageCounter = usageCounter + 1
     galleryCounter = 1
@@ -413,7 +427,7 @@ def getCheckCategoriesTemplate(usage, galleries, ncats):
         galleryCounter = galleryCounter + 1
     result += u'|ncats=%d\n' % ncats
     result += u'}}\n'
-    return result    
+    return result
 
 def main(args):
     '''
@@ -426,7 +440,7 @@ def main(args):
 
     global search_wikis
     global hint_wiki
-    
+
     site = pywikibot.getSite(u'commons', u'commons')
     pywikibot.setSite(site)
     for arg in pywikibot.handleArgs():

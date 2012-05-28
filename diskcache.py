@@ -1,4 +1,6 @@
-__version__ = '$Id: diskcache.py 6872 2009-05-12 01:12:43Z nicdumz $'
+# -*- coding: utf-8  -*-
+
+__version__ = '$Id: diskcache.py 10122 2012-04-16 14:27:09Z xqt $'
 
 import random
 import config

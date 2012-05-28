@@ -19,11 +19,11 @@ and for a description.
 """
 #
 # (C) Rob W.W. Hooft, Andre Engels 2003-2004
-# (C) Pywikipedia bot team, 2003-2010
+# (C) Pywikipedia bot team, 2003-2011
 #
 # Distributed under the terms of the MIT license.
 #
-__version__='$Id: upload.py 8541 2010-09-13 04:20:11Z xqt $'
+__version__='$Id: upload.py 9782 2011-11-28 22:16:59Z platonides $'
 #
 
 import os, sys, time
@@ -33,20 +33,25 @@ import wikipedia as pywikibot
 import config, query
 
 def post_multipart(site, address, fields, files, cookies):
-    """
-    Post fields and files to an http host as multipart/form-data.
-    fields is a sequence of (name, value) elements for regular form fields.
-    files is a sequence of (name, filename, value) elements for data to be uploaded as files
-    Return the server's response page.
+    """ Post fields and files to an http host as multipart/form-data.
+
+    @param fields: sequence of (name, value) elements for regular form fields.
+    @param files: sequence of (name, filename, value) elements for data to be
+        uploaded as files
+    @return: the server's response page.
+
     """
     contentType, body = encode_multipart_formdata(fields, files)
-    return site.postData(address, body, contentType = contentType, cookies = cookies)
+    return site.postData(address, body, contentType=contentType,
+                         cookies=cookies)
 
 def encode_multipart_formdata(fields, files):
     """
-    fields is a sequence of (name, value) elements for regular form fields.
-    files is a sequence of (name, filename, value) elements for data to be uploaded as files
-    Return (content_type, body) ready for httplib.HTTP instance
+    @param fields: sequence of (name, value) elements for regular form fields.
+    @param files: sequence of (name, filename, value) elements for data to be
+        uploaded as files
+    @return: (content_type, body) ready for httplib.HTTP instance
+
     """
     boundary = '----------ThIs_Is_tHe_bouNdaRY_$'
     lines = []
@@ -60,7 +65,8 @@ def encode_multipart_formdata(fields, files):
             lines.append(value.encode('utf-8'))
     for (key, filename, value) in files:
         lines.append('--' + boundary)
-        lines.append('Content-Disposition: form-data; name="%s"; filename="%s"' % (key, filename))
+        lines.append('Content-Disposition: form-data; name="%s"; filename="%s"'
+                     % (key, filename))
         lines.append('Content-Type: %s' % get_content_type(filename))
         lines.append('')
         lines.append(value)
@@ -75,12 +81,13 @@ def get_content_type(filename):
 
 
 class UploadRobot:
-    def __init__(self, url, urlEncoding = None, description = u'', useFilename = None, keepFilename = False,
-                 verifyDescription = True, ignoreWarning = False, targetSite = None, uploadByUrl = False):
+    def __init__(self, url, urlEncoding=None, description=u'',
+                 useFilename=None, keepFilename=False, verifyDescription=True,
+                 ignoreWarning=False, targetSite=None, uploadByUrl=False):
         """
-        ignoreWarning - Set this to True if you want to upload even if another
-                        file would be overwritten or another mistake would be
-                        risked.
+        @param ignoreWarning: Set this to True if you want to upload even if
+            another file would be overwritten or another mistake would be
+            risked.
 
         """
         self._retrieved = False
@@ -92,7 +99,8 @@ class UploadRobot:
         self.verifyDescription = verifyDescription
         self.ignoreWarning = ignoreWarning
         if config.upload_to_commons:
-            self.targetSite = targetSite or pywikibot.getSite('commons', 'commons')
+            self.targetSite = targetSite or pywikibot.getSite('commons',
+                                                              'commons')
         else:
             self.targetSite = targetSite or pywikibot.getSite()
         self.targetSite.forceLogin()
@@ -125,11 +133,13 @@ class UploadRobot:
                     file = uo.open(self.url)
 
                     if 'text/html' in file.info().getheader('Content-Type'):
-                        print "Couldn't download the image: the requested URL was not found on this server."
+                        print \
+"Couldn't download the image: the requested URL was not found on this server."
                         return
 
                     content_len = file.info().getheader('Content-Length')
-                    accept_ranges = file.info().getheader('Accept-Ranges') == 'bytes'
+                    accept_ranges = file.info().getheader(
+                        'Accept-Ranges') == 'bytes'
 
                     if resume:
                         self._contents += file.read()
@@ -144,7 +154,9 @@ class UploadRobot:
                         content_len = int(content_len)
                         if rlen < content_len:
                             self._retrieved = False
-                            pywikibot.output(u"Connection closed at byte %s (%s left)" % (rlen, content_len))
+                            pywikibot.output(
+                                u"Connection closed at byte %s (%s left)"
+                                % (rlen, content_len))
                             if accept_ranges and rlen > 0:
                                 resume = True
                             pywikibot.output(u"Sleeping for %d seconds..." % dt)
@@ -155,7 +167,8 @@ class UploadRobot:
                                 dt += 60
                     else:
                         if pywikibot.verbose:
-                            pywikibot.output(u"WARNING: No check length to retrieved data is possible.")
+                            pywikibot.output(
+u"WARNING: No check length to retrieved data is possible.")
             else:
                 # Opening local files with MyURLopener would be possible, but we
                 # don't do it because it only accepts ASCII characters in the
@@ -163,7 +176,7 @@ class UploadRobot:
                 file = open(self.url,"rb")
                 self._contents = file.read()
                 file.close()
-    
+
     def process_filename(self):
         """Return base filename portion of self.url"""
         # Isolate the pure name
@@ -171,13 +184,13 @@ class UploadRobot:
         # Filename may be either a local file path or a URL
         if '/' in filename:
             filename = filename.split('/')[-1]
-        
+
         if '\\' in filename:
             filename = filename.split('\\')[-1]
-        
+
         if self.urlEncoding:
             filename = urllib.unquote(filename.decode(self.urlEncoding))
-        
+
         if self.useFilename:
             filename = self.useFilename
         if not self.keepFilename:
@@ -188,7 +201,8 @@ class UploadRobot:
             # FIXME: these 2 belong somewhere else, presumably in family
             forbidden = '/' # to be extended
             allowed_formats = (u'gif', u'jpg', u'jpeg', u'mid', u'midi',
-                               u'ogg', u'png', u'svg', u'xcf', u'djvu')
+                               u'ogg', u'png', u'svg', u'xcf', u'djvu',
+                               u'ogv', u'oga', u'tif', u'tiff')
             # ask until it's valid
             while not ok:
                 ok = True
@@ -202,7 +216,10 @@ class UploadRobot:
                         print "Invalid character: %s. Please try again" % c
                         ok = False
                 if ext not in allowed_formats and ok:
-                    choice = pywikibot.inputChoice(u"File format is not one of [%s], but %s. Continue?" % (u' '.join(allowed_formats), ext), ['yes', 'no'], ['y', 'N'], 'N')
+                    choice = pywikibot.inputChoice(
+                        u"File format is not one of [%s], but %s. Continue?"
+                        % (u' '.join(allowed_formats), ext),
+                        ['yes', 'no'], ['y', 'N'], 'N')
                     if choice == 'n':
                         ok = False
             if newfn != '':
@@ -237,12 +254,12 @@ class UploadRobot:
         """
         if not self.targetSite.has_api() or self.targetSite.versionnumber() < 16:
             return self._uploadImageOld(debug)
-        
+
         if not hasattr(self,'_contents'):
             self.read_file_content()
-        
+
         filename = self.process_filename()
-        
+
         params = {
             'action': 'upload',
             'token': self.targetSite.getToken(),
@@ -256,17 +273,17 @@ class UploadRobot:
             params['url'] = self.url
         elif not self.uploadByUrl and not sessionKey:
             params['file'] = self._contents
-        
+
         if self.ignoreWarning:
             params['ignorewarnings'] = 1
-        
+
         pywikibot.output(u'Uploading file to %s via API....' % self.targetSite)
-        
+
         data = query.GetData(params, self.targetSite)
-        
+
         if pywikibot.verbose:
             pywikibot.output("%s" % data)
-        
+
         if 'error' in data: # error occured
             errCode = data['error']['code']
             pywikibot.output("%s" % data)
@@ -276,7 +293,8 @@ class UploadRobot:
                 pywikibot.output("Got warning message:")
                 for k,v in data['warnings'].iteritems():
                     if k == 'duplicate-archive':
-                        pywikibot.output("\tThe file is duplicate a deleted file %s." % v)
+                        pywikibot.output(
+                            "\tThe file is duplicate a deleted file %s." % v)
                     elif k == 'was-deleted':
                         pywikibot.output("\tThis file was deleted for %s." % v)
                     elif k == 'emptyfile':
@@ -284,34 +302,37 @@ class UploadRobot:
                     elif k == 'exists':
                         pywikibot.output("\tFile %s is exists." % v)
                     elif k == 'duplicate':
-                        pywikibot.output("\tUploaded file is duplicate with %s." % v)
+                        pywikibot.output("\tUploaded file is duplicate with %s."
+                                         % v)
                     elif k == 'badfilename':
                         pywikibot.output("\tTarget filename is invalid.")
                     elif k == 'filetype-unwanted-type':
-                        pywikibot.output("\tFile %s type is unwatched type." % v)
-                answer = pywikibot.inputChoice(u"Do you want to ignore?", ['Yes', 'No'], ['y', 'N'], 'N')
+                        pywikibot.output("\tFile %s type is unwatched type."
+                                         % v)
+                answer = pywikibot.inputChoice(u"Do you want to ignore?",
+                                               ['Yes', 'No'], ['y', 'N'], 'N')
                 if answer == "y":
                     self.ignoreWarning = 1
+                    self.useFilename = filename
                     self.keepFilename = True
-                    return self.upload_image(debug, sessionKey = data['sessionkey'])
+                    return self.upload_image(debug,
+                                             sessionKey=data['sessionkey'])
                 else:
                     pywikibot.output("Upload aborted.")
                     return
-                
-            elif data['result'] == u'Success': #No any warning, upload and online complete.
+            #No any warning, upload and online complete.
+            elif data['result'] == u'Success':
                 pywikibot.output(u"Upload successful.")
                 return filename #data['filename']
-        
 
     def _uploadImageOld(self, debug=False):
         if not hasattr(self,'_contents'):
             self.read_file_content()
-        
+
         filename = self.process_filename()
         # Convert the filename (currently Unicode) to the encoding used on the
         # target wiki
         encodedFilename = filename.encode(self.targetSite.encoding())
-
 
         formdata = {
             'wpUploadDescription': self.description,
@@ -327,17 +348,19 @@ class UploadRobot:
         if self.uploadByUrl:
             formdata["wpUploadFileURL"]  = self.url
             formdata["wpSourceType"] = 'Url'
-        
+
         # try to encode the strings to the encoding used by the target site.
         # if that's not possible (e.g. because there are non-Latin-1 characters and
         # the home Wikipedia uses Latin-1), convert all non-ASCII characters to
         # HTML entities.
         for key in formdata:
-            assert isinstance(key, basestring), "ERROR: %s is not a string but %s" % (key, type(key))
+            assert isinstance(key, basestring), \
+                   "ERROR: %s is not a string but %s" % (key, type(key))
             try:
                 formdata[key] = formdata[key].encode(self.targetSite.encoding())
             except (UnicodeEncodeError, UnicodeDecodeError):
-                formdata[key] = pywikibot.UnicodeToAsciiHtml(formdata[key]).encode(self.targetSite.encoding())
+                formdata[key] = pywikibot.UnicodeToAsciiHtml(
+                    formdata[key]).encode(self.targetSite.encoding())
 
         # don't upload if we're in debug mode
         if not debug:
@@ -345,48 +368,62 @@ class UploadRobot:
 
             if self.uploadByUrl:
                 # Just do a post with all the fields filled out
-                response, returned_html = self.targetSite.postForm(self.targetSite.upload_address(), formdata.items(), cookies = self.targetSite.cookies())
+                response, returned_html = self.targetSite.postForm(
+                    self.targetSite.upload_address(), formdata.items(),
+                    cookies=self.targetSite.cookies())
             else:
-                response, returned_html = post_multipart(self.targetSite, self.targetSite.upload_address(),
-                                  formdata.items(), (('wpUploadFile', encodedFilename, self._contents),),
-                                  cookies = self.targetSite.cookies())
+                response, returned_html = post_multipart(
+                    self.targetSite, self.targetSite.upload_address(),
+                    formdata.items(),
+                    (('wpUploadFile', encodedFilename, self._contents),),
+                    cookies = self.targetSite.cookies())
             # There are 2 ways MediaWiki can react on success: either it gives
             # a 200 with a success message, or it gives a 302 (redirection).
             # Do we know how the "success!" HTML page should look like?
-            # ATTENTION: if you changed your Wikimedia Commons account not to show
-            # an English interface, this detection will fail!
+            # ATTENTION: if you changed your Wikimedia Commons account not to
+            # show an English interface, this detection will fail!
             success_msg = self.targetSite.mediawiki_message('successfulupload')
             if success_msg in returned_html or response.code == 302:
                  pywikibot.output(u"Upload successful.")
-            # The following is not a good idea, because the server also gives a 200 when
-            # something went wrong.
-            #if response.code in [200, 302]:
-            #    pywikibot.output(u"Upload successful.")
+            # The following is not a good idea, because the server also gives a
+            # 200 when something went wrong.
+##            if response.code in [200, 302]:
+##                pywikibot.output(u"Upload successful.")
 
             elif response.code == 301:
                 pywikibot.output(u"Following redirect...")
                 address = response.getheader('Location')
-                pywikibot.output(u"Changed upload address to %s. Please update %s.py" % (address, self.targetSite.family.__module__))
-                exec('self.targetSite.upload_address = lambda: %r' % address, locals(), globals())
+                pywikibot.output(
+                    u"Changed upload address to %s. Please update %s.py"
+                    % (address, self.targetSite.family.__module__))
+                exec('self.targetSite.upload_address = lambda: %r' % address,
+                     locals(), globals())
                 return self.upload_image(debug)
             else:
                 try:
                     # Try to find the error message within the HTML page.
                     # If we can't find it, we just dump the entire HTML page.
-                    returned_html = returned_html[returned_html.index('<!-- start content -->') + 22: returned_html.index('<!-- end content -->')]
+                    returned_html = returned_html[
+                        returned_html.index('<!-- start content -->') + 22:
+                        returned_html.index('<!-- end content -->')]
                 except:
                     pass
                 pywikibot.output(u'%s\n\n' % returned_html)
                 pywikibot.output(u'%i %s' % (response.code, response.msg))
 
-                if self.targetSite.mediawiki_message('uploadwarning') in returned_html:
-                    answer = pywikibot.inputChoice(u"You have recevied an upload warning message. Ignore?", ['Yes', 'No'], ['y', 'N'], 'N')
+                if self.targetSite.mediawiki_message('uploadwarning'
+                                                     ) in returned_html:
+                    answer = pywikibot.inputChoice(
+                        u"You have recevied an upload warning message. Ignore?",
+                        ['Yes', 'No'], ['y', 'N'], 'N')
                     if answer == "y":
                         self.ignoreWarning = 1
                         self.keepFilename = True
                         return self._uploadImageOld(debug)
                 else:
-                    answer = pywikibot.inputChoice(u'Upload of %s probably failed. Above you see the HTML page which was returned by MediaWiki. Try again?' % filename, ['Yes', 'No'], ['y', 'N'], 'N')
+                    answer = pywikibot.inputChoice(
+u'Upload of %s probably failed. Above you see the HTML page which was returned by MediaWiki. Try again?'
+                        % filename, ['Yes', 'No'], ['y', 'N'], 'N')
                     if answer == "y":
                         return self._uploadImageOld(debug)
                     else:

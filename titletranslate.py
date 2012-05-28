@@ -1,12 +1,12 @@
 # -*- coding: utf-8  -*-
 #
-# (C) Rob W.W. Hooft, 2003
-# (C) Yuri Astrakhan, 2005
-# (C) Pywikipedia bot team, 2003-2010
+# (C) Rob W.W. Hooft, 2003-2004
+# (C) Yuri Astrakhan, 2005-2006
+# (C) Pywikipedia bot team, 2003-2011
 #
 # Distributed under the terms of the MIT license.
 #
-__version__ = '$Id: titletranslate.py 9009 2011-02-25 10:06:42Z xqt $'
+__version__ = '$Id: titletranslate.py 9692 2011-10-30 15:03:29Z xqt $'
 #
 import re
 
@@ -20,10 +20,6 @@ def _join_to_(result, join):
 
 def translate(page, hints = None, auto = True, removebrackets = False, site = None, family = None):
     """
-    Please comment your source code! --Daniel
-
-    Does some magic stuff. Returns a list of pages.
-
     Goes through all entries in 'hints'. Returns a list of pages.
 
     Entries for single page titles list those pages. Page titles for entries
@@ -32,7 +28,7 @@ def translate(page, hints = None, auto = True, removebrackets = False, site = No
     brackets and the text between them is removed from the page title.
     If 'auto' is true, known year and date page titles are autotranslated
     to all known target languages and inserted into the list.
-    
+
     """
     result = []
     if site is None and page:
@@ -58,7 +54,7 @@ def translate(page, hints = None, auto = True, removebrackets = False, site = No
                 ns = page.namespace()
                 if ns:
                     newname = u'%s:%s' % (family.namespace('_default', ns),
-                                          page.titleWithoutNamespace())
+                                          page.title(withNamespace=False))
                 else:
                     # article in the main namespace
                     newname = page.title()

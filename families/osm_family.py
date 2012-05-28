@@ -1,6 +1,6 @@
 # -*- coding: utf-8  -*-
 
-__version__ = '$Id: osm_family.py 9015 2011-02-28 17:57:55Z lcawte $'
+__version__ = '$Id: osm_family.py 9182 2011-04-19 09:07:26Z xqt $'
 
 import family
 
@@ -22,10 +22,10 @@ class Family(family.Family):
             '_default': [u'OpenStreetMap talk', self.namespaces[5]['_default']],
         }
         self.namespaces[6] = {
-            '_default': u'Image',
+            '_default': u'File',
         }
         self.namespaces[7] = {
-            '_default': u'Image talk',
+            '_default': u'File talk',
         }
         self.namespaces[200] = {
             '_default': u'DE',
@@ -57,6 +57,18 @@ class Family(family.Family):
         self.namespaces[209] = {
             '_default': u'NL talk',
         }
+        self.namespaces[210] = {
+            '_default': u'RU',
+        }
+        self.namespaces[211] = {
+            '_default': u'RU talk',
+        }
+        self.namespaces[212] = {
+            '_default': u'JA',
+        }
+        self.namespaces[213] = {
+            '_default': u'JA talk',
+        }                
 
     def version(self, code):
         return "1.16.2"

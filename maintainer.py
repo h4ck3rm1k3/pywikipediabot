@@ -7,7 +7,7 @@ This script requires the Python IRC library http://python-irclib.sourceforge.net
 
 Warning: experimental software, use at your own risk
 """
-__version__ = '$Id: maintainer.py 8633 2010-10-09 22:37:43Z xqt $'
+__version__ = '$Id: maintainer.py 9483 2011-08-29 19:17:43Z xqt $'
 
 # Author: Balasyum
 # http://hu.wikipedia.org/wiki/User:Balasyum
@@ -83,7 +83,8 @@ class MaintcontBot(SingleServerIRCBot):
     def on_welcome(self, c, e):
         self.connection.privmsg("maintcont",
                                 "workerjoin %s.%s %s"
-                                % (site.language(), site.family.name, str(ver))
+                                % (site.language(), site.family.name,
+                                   str(ver)))
 
     def on_privmsg(self, c, e):
         nick = nm_to_n(e.source())

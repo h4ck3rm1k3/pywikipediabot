@@ -1,3 +1,4 @@
+# -*- coding: utf-8  -*-
 """
 This script checks the language list of each Wikimedia multiple-language site
 against the language lists
@@ -7,10 +8,11 @@ against the language lists
 #
 # Distributed under the terms of the MIT license.
 #
+__version__ = '$Id: wikimedia_sites.py 9618 2011-10-10 16:02:42Z xqt $'
 
 import sys, re
 
-sys.path.append('..')
+sys.path.insert(1, '..')
 import wikipedia
 import codecs
 

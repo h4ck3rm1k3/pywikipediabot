@@ -7,12 +7,14 @@ lists which are required by some other programs.
 # © Rob W.W. Hooft, 2003
 # © Daniel Herding, 2004
 # © Ævar Arnfjörð Bjarmason, 2004
-# © Andre Engels, 2005
-# © Yuri Astrakhan, 2005-2006  FirstnameLastname@gmail.com (years/decades/centuries/millenniums  str <=> int  conversions)
+# © Andre Engels, 2004-2005
+# © Yuri Astrakhan, 2005-2006  FirstnameLastname@gmail.com
+#       (years/decades/centuries/millenniums  str <=> int  conversions)
+# © Pywikipedia bot team, 2004-2011
 #
 # Distributed under the terms of the MIT license.
 #
-__version__='$Id: date.py 8518 2010-09-11 09:20:01Z xqt $'
+__version__='$Id: date.py 10186 2012-05-05 17:14:00Z xqt $'
 
 # used for date recognition
 import types
@@ -127,11 +129,11 @@ def dh_simpleYearAD(value):
 
 def dh_number(value, pattern):
     return dh_noConv(value, pattern, formatLimits['Number'][0])
-def dh_centuryAD(value, pattern ):
+def dh_centuryAD(value, pattern):
     return dh_noConv(value, pattern, formatLimits['CenturyAD'][0])
 def dh_centuryBC(value, pattern):
     return dh_noConv(value, pattern, formatLimits['CenturyBC'][0])
-def dh_millenniumAD(value, pattern ):
+def dh_millenniumAD(value, pattern):
     return dh_noConv(value, pattern, formatLimits['MillenniumAD'][0])
 def dh_millenniumBC(value, pattern):
     return dh_noConv(value, pattern, formatLimits['MillenniumBC'][0])
@@ -202,28 +204,28 @@ def monthName(lang, ind):
 
 # Helper for KN: digits representation
 _knDigits = u'೦೧೨೩೪೫೬೭೮೯'
-_knDigitsToLocal = dict([(ord(unicode(i)), _knDigits[i]) for i in range(10)])
-_knLocalToDigits = dict([(ord(_knDigits[i]), unicode(i)) for i in range(10)])
+_knDigitsToLocal = dict([(ord(unicode(i)), _knDigits[i]) for i in xrange(10)])
+_knLocalToDigits = dict([(ord(_knDigits[i]), unicode(i)) for i in xrange(10)])
 
 # Helper for Urdu/Persian languages
 _faDigits = u'۰۱۲۳۴۵۶۷۸۹'
-_faDigitsToLocal = dict([(ord(unicode(i)), _faDigits[i]) for i in range(10)])
-_faLocalToDigits = dict([(ord(_faDigits[i]), unicode(i)) for i in range(10)])
+_faDigitsToLocal = dict([(ord(unicode(i)), _faDigits[i]) for i in xrange(10)])
+_faLocalToDigits = dict([(ord(_faDigits[i]), unicode(i)) for i in xrange(10)])
 
 # Helper for HI:, MR:
 _hiDigits = u'०१२३४५६७८९'
-_hiDigitsToLocal = dict([(ord(unicode(i)), _hiDigits[i]) for i in range(10)])
-_hiLocalToDigits = dict([(ord(_hiDigits[i]), unicode(i)) for i in range(10)])
+_hiDigitsToLocal = dict([(ord(unicode(i)), _hiDigits[i]) for i in xrange(10)])
+_hiLocalToDigits = dict([(ord(_hiDigits[i]), unicode(i)) for i in xrange(10)])
 
 # Helper for BN:
 _bnDigits = u'০১২৩৪৫৬৭৮৯'
-_bnDigitsToLocal = dict([(ord(unicode(i)), _bnDigits[i]) for i in range(10)])
-_bnLocalToDigits = dict([(ord(_bnDigits[i]), unicode(i)) for i in range(10)])
+_bnDigitsToLocal = dict([(ord(unicode(i)), _bnDigits[i]) for i in xrange(10)])
+_bnLocalToDigits = dict([(ord(_bnDigits[i]), unicode(i)) for i in xrange(10)])
 
 # Helper for GU:
 _guDigits = u'૦૧૨૩૪૫૬૭૮૯'
-_guDigitsToLocal = dict([(ord(unicode(i)), _guDigits[i]) for i in range(10)])
-_guLocalToDigits = dict([(ord(_guDigits[i]), unicode(i)) for i in range(10)])
+_guDigitsToLocal = dict([(ord(unicode(i)), _guDigits[i]) for i in xrange(10)])
+_guLocalToDigits = dict([(ord(_guDigits[i]), unicode(i)) for i in xrange(10)])
 
 def intToLocalDigitsStr( value, digitsToLocalDict ):
     # Encode an integer value into a textual form.
@@ -244,7 +246,7 @@ _decimalDigits = '0123456789'
 _romanNumbers = ['-', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX',
                  'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII',
                  'XIX', 'XX', 'XXI', 'XXII', 'XXIII', 'XXIV', 'XXV', 'XXVI',
-                 'XXVII', 'XXVIII', 'XXVIX', 'XXX']
+                 'XXVII', 'XXVIII', 'XXIX', 'XXX']
 
 def intToRomanNum(i):
     if i >= len(_romanNumbers):
@@ -278,7 +280,7 @@ _digitDecoders = {
     'T' : ( _decimalDigits, lambda v: unicode(v+543), lambda v: int(v)-543 ),
 }
 
-# Allows to search for '(%%)|(%d)|(%R)|...", and allows one digit 1-9  to set
+# Allows to search for '(%%)|(%d)|(%R)|...", and allows one digit 1-9 to set
 # the size of zero-padding for numbers
 _reParameters = re.compile(u'|'.join([ u'(%%[1-9]?%s)' % s for s in _digitDecoders.keys() ]))
 
@@ -366,7 +368,7 @@ def dh( value, pattern, encf, decf, filter = None ):
         m = compPattern.match(value)
         if m:
             # decode each found value using provided decoder
-            values = [ decoders[i][2](m.group(i+1)) for i in range(len(decoders))]
+            values = [ decoders[i][2](m.group(i+1)) for i in xrange(len(decoders))]
             decValue = decf( values )
 
             if decValue in _stringTypes:
@@ -389,7 +391,7 @@ def dh( value, pattern, encf, decf, filter = None ):
             if len(params) != len(decoders):
                 raise AssertionError("parameter count (%d) does not match decoder count (%d)" % (len(params), len(decoders)))
             # convert integer parameters into their textual representation
-            params = [ MakeParameter(decoders[i], params[i]) for i in range(len(params)) ]
+            params = [ MakeParameter(decoders[i], params[i]) for i in xrange(len(params)) ]
             return strPattern % tuple(params)
         else:
             if 1 != len(decoders):
@@ -492,6 +494,7 @@ formats = {
         'no' :      lambda v: slh( v, [u"januar", u"februar", u"mars", u"april", u"mai", u"juni", u"juli", u"august", u"september", u"oktober", u"november", u"desember"] ),
         'oc' :      lambda v: slh( v, [u"genièr", u"febrièr", u"març", u"abril", u"mai", u"junh", u"julhet", u"agost", u"setembre", u"octobre", u"novembre", u"decembre"] ),
         'os' :      lambda v: slh( v, [u"январь", u"февраль", u"мартъи", u"апрель", u"май", u"июнь", u"июль", u"август", u"сентябрь", u"октябрь", u"ноябрь", u"декабрь"] ),
+        'pdc' :     lambda v: slh( v, [u'Yenner', u'Hanning', u'Matz', u'Abril', u'Moi', u'Yuni', u'Yuli', u'Aagscht', u'September', u'Oktower', u'Nowember', u'Disember'] ),
         'pl' :      lambda v: slh( v, [u"styczeń", u"luty", u"marzec", u"kwiecień", u"maj", u"czerwiec", u"lipiec", u"sierpień", u"wrzesień", u"październik", u"listopad", u"grudzień"] ),
         'pt' :      lambda v: slh( v, [u"Janeiro", u"Fevereiro", u"Março", u"Abril", u"Maio", u"Junho", u"Julho", u"Agosto", u"Setembro", u"Outubro", u"Novembro", u"Dezembro"] ),
         'ro' :      lambda v: slh( v, [u"ianuarie", u"februarie", u"martie", u"aprilie", u"mai", u"iunie", u"iulie", u"august", u"septembrie", u"octombrie", u"noiembrie", u"decembrie"] ),
@@ -547,6 +550,7 @@ formats = {
         'nl' :      lambda v: dh_number( v, u'%d (getal)' ),
         'nn' :      lambda v: dh_number( v, u'Talet %d' ),
         'no' :      lambda v: dh_number( v, u'%d (tall)' ),
+        'nso' :     lambda v: dh_number( v, u'%d (nomoro)' ),
         'pl' :      lambda v: dh_number( v, u'%d (liczba)' ),
         'ro' :      lambda v: dh_number( v, u'%d (cifră)' ),
         'ru' :      lambda v: dh_number( v, u'%d (число)' ),
@@ -594,6 +598,7 @@ formats = {
         'fur':      dh_simpleYearAD,
         'fy' :      dh_simpleYearAD,
         'ga' :      dh_simpleYearAD,
+        'gan' :     lambda v: dh_yearAD( v, u'%d年' ),
         'gd' :      dh_simpleYearAD,
         'gl' :      dh_simpleYearAD,
         'gu' :      lambda v: dh_yearAD( v, u'%G' ),
@@ -635,8 +640,10 @@ formats = {
         'nl' :      dh_simpleYearAD,
         'nn' :      dh_simpleYearAD,
         'no' :      dh_simpleYearAD,
+        'nso' :     dh_simpleYearAD,
         'oc' :      dh_simpleYearAD,
         'os' :      dh_simpleYearAD,
+        'pdc' :     dh_simpleYearAD,
         'pl' :      dh_simpleYearAD,
         'pt' :      dh_simpleYearAD,
         'rm' :      dh_simpleYearAD,
@@ -888,10 +895,12 @@ formats = {
         'he' :      lambda v: dh_decBC( v, u'שנות ה־%d לפני הספירה' ),
         'hr' :      lambda v: dh_decBC( v, u'%dih p.n.e.' ),
 
-        'hu' :      lambda m: multi( m, [
-            (lambda v: dh_constVal( v, 0, u'i.e. 0-ás évek' ),      lambda p: p == 0),
-            (lambda v: dh_decBC( v, u'i.e. %d-as évek' ),           lambda p: (p % 100 / 10) in [0,2,3,6,8]),
-            (lambda v: dh_decBC( v, u'i.e. %d-es évek' ),           alwaysTrue)]),
+        'hu' :      lambda m: multi(m, [
+            (lambda v: dh_constVal(v, 0, u'i. e. 0-s évek'),
+             lambda p: p == 0),
+            (lambda v: dh_decBC(v, u'i. e. %d-as évek' ),
+             lambda p: (p % 100 / 10) in [0,2,3,6,8]),
+            (lambda v: dh_decBC(v, u'i. e. %d-es évek'), alwaysTrue)]),
 
         'it' :      lambda v: dh_decBC( v, u'Anni %d a.C.' ),
 
@@ -996,7 +1005,7 @@ formats = {
             (lambda v: dh_centuryAD( v, u'%des kansblydhen' ),  lambda p: p == 5),
             (lambda v: dh_centuryAD( v, u'%dns kansblydhen' ),  lambda p: p >= 20),
             (lambda v: dh_centuryAD( v, u'%dves kansblydhen' ), alwaysTrue)]),
-        'ksh':      lambda v: dh_centuryAD( v, u'%d. Joohunndot'), 
+        'ksh':      lambda v: dh_centuryAD( v, u'%d. Joohunndot'),
         'la' :      lambda v: dh_centuryAD( v, u'Saeculum %d' ),
         'lb' :      lambda v: dh_centuryAD( v, u'%d. Joerhonnert' ),
 
@@ -1110,14 +1119,12 @@ formats = {
         'cs' :      lambda v: dh_centuryAD( v, u'%d. století' ),
         'da' :      lambda v: dh_centuryAD( v, u'%d. århundrede' ),
         'no' :      lambda v: dh( v, u'%d-tallet', lambda i: (i-1)*100, lambda ii: ii[0]/100+1 ),
-        'ksh':      lambda v: dh_constVal( v, 1, u'Joohunndot' ),
     },
 
     'CenturyBC_Cat':{
         'cs' :      lambda v: dh_centuryBC( v, u'%d. století př. n. l.' ),
         'de' :      lambda v: dh_centuryBC( v, u'Jahr (%d. Jh. v. Chr.)' ),
         'no' :      lambda v: dh( v, u'%d-tallet f.Kr.', lambda i: (i-1)*100, lambda ii: ii[0]/100+1 ),
-        'ksh':      lambda v: dh_constVal( v, 1, u'Joohunndot' ),
     },
 
     'MillenniumAD': {
@@ -1229,9 +1236,192 @@ formats = {
         'fi' :      lambda v: dh_yearAD( v, u'Vuoden %d albumit' ),
         'fr' :      lambda v: dh_yearAD( v, u'Album musical sorti en %d' ),
         'he' :      lambda v: dh_yearAD( v, u'אלבומי %d' ),
+        'no' :      lambda v: dh_yearAD( v, u'Musikkalbum fra %d' ),
         'pl' :      lambda v: dh_yearAD( v, u'Albumy muzyczne wydane w roku %d' ),
         'sl' :      lambda v: dh_yearAD( v, u'Albumi iz %d' ),
         'sv' :      lambda v: dh_yearAD( v, u'%d års musikalbum' ),
+    },
+
+    'Cat_BirthsAD': {
+        'an' :      lambda v: dh_yearAD( v, u'%d (naixencias)' ),
+        'ar' :      lambda v: dh_yearAD( v, u'مواليد %d' ),
+        'arz' :     lambda v: dh_yearAD( v, u'مواليد %d'),
+        'bar' :     lambda v: dh_yearAD( v, u'Geboren %d' ),
+        'be' :      lambda v: dh_yearAD( v, u'Нарадзіліся ў %d годзе' ),
+        'be-x-old' : lambda v: dh_yearAD( v, u'Нарадзіліся ў %d годзе' ),
+        'bg' :      lambda v: dh_yearAD( v, u'Родени през %d година' ),
+        'bjn' :     lambda v: dh_yearAD( v, u'Kalahiran %d' ),
+        'bn' :      lambda v: dh_yearAD( v, u'%B-এ জন্ম' ),
+        'bpy' :     lambda v: dh_yearAD( v, u'মারি %B-এ উজ্জিসিতা' ),
+        'br' :      lambda v: dh_yearAD( v, u'Ganedigezhioù %d' ),
+        'bs' :      lambda v: dh_yearAD( v, u'%d rođenja' ),
+        'cbk-zam' : lambda v: dh_yearAD( v, u'Nacidos en %d' ),
+        'crh' :     lambda v: dh_yearAD( v, u'%d senesinde doğğanlar' ),
+        'cs' :      lambda v: dh_yearAD( v, u'Narození %d' ),
+        'cy' :      lambda v: dh_yearAD( v, u'Genedigaethau %d' ),
+        'da' :      lambda v: dh_yearAD( v, u'Født i %d' ),
+        'de' :      lambda v: dh_yearAD( v, u'Geboren %d' ),
+        'dsb' :     lambda v: dh_yearAD( v, u'Roź. %d' ),
+        'el' :      lambda v: dh_yearAD( v, u'Γεννήσεις το %d' ),
+        'en' :      lambda v: dh_yearAD( v, u'%d births' ),
+        'eo' :      lambda v: dh_yearAD( v, u'Naskiĝintoj en %d' ),
+        'es' :      lambda v: dh_yearAD( v, u'Nacidos en %d' ),
+        'et' :      lambda v: dh_yearAD( v, u'Sündinud %d' ),
+        'eu' :      lambda v: dh_yearAD( v, u'%dko jaiotzak' ),
+        'fi' :      lambda v: dh_yearAD( v, u'Vuonna %d syntyneet' ),
+        'fa' :      lambda v: dh_yearAD( v, u'زادگان %F (میلادی)' ),
+        'fr' :      lambda v: dh_yearAD( v, u'Naissance en %d' ),
+        'ga' :      lambda v: dh_yearAD( v, u'Daoine a rugadh i %d' ),
+        'gan' :     lambda v: dh_yearAD( v, u'%d年出世' ),
+        'gv' :      lambda v: dh_yearAD( v, u'Ruggyryn \'sy vlein %d' ),
+        'hsb' :     lambda v: dh_yearAD( v, u'Rodź. %d' ),
+        'hy' :      lambda v: dh_yearAD( v, u'%d ծնունդներ' ),
+        'id' :      lambda v: dh_yearAD( v, u'Kelahiran %d' ),
+        'is' :      lambda v: dh_yearAD( v, u'Fólk fætt árið %d' ),
+        'it' :      lambda v: dh_yearAD( v, u'Nati nel %d' ),
+        'ja' :      lambda v: dh_yearAD( v, u'%d年生' ),
+        'jv' :      lambda v: dh_yearAD( v, u'Lair %d' ),
+        'ka' :      lambda v: dh_yearAD( v, u'დაბადებული %d' ),
+        'kk' :      lambda v: dh_yearAD( v, u'%d жылы туғандар' ),
+        'ko' :      lambda v: dh_yearAD( v, u'%d년 태어남' ),
+        'la' :      lambda v: dh_yearAD( v, u'Nati %d' ),
+        'lb' :      lambda v: dh_yearAD( v, u'Gebuer %d' ),
+        'lv' :      lambda v: dh_yearAD( v, u'%d. gadā dzimušiel' ),
+        'mk' :      lambda v: dh_yearAD( v, u'Родени во %d година' ),
+        'ml' :      lambda v: dh_yearAD( v, u'%d-ൽ ജനിച്ചവർ' ),
+        'mn' :      lambda v: dh_yearAD( v, u'%d онд төрөгсөд' ),
+        'mr' :      lambda v: dh_yearAD( v, u'इ.स. %H मधील जन्म' ),
+        'ms' :      lambda v: dh_yearAD( v, u'Kelahiran %d' ),
+        'mt' :      lambda v: dh_yearAD( v, u'Twieldu fl-%d' ),
+        'nah' :     lambda v: dh_yearAD( v, u'Ōtlācatqueh xiuhpan %d' ),
+        'new' :     lambda v: dh_yearAD( v, u'%Hय् बुगु' ),
+        'nn' :      lambda v: dh_yearAD( v, u'Fødde i %d' ),
+        'no' :      lambda v: dh_yearAD( v, u'Fødsler i %d' ),
+        'oc' :      lambda v: dh_yearAD( v, u'Naissença en %d' ),
+        'pdc' :     lambda v: dh_yearAD( v, u'Gebore %d' ),
+        'pl' :      lambda v: dh_yearAD( v, u'Urodzeni w %d' ),
+        'qu' :      lambda v: dh_yearAD( v, u'Paqarisqa %d' ),
+        'ro' :      lambda v: dh_yearAD( v, u'Nașteri în %d' ),
+        'ru' :      lambda v: dh_yearAD( v, u'Родившиеся в %d году' ),
+        'sah' :     lambda v: dh_yearAD( v, u'%d сыллаахха төрөөбүттэр' ),
+        'se' :      lambda v: dh_yearAD( v, u'Riegádeamit %d' ),
+        'sh' :      lambda v: dh_yearAD( v, u'Rođeni %d.' ),
+        'simple' :  lambda v: dh_yearAD( v, u'%d births' ),
+        'sk' :      lambda v: dh_yearAD( v, u'Narodenia v %d' ),
+        'sl' :      lambda v: dh_yearAD( v, u'Rojeni leta %d' ),
+        'sq' :      lambda v: dh_yearAD( v, u'Lindje %d' ),
+        'sr' :      lambda v: dh_yearAD( v, u'Рођени %d.' ),
+        'sv' :      lambda v: dh_yearAD( v, u'Födda %d' ),
+        'sw' :      lambda v: dh_yearAD( v, u'Waliozaliwa %d' ),
+        'szl' :     lambda v: dh_yearAD( v, u'Rodzyńi we %d' ),
+        'ta' :      lambda v: dh_yearAD( v, u'%d பிறப்புகள்' ),
+        'te' :      lambda v: dh_yearAD( v, u'%d జననాలు' ),
+        'th' :      lambda v: dh_yearAD( v, u'บุคคลที่เกิดในปี พ.ศ. %T' ),
+        'tl' :      lambda v: dh_yearAD( v, u'Ipinanganak noong %d' ),
+        'tr' :      lambda v: dh_yearAD( v, u'%d doğumlular' ),
+        'tt' :      lambda v: dh_yearAD( v, u'%d елда туганнар' ),
+        'uk' :      lambda v: dh_yearAD( v, u'Народились %d' ),
+        'vi' :      lambda v: dh_yearAD( v, u'Sinh %d' ),
+        'war' :     lambda v: dh_yearAD( v, u'Mga natawo han %d' ),
+        'yo' :      lambda v: dh_yearAD( v, u'Àwọn ọjọ́ìbí ní %d' ),
+        'zh' :      lambda v: dh_yearAD( v, u'%d年出生' ),
+        'zh-yue' :  lambda v: dh_yearAD( v, u'%d年出世' ),
+    },
+
+    'Cat_DeathsAD': {
+        'an' :      lambda v: dh_yearAD( v, u'%d (muertes)' ),
+        'ay' :      lambda v: dh_yearAD( v, u'Jiwäwi %d' ),
+        'ar' :      lambda v: dh_yearAD( v, u'وفيات %d' ),
+        'ba' :      lambda v: dh_yearAD( v, u'%d йылда үлгәндәр' ),
+        'bar' :     lambda v: dh_yearAD( v, u'Gestorben %d' ),
+        'be' :      lambda v: dh_yearAD( v, u'Памерлі ў %d годзе' ),
+        'be-x-old' : lambda v: dh_yearAD( v, u'Памерлі ў %d годзе' ),
+        'bg' :      lambda v: dh_yearAD( v, u'Починали през %d година' ),
+        'bn' :      lambda v: dh_yearAD( v, u'%B-এ মৃত্যু' ),
+        'br' :      lambda v: dh_yearAD( v, u'Marvioù %d' ),
+        'bs' :      lambda v: dh_yearAD( v, u'%d smrti' ),
+        'crh' :     lambda v: dh_yearAD( v, u'%d senesinde ölgenler' ),
+        'cs' :      lambda v: dh_yearAD( v, u'Úmrtí %d' ),
+        'cy' :      lambda v: dh_yearAD( v, u'Marwolaethau %d' ),
+        'da' :      lambda v: dh_yearAD( v, u'Døde i %d' ),
+        'de' :      lambda v: dh_yearAD( v, u'Gestorben %d' ),
+        'dsb' :     lambda v: dh_yearAD( v, u'Wum. %d' ),
+        'el' :      lambda v: dh_yearAD( v, u'Θάνατοι το %d' ),
+        'en' :      lambda v: dh_yearAD( v, u'%d deaths' ),
+        'eo' :      lambda v: dh_yearAD( v, u'Mortintoj en %d' ),
+        'es' :      lambda v: dh_yearAD( v, u'Fallecidos en %d' ),
+        'et' :      lambda v: dh_yearAD( v, u'Surnud %d' ),
+        'eu' :      lambda v: dh_yearAD( v, u'%deko heriotzak' ),
+        'fa' :      lambda v: dh_yearAD( v, u'درگذشتگان %F (میلادی)' ),
+        'fi' :      lambda v: dh_yearAD( v, u'Vuonna %d kuolleet' ),
+        'fr' :      lambda v: dh_yearAD( v, u'Décès en %d' ),
+        'ga' :      lambda v: dh_yearAD( v, u'Básanna i %d' ),
+        'gan' :     lambda v: dh_yearAD( v, u'%d年過世' ),
+        'gv' :      lambda v: dh_yearAD( v, u'Baaseyn \'sy vlein %d' ),
+        'hif' :     lambda v: dh_yearAD( v, u'%d maut' ),
+        'hsb' :     lambda v: dh_yearAD( v, u'Zemr. %d' ),
+        'hy' :      lambda v: dh_yearAD( v, u'%d մահեր' ),
+        'id' :      lambda v: dh_yearAD( v, u'Kematian %d' ),
+        'is' :      lambda v: dh_yearAD( v, u'Fólk dáið árið %d' ),
+        'it' :      lambda v: dh_yearAD( v, u'Morti nel %d' ),
+        'ja' :      lambda v: dh_yearAD( v, u'%d年没' ),
+        'jv' :      lambda v: dh_yearAD( v, u'Pati %d' ),
+        'ka' :      lambda v: dh_yearAD( v, u'გარდაცვლილი %d' ),
+        'kk' :      lambda v: dh_yearAD( v, u'%d жылы қайтыс болғандар' ),
+        'ko' :      lambda v: dh_yearAD( v, u'%d년 죽음' ),
+        'krc' :     lambda v: dh_yearAD( v, u'%d джылда ёлгенле' ),
+        'ky' :      lambda v: dh_yearAD( v, u'%d жылы кайтыш болгандар' ),
+        'la' :      lambda v: dh_yearAD( v, u'Mortui %d' ),
+        'lb' :      lambda v: dh_yearAD( v, u'Gestuerwen %d' ),
+        'lv' :      lambda v: dh_yearAD( v, u'%d. gadā mirušie' ),
+        'mk' :      lambda v: dh_yearAD( v, u'Починати во %d година' ),
+        'ml' :      lambda v: dh_yearAD( v, u'%d-ൽ മരിച്ചവർ' ),
+        'mn' :      lambda v: dh_yearAD( v, u'%d онд нас барагсад' ),
+        'ms' :      lambda v: dh_yearAD( v, u'Kematian %d' ),
+        'mt' :      lambda v: dh_yearAD( v, u'Mietu fl-%d' ),
+        'nah' :     lambda v: dh_yearAD( v, u'%d miquiztli' ),
+        'nn' :      lambda v: dh_yearAD( v, u'Døde i %d' ),
+        'no' :      lambda v: dh_yearAD( v, u'Dødsfall i %d' ),
+        'oc' :      lambda v: dh_yearAD( v, u'Decès en %d' ),
+        'pdc' :     lambda v: dh_yearAD( v, u'Gschtaerewe %d' ),
+        'pl' :      lambda v: dh_yearAD( v, u'Zmarli w %d' ),
+        'pt' :      lambda v: dh_yearAD( v, u'Mortos em %d' ),
+        'qu' :      lambda v: dh_yearAD( v, u'Wañusqa %d' ),
+        'ro' :      lambda v: dh_yearAD( v, u'Decese în %d' ),
+        'ru' :      lambda v: dh_yearAD( v, u'Умершие в %d году' ),
+        'sah' :     lambda v: dh_yearAD( v, u'%d сыллаахха өлбүттэр' ),
+        'se' :      lambda v: dh_yearAD( v, u'Jápmimat %d' ),
+        'sh' :      lambda v: dh_yearAD( v, u'Umrli %d.' ),
+        'simple' :  lambda v: dh_yearAD( v, u'%d deaths' ),
+        'sk' :      lambda v: dh_yearAD( v, u'Úmrtia v %d' ),
+        'sl' :      lambda v: dh_yearAD( v, u'Umrli leta %d' ),
+        'sq' :      lambda v: dh_yearAD( v, u'Vdekje %d' ),
+        'sr' :      lambda v: dh_yearAD( v, u'Умрли %d.' ),
+        'sv' :      lambda v: dh_yearAD( v, u'Avlidna %d' ),
+        'sw' :      lambda v: dh_yearAD( v, u'Waliofariki %d' ),
+        'szl' :     lambda v: dh_yearAD( v, u'Umarći we %d' ),
+        'ta' :      lambda v: dh_yearAD( v, u'%d இறப்புகள்' ),
+        'te' :      lambda v: dh_yearAD( v, u'%d మరణాలు' ),
+        'th' :      lambda v: dh_yearAD( v, u'บุคคลที่เสียชีวิตในปี พ.ศ. %T' ),
+        'tl' :      lambda v: dh_yearAD( v, u'Namatay noong %d' ),
+        'tr' :      lambda v: dh_yearAD( v, u'%d yılında ölenler' ),
+        'tt' :      lambda v: dh_yearAD( v, u'%d елда вафатлар' ),
+        'uk' :      lambda v: dh_yearAD( v, u'Померли %d' ),
+        'vi' :      lambda v: dh_yearAD( v, u'Mất %d' ),
+        'war' :     lambda v: dh_yearAD( v, u'Mga namatay han %d' ),
+        'yo' :      lambda v: dh_yearAD( v, u'Àwọn ọjọ́aláìsí ní %d' ),
+        'zh' :      lambda v: dh_yearAD( v, u'%d年逝世' ),
+        'zh-yue' :  lambda v: dh_yearAD( v, u'%d年死' ),
+    },
+
+    'Cat_BirthsBC': {
+        'en' :      lambda v: dh_yearBC( v, u'%d BC births' ),
+        'no' :      lambda v: dh_yearBC( v, u'Fødsler i %d f.Kr.' ),
+    },
+    'Cat_DeathsBC': {
+        'en' :      lambda v: dh_yearBC( v, u'%d BC deaths' ),
+        'fr' :      lambda v: dh_yearBC( v, u'Décès en -%d' ),
+        'no' :      lambda v: dh_yearBC( v, u'Dødsfall i %d f.Kr.' ),
     },
 
     'CurrEvents': {
@@ -1313,7 +1503,7 @@ def addFmt( lang, isMnthOfYear, patterns ):
     if len(patterns) != 12:
         raise AssertionError(u'pattern %s does not have 12 elements' % lang )
 
-    for i in range(12):
+    for i in xrange(12):
         if patterns[i] is not None:
             if isMnthOfYear:
                 formats[yrMnthFmts[i]][lang] = eval(u'lambda v: dh_mnthOfYear( v, u"%s" )' % patterns[i])
@@ -1321,7 +1511,7 @@ def addFmt( lang, isMnthOfYear, patterns ):
                 formats[dayMnthFmts[i]][lang] = eval(u'lambda v: dh_dayOfMnth( v, u"%s" )' % patterns[i])
 
 def makeMonthList(pattern):
-    return [pattern % m for m in range(1,13)]
+    return [pattern % m for m in xrange(1,13)]
 
 def makeMonthNamedList(lang, pattern, makeUpperCase=None):
     """Creates a list of 12 elements based on the name of the month.
@@ -1336,7 +1526,7 @@ def makeMonthNamedList(lang, pattern, makeUpperCase=None):
     elif makeUpperCase == False:
         f = lambda s: s[0].lower() + s[1:]
 
-    return [ pattern % f(monthName(lang, m)) for m in range(1,13) ]
+    return [ pattern % f(monthName(lang, m)) for m in xrange(1,13) ]
 
 def addFmt2( lang, isMnthOfYear, pattern, makeUpperCase = None ):
     addFmt( lang, isMnthOfYear, makeMonthNamedList( lang, pattern, makeUpperCase ))
@@ -1456,7 +1646,7 @@ for i in [3,7,9]:
 
 # Brazil uses "1añ" for the 1st of every month, and number without suffix for all other days
 brMonthNames = makeMonthNamedList( 'br', u"%s", True )
-for i in range(0,12):
+for i in xrange(0,12):
     formats[dayMnthFmts[i]]['br'] = eval(
         (u'lambda m: multi( m, [' +
             u'(lambda v: dh_dayOfMnth( v, u"%%dañ %s" ), lambda p: p == 1),' +
@@ -1479,7 +1669,7 @@ addFmt2('fi', True, u"%s %%d", True )
 addFmt ('fr', True,     [ u"Janvier %d", u"Février %d", u"Mars %d", u"Avril %d", u"Mai %d", u"Juin %d", u"Juillet %d", u"Août %d", u"Septembre %d", u"Octobre %d", u"Novembre %d", u"Décembre %d" ])
 addFmt2('he', True, u"%s %%d", True )
 addFmt2('it', True, u"Attualità/Anno %%d - %s", True )
-addFmt ('ja', True,     [ u"「最近の出来事」%%d年%d月" % mm for mm in range(1,13)])
+addFmt ('ja', True,     [ u"「最近の出来事」%%d年%d月" % mm for mm in xrange(1,13)])
 addFmt2('ka', True, u"%s, %%d" )
 addFmt ('ko', True,     [ u"%d년 1월", u"%d년 2월", u"%d년 3월", u"%d년 4월", u"%d년 5월", u"%d년 6월", u"%d년 7월", u"%d년 8월", u"%d년 9월", u"%d년 10월", u"%d년 11월", u"%d년 12월" ])
 addFmt ('li', True,     [ u"januari %d", u"februari %d", u"miert %d", u"april %d", u"mei %d", u"juni %d", u"juli %d", u"augustus %d", u"september %d", u"oktober %d", u"november %d", u"december %d" ])
@@ -1519,8 +1709,12 @@ formatLimits = {
     'MillenniumBC'      : (lambda v: 1 <=v and v < 20,                 1, 2),     # And only 1 BC Millenium
     'CenturyAD_Cat'     : (lambda v: 1 <=v and v < 41,                 1, 23),    # Some centuries use Roman numerals or a given list - do not exceed them in testing
     'CenturyBC_Cat'     : (lambda v: 1 <=v and v < 41,                 1, 23),    # Some centuries use Roman numerals or a given list - do not exceed them in testing
-    'Cat_Year_MusicAlbums'  : (lambda v: 1950 <= v and v < 2021,        1950, 2021),
-    'CurrEvents'            : (lambda v: 0 <= v and v < 1,              0, 1),
+    'Cat_Year_MusicAlbums' : (lambda v: 1950 <= v and v < 2021,        1950, 2021),
+    'Cat_BirthsAD'      : (lambda v: 0 <=v and v < 2501,               0, 2501),
+    'Cat_DeathsAD'      : (lambda v: 0 <=v and v < 2501,               0, 2501),
+    'Cat_BirthsBC'      : (lambda v: 0 <=v and v < 4001,               0, 501),
+    'Cat_DeathsBC'      : (lambda v: 0 <=v and v < 4001,               0, 501),
+    'CurrEvents'        : (lambda v: 0 <= v and v < 1,                 0, 1),
 }
 
 # All month of year articles are in the same format
@@ -1531,7 +1725,7 @@ for month in yrMnthFmts:
 _formatLimit_DayOfMonth31 = (lambda v: 1 <= v and v < 32,           1, 32)
 _formatLimit_DayOfMonth30 = (lambda v: 1 <= v and v < 31,           1, 31)
 _formatLimit_DayOfMonth29 = (lambda v: 1 <= v and v < 30,           1, 30)
-for monthId in range(12):
+for monthId in xrange(12):
     if (monthId + 1) in [1, 3, 5, 7, 8, 10, 12]:
         formatLimits[dayMnthFmts[monthId]] = _formatLimit_DayOfMonth31      # 31 days a month
     elif (monthId+1) == 2: # February
@@ -1548,7 +1742,7 @@ def getAutoFormat( lang, title, ignoreFirstLetterCase = True ):
     for dictName, dict in formats.iteritems():
         try:
             year = dict[ lang ]( title )
-            return (dictName,year)
+            return (dictName, year)
         except:
             pass
     # sometimes the title may begin with an upper case while its listed as lower case, or the other way around
@@ -1562,7 +1756,7 @@ def getAutoFormat( lang, title, ignoreFirstLetterCase = True ):
             return getAutoFormat(lang, title, ignoreFirstLetterCase = False)
         except:
             pass
-    return (None,None)
+    return (None, None)
 
 
 class FormatDate(object):
@@ -1587,7 +1781,7 @@ def printMonthArray( lang, pattern, capitalize ):
     """
     """
     for s in makeMonthNamedList( lang, pattern, capitalize ):
-        pywikibot.output( s )
+        pywikibot.output(s)
 
 def testMapEntry( formatName, showAll = True, value = None ):
     """This is a test function, to be used interactivelly to test the validity of the above maps.
@@ -1605,12 +1799,12 @@ def testMapEntry( formatName, showAll = True, value = None ):
     if value is not None:
         start, stop = value, value+1
     if showAll:
-        pywikibot.output(u"Processing %s with limits from %d to %d and step %d" % (formatName, start,stop-1,step))
+        pywikibot.output(u"Processing %s with limits from %d to %d and step %d" % (formatName, start, stop - 1, step))
 
     for code, convFunc in formats[formatName].iteritems():
 #        import time
 #        startClock = time.clock()
-        for value in range(start, stop, step):
+        for value in xrange(start, stop, step):
             try:
                 if not predicate(value):
                     raise AssertionError("     Not a valid value for this format.")
@@ -1646,6 +1840,6 @@ def test(quick=False, showAll=False):
     else:
         pywikibot.output(u'Date module has been fully tested')
 
-# Do a quick test upon module loading!
-# Make sure the date file is correct
-test(quick=True)
+if __name__=="__main__":
+    # Test the date file
+    test(quick=False)

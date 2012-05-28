@@ -1,7 +1,7 @@
 # -*- coding: utf-8  -*-
 import family
 
-__version__ = '$Id: wikibooks_family.py 9006 2011-02-25 07:15:28Z xqt $'
+__version__ = '$Id: wikibooks_family.py 10253 2012-05-26 12:46:40Z xqt $'
 
 # The Wikimedia family that is known as Wikibooks
 
@@ -11,98 +11,172 @@ class Family(family.Family):
         self.name = 'wikibooks'
 
         self.languages_by_size = [
-            'en', 'de', 'fr', 'hu', 'ja', 'pt', 'nl', 'pl', 'es', 'it', 'he',
-            'sq', 'fi', 'ca', 'ru', 'vi', 'cs', 'hr', 'zh', 'sv', 'tr', 'da',
-            'id', 'th', 'ko', 'mk', 'fa', 'sr', 'tl', 'gl', 'ar', 'is', 'no',
-            'ta', 'ka', 'lt', 'eo', 'bg', 'ro', 'sk', 'el', 'uk', 'si', 'li',
-            'la', 'tt', 'ang', 'ia', 'cv', 'az', 'sl', 'mr', 'et', 'ur', 'oc',
-            'ml', 'ms', 'bn', 'hi', 'eu', 'fy', 'ie', 'tg', 'af', 'hy', 'pa',
-            'te', 'ne', 'bs', 'sa', 'ky', 'be', 'ast', 'zh-min-nan', 'mg', 'cy',
-            'ku', 'co', 'tk', 'su', 'uz', 'vo', 'kk', 'mn', 'my',
+            'en', 'de', 'fr', 'hu', 'ja', 'pt', 'nl', 'pl', 'it', 'es', 'he',
+            'sq', 'fi', 'ca', 'id', 'ru', 'vi', 'cs', 'zh', 'hr', 'sv', 'tr',
+            'da', 'th', 'gl', 'ta', 'fa', 'no', 'ko', 'sr', 'ar', 'tl', 'mk',
+            'is', 'tt', 'lt', 'ka', 'az', 'eo', 'ro', 'bg', 'uk', 'hy', 'sl',
+            'sk', 'el', 'si', 'li', 'la', 'ang', 'ia', 'cv', 'et', 'ur', 'mr',
+            'bn', 'ms', 'hi', 'oc', 'ml', 'kk', 'eu', 'fy', 'ie', 'ne', 'te',
+            'af', 'tg', 'sa', 'pa', 'bs', 'ky', 'mg', 'cy', 'be', 'zh-min-nan',
+            'ast', 'ku', 'tk', 'uz', 'su', 'vo', 'mn', 'my',
         ]
 
-        if family.config.SSL_connection:
-            self.langs = dict([(lang, None) for lang in self.languages_by_size])
-        else:
-            self.langs = dict([(lang, '%s.wikibooks.org' % lang) for lang in self.languages_by_size])
+        self.langs = dict([(lang, '%s.wikibooks.org' % lang) for lang in self.languages_by_size])
 
         # Override defaults
-        self.namespaces[2]['pl'] = u'Wikipedysta'
-        self.namespaces[3]['pl'] = u'Dyskusja Wikipedysty'
+        self.namespaces[3]['fr'] = [u'Discussion utilisateur', u'Discussion Utilisateur']
+        self.namespaces[2]['fr'] = [u'Utilisateur']
+        self.namespaces[14]['en'] = [u'Category', u'CAT']
+        self.namespaces[10]['zh'] = [u'Template', u'模板', u'样板', u'樣板']
+        self.namespaces[12]['zh'] = [u'Help', u'帮助', u'幫助']
+        self.namespaces[14]['zh'] = [u'Category', u'分类', u'分類']
+        self.namespaces[3]['pt'] = [u'Utilizador Discussão', u'Usuário Discussão', u'Utilizadora Discussão']
+        self.namespaces[2]['pt'] = [u'Utilizador', u'Usuário', u'Utilizadora']
+        self.namespaces[3]['ca'] = [u'Usuari Discussió']
+        self.namespaces[2]['ca'] = [u'Usuari']
+        self.namespaces[13]['de'] = [u'Hilfe Diskussion']
+        self.namespaces[12]['de'] = [u'Hilfe']
+        self.namespaces[3]['de'] = [u'Benutzer Diskussion', u'Benutzerin Diskussion']
+        self.namespaces[14]['tr'] = [u'Kategori', u'KAT']
+        self.namespaces[13]['da'] = [u'Hjælp diskussion', u'Hjælp-diskussion']
+        self.namespaces[9]['da'] = [u'MediaWiki diskussion', u'MediaWiki-diskussion']
+        self.namespaces[11]['hi'] = [u'साँचा वार्ता']
+        self.namespaces[10]['hi'] = [u'साँचा']
+        self.namespaces[15]['hi'] = [u'श्रेणी वार्ता']
+        self.namespaces[14]['hi'] = [u'श्रेणी']
+        self.namespaces[3]['hi'] = [u'सदस्य वार्ता']
+        self.namespaces[2]['hi'] = [u'सदस्य']
+        self.namespaces[9]['hi'] = [u'मीडियाविकि वार्ता']
+        self.namespaces[8]['hi'] = [u'मीडियाविकि']
+        self.namespaces[3]['cs'] = [u'Diskuse s uživatelem', u'Uživatel diskuse', u'Uživatelka diskuse', u'Diskuse s uživatelkou']
+        self.namespaces[2]['cs'] = [u'Uživatel', u'Uživatelka']
+        self.namespaces[12]['nl'] = [u'Help']
+        self.namespaces[9]['ro'] = [u'Discuție MediaWiki', u'Discuţie MediaWiki']
+        self.namespaces[15]['bn'] = [u'বিষয়শ্রেণী আলোচনা']
+        self.namespaces[14]['bn'] = [u'বিষয়শ্রেণী']
+        self.namespaces[3]['pl'] = [u'Dyskusja wikipedysty', u'Dyskusja wikipedystki', u'Dyskusja użytkownika', u'Dyskusja użytkowniczki']
+        self.namespaces[2]['pl'] = [u'Wikipedysta', u'Wikipedystka', u'Użytkownik', u'Użytkowniczka']
 
         # Most namespaces are inherited from family.Family.
         # Translation used on all wikis for the different namespaces.
         # (Please sort languages alphabetically)
         # You only need to enter translations that differ from _default.
         self.namespaces[4] = {
-            '_default': [u'Wikibooks', self.namespaces[4]['_default']],
-            'ar': u'ويكي الكتب',
-            'bg': u'Уикикниги',
-            'bn': u'উইকিবই',
-            'bs': u'Wikiknjige',
-            'ca': u'Viquillibres',
-            'cs': u'Wikiknihy',
-            'cy': u'Wicillyfrau',
-            'el': u'Βικιβιβλία',
-            'eo': u'Vikilibroj',
-            'es': u'Wikilibros',
-            'et': u'Vikiõpikud',
-            'fa': u'ویکی‌نسک',
-            'fi': u'Wikikirjasto',
-            'fr': u'Wikilivres',
+            '_default': self.namespaces[4]['_default'],
+            'af': u'Wikibooks',
+            'ang': u'Wikibooks',
+            'ar': [u'ويكي الكتب', u'Wikibooks'],
+            'ast': u'Wikibooks',
+            'az': u'Wikibooks',
+            'be': u'Wikibooks',
+            'bg': [u'Уикикниги', u'Wikibooks'],
+            'bn': [u'উইকিবই', u'WB', u'Wikibooks'],
+            'bs': [u'Wikiknjige', u'Wikibooks'],
+            'ca': [u'Viquillibres', u'Wikibooks'],
+            'cs': [u'Wikiknihy', u'WB', u'WK', u'Wikibooks'],
+            'cv': u'Wikibooks',
+            'cy': [u'Wicilyfrau', u'Wikibooks'],
+            'da': u'Wikibooks',
+            'de': u'Wikibooks',
+            'el': [u'Βικιβιβλία', u'Wikibooks'],
+            'en': [u'Wikibooks', u'WB'],
+            'eo': [u'Vikilibroj', u'Wikibooks'],
+            'es': [u'Wikilibros', u'Wikibooks'],
+            'et': [u'Vikiõpikud', u'Wikibooks'],
+            'eu': u'Wikibooks',
+            'fa': [u'ویکی‌نسک', u'Wikibooks'],
+            'fi': [u'Wikikirjasto', u'Wikibooks'],
+            'fr': [u'Wikilivres', u'WL'],
+            'fy': u'Wikibooks',
             'ga': u'Vicíleabhair',
-            'he': u'ויקיספר',
-            'hr': u'Wikiknjige',
-            'hu': u'Wikikönyvek',
-            'hy': u'Վիքիգրքեր',
-            'is': u'Wikibækur',
-            'ka': u'ვიკიწიგნები',
-            'kk': u'Уикикітап',
-            'ko': u'위키책',
-            'la': u'Vicilibri',
-            'li': u'Wikibeuk',
-            'ml': u'വിക്കിപാഠശാല',
-            'no': u'Wikibøker',
-            'oc': u'Wikilibres',
+            'gl': u'Wikibooks',
+            'he': [u'ויקיספר', u'Wikibooks'],
+            'hi': u'Wikibooks',
+            'hr': [u'Wikiknjige', u'Wikibooks'],
+            'hu': [u'Wikikönyvek', u'Wikibooks'],
+            'hy': [u'Վիքիգրքեր', u'Wikibooks'],
+            'ia': u'Wikibooks',
+            'id': [u'Wikibuku', u'Wikibooks'],
+            'ie': u'Wikibooks',
+            'is': [u'Wikibækur', u'Wikibooks'],
+            'it': [u'Wikibooks', u'WB'],
+            'ja': u'Wikibooks',
+            'ka': [u'ვიკიწიგნები', u'Wikibooks'],
+            'kk': [u'Уикикітап', u'Wikibooks'],
+            'ko': [u'위키책', u'Wikibooks'],
+            'ku': u'Wikibooks',
+            'ky': u'Wikibooks',
+            'la': [u'Vicilibri', u'Wikibooks'],
+            'li': [u'Wikibeuk', u'Wikibooks'],
+            'lt': u'Wikibooks',
+            'mg': u'Wikibooks',
+            'mk': u'Wikibooks',
+            'ml': [u'വിക്കിപാഠശാല', u'വിക്കി‌‌ പുസ്തകശാല', u'Wikibooks'],
+            'mn': u'Wikibooks',
+            'mr': u'Wikibooks',
+            'ms': u'Wikibooks',
+            'my': u'Wikibooks',
+            'ne': u'Wikibooks',
+            'nl': u'Wikibooks',
+            'no': [u'Wikibøker', u'Wikibooks'],
+            'oc': [u'Wikilibres', u'Wikibooks'],
+            'pa': u'Wikibooks',
+            'pl': [u'Wikibooks', u'WB'],
             'ps': u'ويکيتابونه',
-            'pt': u'Wikilivros',
-            'ro': u'Wikimanuale',
-            'ru': u'Викиучебник',
-            'si': u'විකිපොත්',
-            'sl': u'Wikiknjige',
-            'sr': u'Викикњиге',
-            'tr': u'Vikikitap',
-            'uk': u'Вікіпідручник',
-            'ur': u'وکی کتب',
-            'uz': u'Vikikitob',
-            'vo': u'Vükibuks',
-            'zh': [u'Wikibooks', u'维基教科书'],
+            'pt': [u'Wikilivros', u'Wikibooks'],
+            'ro': [u'Wikimanuale', u'Wikibooks'],
+            'ru': [u'Викиучебник', u'ВУ'],
+            'sa': u'Wikibooks',
+            'si': [u'විකිපොත්', u'Wikibooks'],
+            'sk': u'Wikibooks',
+            'sl': [u'Wikiknjige', u'Wikibooks'],
+            'sq': u'Wikibooks',
+            'sr': [u'Викикњиге', u'Wikibooks'],
+            'su': u'Wikibooks',
+            'sv': u'Wikibooks',
+            'ta': [u'விக்கிநூல்கள்', u'Wikibooks', u'விக்கிபீடியா'],
+            'te': u'Wikibooks',
+            'tg': u'Wikibooks',
+            'th': u'Wikibooks',
+            'tk': u'Wikibooks',
+            'tl': u'Wikibooks',
+            'tr': [u'Vikikitap', u'VK'],
+            'tt': u'Wikibooks',
+            'uk': [u'Вікіпідручник', u'ВП'],
+            'ur': [u'وکی کتب', u'Wikibooks'],
+            'uz': [u'Vikikitob', u'Wikibooks'],
+            'vi': u'Wikibooks',
+            'vo': [u'Vükibuks', u'Wikibooks'],
+            'zh': [u'Wikibooks', u'维基教科书', u'維基教科書', u'WB'],
+            'zh-min-nan': u'Wikibooks',
         }
 
         self.namespaces[5] = {
-            '_default': [u'Wikibooks talk', self.namespaces[5]['_default']],
+            '_default': self.namespaces[5]['_default'],
             'af': u'Wikibooksbespreking',
             'als': u'Wikibooks Diskussion',
+            'ang': u'Wikibooks talk',
             'ar': u'نقاش ويكي الكتب',
-            'ast': u'Wikibooks alderique',
+            'ast': [u'Wikibooks alderique', u'Wikibooks discusión'],
             'ay': u'Wikibooks Discusión',
             'az': u'Wikibooks müzakirəsi',
             'ba': u'Wikibooks б-са фекер алышыу',
             'be': u'Wikibooks размовы',
             'bg': u'Уикикниги беседа',
             'bm': u'Discussion Wikibooks',
-            'bn': u'উইকিবই আলোচনা',
+            'bn': [u'উইকিবই আলোচনা', u'উইকিবই আলাপ'],
             'bs': u'Razgovor s Wikiknjigama',
             'ca': u'Viquillibres Discussió',
-            'cs': u'Diskuse k Wikiknihám',
+            'cs': [u'Diskuse k Wikiknihám', u'Wikibooks diskuse', u'Wikibooks talk', u'Wikiknihy diskuse'],
             'cv': u'Wikibooks сӳтсе явмалли',
-            'cy': u'Sgwrs Wicillyfrau',
+            'cy': u'Sgwrs Wicilyfrau',
             'da': [u'Wikibooks diskussion', u'Wikibooks-diskussion'],
             'de': u'Wikibooks Diskussion',
             'el': u'Βικιβιβλία συζήτηση',
+            'en': u'Wikibooks talk',
             'eo': [u'Vikilibroj-Diskuto', u'Vikilibroj diskuto'],
-            'es': u'Wikilibros Discusión',
-            'et': u'Vikiõpikute arutelu',
+            'es': u'Wikilibros discusión',
+            'et': [u'Vikiõpikute arutelu', u'Vikiõpikud arutelu'],
             'eu': u'Wikibooks eztabaida',
             'fa': u'بحث ویکی‌نسک',
             'fi': u'Keskustelu Wikikirjastosta',
@@ -114,31 +188,34 @@ class Family(family.Family):
             'he': u'שיחת ויקיספר',
             'hi': u'Wikibooks वार्ता',
             'hr': u'Razgovor Wikiknjige',
-            'hu': u'Wikikönyvek-vita',
+            'hu': [u'Wikikönyvek-vita', u'Wikikönyvek vita'],
             'hy': u'Վիքիգրքերի քննարկում',
             'ia': u'Discussion Wikibooks',
-            'id': u'Pembicaraan Wikibooks',
+            'id': [u'Pembicaraan Wikibuku', u'Pembicaraan Wikibooks'],
+            'ie': u'Wikibooks Discussion',
             'is': u'Wikibækurspjall',
             'it': u'Discussioni Wikibooks',
-            'ja': u'Wikibooks・トーク',
+            'ja': [u'Wikibooks・トーク', u'Wikibooks‐ノート'],
             'ka': u'ვიკიწიგნები განხილვა',
-            'kk': u'Уикикітап талқылауы',
+            'kk': [u'Уикикітап талқылауы', u'Уикикітап talqılawı', u'Уикикітап تالقىلاۋى'],
             'km': u'ការពិភាក្សាអំពីWikibooks',
             'kn': u'Wikibooks ಚರ್ಚೆ',
             'ko': u'위키책토론',
             'ku': u'Wikibooks nîqaş',
+            'ky': u'Wikibooks talk',
             'la': u'Disputatio Vicilibrorum',
             'lb': u'Wikibooks Diskussioun',
             'li': u'Euverlèk Wikibeuk',
             'ln': u'Discussion Wikibooks',
             'lt': u'Wikibooks aptarimas',
             'lv': u'Wikibooks diskusija',
-            'mg': u'Dinika amin\'ny Wikibooks',
+            'mg': [u'Dinika amin\'ny Wikibooks', u'Discussion Wikibooks'],
             'mk': u'Разговор за Wikibooks',
-            'ml': u'വിക്കിപാഠശാല സംവാദം',
+            'ml': [u'വിക്കിപാഠശാല സംവാദം', u'വിക്കി‌‌ പുസ്തകശാല സംവാദം', u'Wikibooks talk'],
             'mn': u'Wikibooks-н хэлэлцүүлэг',
             'mr': u'Wikibooks चर्चा',
-            'ms': u'Perbincangan Wikibooks',
+            'ms': [u'Perbincangan Wikibooks', u'Perbualan Wikibooks'],
+            'my': u'Wikibooks talk',
             'nah': u'Wikibooks Discusión',
             'nds': u'Wikibooks Diskuschoon',
             'ne': u'Wikibooks वार्ता',
@@ -148,27 +225,27 @@ class Family(family.Family):
             'pa': u'Wikibooks ਚਰਚਾ',
             'pl': u'Dyskusja Wikibooks',
             'ps': u'د ويکيتابونه خبرې اترې',
-            'pt': u'Wikilivros Discussão',
+            'pt': [u'Wikilivros Discussão', u'Wikibooks Talk', u'Wikibooks Discussão'],
             'qu': u'Wikibooks rimanakuy',
-            'ro': u'Discuție Wikimanuale',
+            'ro': [u'Discuție Wikimanuale', u'Discuţie Wikibooks', u'Discuţie Wikimanuale'],
             'ru': u'Обсуждение Викиучебника',
             'sa': [u'Wikibooksसम्भाषणम्', u'Wikibooksसंभाषणं'],
-            'si': u'විකිපොත් සාකච්ඡාව',
-            'sk': u'Diskusia k Wikibooks',
+            'si': [u'විකිපොත් සාකච්ඡාව', u'Wikibooks talk'],
+            'sk': [u'Diskusia k Wikibooks', u'Komentár k Wikipédii'],
             'sl': u'Pogovor o Wikiknjigah',
             'sq': u'Wikibooks diskutim',
-            'sr': u'Разговор о викикњигама',
+            'sr': [u'Разговор о викикњигама', u'Razgovor o Викикњиге'],
             'su': u'Obrolan Wikibooks',
             'sv': u'Wikibooksdiskussion',
             'sw': u'Majadiliano ya Wikibooks',
-            'ta': u'Wikibooks பேச்சு',
+            'ta': [u'விக்கிநூல்கள் பேச்சு', u'விக்கிபீடியா பேச்சு'],
             'te': u'Wikibooks చర్చ',
             'tg': u'Баҳси Wikibooks',
             'th': u'คุยเรื่องWikibooks',
             'tk': u'Wikibooks çekişme',
             'tl': u'Usapang Wikibooks',
             'tr': u'Vikikitap tartışma',
-            'tt': [u'Wikibooks бәхәсе', u'Wikibooks bäxäse'],
+            'tt': [u'Wikibooks бәхәсе', u'Обсуждение Wikibooks', u'Wikibooks bäxäse'],
             'uk': u'Обговорення Вікіпідручника',
             'ur': u'تبادلۂ خیال وکی کتب',
             'uz': u'Vikikitob munozarasi',
@@ -176,7 +253,8 @@ class Family(family.Family):
             'vo': u'Bespik dö Vükibuks',
             'wa': u'Wikibooks copene',
             'za': u'Wikibooks讨论',
-            'zh': [u'Wikibooks talk', u'维基教科书讨论'],
+            'zh': u'Wikibooks talk',
+            'zh-min-nan': u'Wikibooks talk',
         }
 
         self.namespaces[90] = {
@@ -206,6 +284,7 @@ class Family(family.Family):
             'ms': u'Resipi',
             'ro': u'Raft',
             'ru': u'Полка',
+            'tl': u'Pagluluto',
             'tr': u'Yemek',
             'uk': u'Полиця',
         }
@@ -221,17 +300,20 @@ class Family(family.Family):
             'ms': u'Perbualan Resipi',
             'ro': u'Discuţie Raft',
             'ru': u'Обсуждение полки',
+            'tl': u'Usapang pagluluto',
             'tr': u'Yemek tartışma',
             'uk': u'Обговорення полиці',
         }
 
         self.namespaces[102] = {
+            'az': u'Resept',
             'bn': u'বিষয়',
             'ca': u'Viquiprojecte',
             'cy': u'Silff lyfrau',
             'de': u'Regal',
             'en': u'Cookbook',
             'es': u'Wikiversidad',
+            'fr': u'Wikijunior',
             'id': u'Wisata',
             'it': u'Ripiano',
             'ml': u'വിഷയം',
@@ -240,15 +322,18 @@ class Family(family.Family):
             'ru': u'Импортировано',
             'sr': u'Кувар',
             'uk': u'Рецепт',
+            'vi': u'Chủ đề',
         }
 
         self.namespaces[103] = {
+            'az': u'Resept müzakirəsi',
             'bn': u'বিষয় আলাপ',
             'ca': u'Viquiprojecte Discussió',
             'cy': u'Sgwrs Silff lyfrau',
             'de': u'Regal Diskussion',
             'en': u'Cookbook talk',
             'es': u'Wikiversidad Discusión',
+            'fr': u'Discussion Wikijunior',
             'id': u'Pembicaraan Wisata',
             'it': u'Discussioni ripiano',
             'ml': u'വിഷയസം‌വാദം',
@@ -257,32 +342,39 @@ class Family(family.Family):
             'ru': u'Обсуждение импортированного',
             'sr': u'Разговор о кувару',
             'uk': u'Обговорення рецепта',
+            'vi': u'Thảo luận Chủ đề',
         }
 
         self.namespaces[104] = {
+            'az': u'Vikikitab',
             'he': u'מדף',
             'ka': u'თარო',
             'nl': u'Wikijunior',
             'pl': u'Wikijunior',
             'ro': u'Carte de bucate',
             'ru': u'Рецепт',
+            'vi': u'Trẻ em',
         }
 
         self.namespaces[105] = {
+            'az': u'Vikikitab müzakirəsi',
             'he': u'שיחת מדף',
             'ka': u'თარო განხილვა',
             'nl': u'Overleg Wikijunior',
             'pl': u'Dyskusja Wikijuniora',
             'ro': u'Discuţie Carte de bucate',
             'ru': u'Обсуждение рецепта',
+            'vi': u'Thảo luận Trẻ em',
         }
 
         self.namespaces[106] = {
             'ru': u'Задача',
+            'vi': u'Nấu ăn',
         }
 
         self.namespaces[107] = {
             'ru': u'Обсуждение задачи',
+            'vi': u'Thảo luận Nấu ăn',
         }
 
         self.namespaces[108] = {
@@ -323,24 +415,33 @@ class Family(family.Family):
             'si': u'කණිෂ්ඨ විකි සාකච්ඡාව',
         }
 
+        # CentralAuth cross avaliable projects.
+        self.cross_projects = [
+            'wiktionary', 'wikibooks', 'wikiquote', 'wikisource', 'wikinews',
+            'wikiversity', 'meta', 'mediawiki', 'test', 'incubator', 'commons',
+            'species',
+        ]
+
+        # Global bot allowed languages on http://meta.wikimedia.org/wiki/Bot_policy/Implementation#Current_implementation
+        self.cross_allowed = [
+            'af', 'ang', 'ca', 'fa', 'fy', 'it', 'nl', 'ru', 'th', 'zh',
+        ]
+
         # Which languages have a special order for putting interlanguage links,
         # and what order is it? If a language is not in interwiki_putfirst,
         # alphabetical order on language code is used. For languages that are in
         # interwiki_putfirst, interwiki_putfirst is checked first, and
-        # languages are put in the order given there. All other languages are put
-        # after those, in code-alphabetical order.
-
-        alphabetic = ['af', 'ar', 'roa-rup', 'om', 'bg', 'be', 'bn', 'bs', 'ca',
-                      'chr', 'co', 'cs', 'cy', 'da', 'de', 'als', 'et', 'el',
-                      'en', 'es', 'eo', 'eu', 'fa', 'fr', 'fy', 'gv', 'gd',
-                      'gl', 'ko', 'hi', 'hr', 'io', 'id', 'ia', 'is', 'it',
-                      'he', 'jv', 'ka', 'csb', 'sw', 'la', 'lv', 'lt', 'hu',
-                      'mk', 'mg', 'ml', 'mi', 'mr', 'ms', 'zh-cfr', 'mn', 'nah',
-                      'na', 'nl', 'ja', 'no', 'nb', 'oc', 'nds', 'pl', 'pt',
-                      'ro', 'ru', 'sa', 'st', 'sq', 'si', 'simple', 'sk', 'sl',
-                      'sr', 'su', 'fi', 'sv', 'ta', 'tt', 'th', 'ur', 'vi',
-                      'tpi', 'tr', 'uk', 'vo', 'yi', 'za', 'zh', 'zh-cn',
-                      'zh-tw']
+        # languages are put in the order given there. All other languages are
+        # put after those, in code-alphabetical order.
+        self.interwiki_putfirst = {
+            'en': self.alphabetic,
+            'fi': self.alphabetic,
+            'fr': self.alphabetic,
+            'he': ['en'],
+            'hu': ['en'],
+            'pl': self.alphabetic,
+            'simple': self.alphabetic
+        }
 
         self.obsolete = {
             'aa': None, # http://meta.wikimedia.org/wiki/Proposals_for_closing_projects/Closure_of_Afar_Wikibooks
@@ -353,6 +454,7 @@ class Family(family.Family):
             'bm': None, # http://meta.wikimedia.org/wiki/Proposals_for_closing_projects/Closure_of_Bambara_Wikibooks
             'bo': None, # http://meta.wikimedia.org/wiki/Proposals_for_closing_projects/Closure_of_Tibetan_Wikibooks
             'ch': None, # http://meta.wikimedia.org/wiki/Proposals_for_closing_projects/Closure_of_Chamorro_Wikibooks
+            'co': None, # https://bugzilla.wikimedia.org/show_bug.cgi?id=28644
             'dk': 'da',
             'ga':None, # http://meta.wikimedia.org/wiki/Proposals_for_closing_projects/Closure_of_Gaeilge_Wikibooks
             'got': None, # http://meta.wikimedia.org/wiki/Proposals_for_closing_projects/Closure_of_Gothic_Wikibooks
@@ -388,38 +490,10 @@ class Family(family.Family):
             'zu': None, # https://bugzilla.wikimedia.org/show_bug.cgi?id=25425
         }
 
-        self.interwiki_putfirst = {
-            'en': alphabetic,
-            'fi': alphabetic,
-            'fr': alphabetic,
-            'he': ['en'],
-            'hu': ['en'],
-            'pl': alphabetic,
-            'simple': alphabetic
-        }
-        # Global bot allowed languages on http://meta.wikimedia.org/wiki/Bot_policy/Implementation#Current_implementation
-        self.cross_allowed = ['fa', 'fy', 'it', 'nl', 'ru', 'simple', 'zh']
-        # CentralAuth cross avaliable projects.
-        self.cross_projects = [
-            'wikipedia', 'wiktionary', 'wikiquote', 'wikiquote', 'wikinews', 'wikiversity', 
-            'meta', 'mediawiki', 'test', 'incubator', 'commons', 'species'
-        ]
-
-    def version(self, code):
-        return '1.17wmf1'
-
     def shared_image_repository(self, code):
         return ('commons', 'commons')
 
     if family.config.SSL_connection:
-        def hostname(self, code):
-            return 'secure.wikimedia.org'
 
         def protocol(self, code):
             return 'https'
-
-        def scriptpath(self, code):
-            return '/%s/%s/w' % (self.name, code)
-
-        def nicepath(self, code):
-            return '/%s/%s/wiki/' % (self.name, code)

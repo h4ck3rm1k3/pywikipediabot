@@ -14,21 +14,23 @@ are taken into account.
 """
 
 #
-# (C) Pywikipedia team, 2008-2009
+# (C) Pywikipedia team, 2008-2011
 #
-__version__ = '$Id: category_redirect.py 8805 2010-12-26 16:43:08Z xqt $'
+__version__ = '$Id: category_redirect.py 9692 2011-10-30 15:03:29Z xqt $'
 #
 # Distributed under the terms of the MIT license.
 #
 
-import wikipedia as pywikibot
-import catlib, query, pagegenerators
 import cPickle
 import math
 import re
 import sys, traceback
 import time
 from datetime import datetime, timedelta
+import wikipedia as pywikibot
+import pagegenerators
+import catlib, query
+from pywikibot import i18n
 
 
 class APIError(Exception):
@@ -78,143 +80,17 @@ class CategoryRedirectBot(object):
             }
         }
 
-        self.move_comment = {
-            'ar': u"روبوت: نقل الصفحات من تصنيف محول",
-            'cs': u'Robot přesunul stránku ze zastaralé kategorie',
-            'da': u"Robot: flytter sider ud af omdirigeringskategorien",
-            'en': u"Robot: moving pages out of redirected category",
-            'es': u"Bot: moviendo páginas de categoría redirigida",
-            'fa': u"ربات:تغییر رده‌هایی که انتقال یافته‌اند",
-            'hu': u"Bot: Lapok automatikus áthelyezése átirányított kategóriából",
-            'ja': u"ロボットによる: 移行中のカテゴリからのカテゴリ変更",
-            'ksh': u"Bot: Sigk uß en ömjeleidt Saachjropp eruß jesammdt.",
-            'no': u"Robot: Flytter sider ut av omdirigeringskategori",
-            'pl': u"Robot: Usuwa strony z przekierowanej kategorii",
-            'pt': u"Bot: movendo páginas de redirecionamentos de categorias",
-            'commons': u'Robot: Changing category link (following [[Template:Category redirect|category redirect]])',
-            'vi': u"Robot: bỏ trang ra khỏi thể loại đổi hướng",
-            'zh': u'机器人：改变已重定向分类中的页面的分类',
-        }
-
-        self.redir_comment = {
-            'ar':u"روبوت: إضافة قالب تحويل تصنيف للصيانة",
-            'cs':u'Robot označil kategorii jako zastaralou',
-            'da':u"Robot: tilføjer omdirigeringsskabelon for vedligeholdelse",
-            'en':u"Robot: adding category redirect template for maintenance",
-            'es':u"Bot: añadiendo plantilla de categoría redirigida para mantenimiento",
-            'fa':u"ربات:افزودن الگوی رده بهتر",
-            'hu':u"Bot: kategóriaátirányítás sablon hozzáadása",
-            'ja':u"ロボットによる: 移行中のカテゴリとしてタグ付け",
-            'ksh':u"Bot: Ömleidungsschalbon dobeijedonn.",
-            'no':u"Robot: Legger til vedlikeholdsmal for kategoriomdirigering",
-            'pl':u"Robot: Dodaje szablon przekierowanej kategorii",
-            'pt':u"Bot: adicionando a predefinição de redirecionamento de categoria",
-            'vi':u"Robot: thêm bản mẫu đổi hướng thể loại để dễ bảo trì",
-            'zh':u"机器人: 增加分类重定向模板，用于维护",
-        }
-
-        self.dbl_redir_comment = {
-            'ar': u"روبوت: تصليح تحويلة مزدوجة",
-            'cs': u'Robot opravil dvojité přesměrování',
-            'da': u"Robot: retter dobbelt omdirigering",
-            'en': u"Robot: fixing double-redirect",
-            'es': u"Bot: reparando redirección doble",
-            'fa': u"ربات:تصحیح تغییرمسیرهای دوتایی",
-            'fr': u"Robot : Correction des redirections doubles",
-            'hu': u"Bot: Kettős átirányítás javítása",
-            'ja': u"ロボットによる: 二重リダイレクト修正",
-            'no': u"Robot: Ordner doble omdirigeringer",
-            'ksh': u"Bot: dubbel Ömleidung eruß jemaat.",
-            'pl': u"Robot: Poprawia podwójne przekierowanie",
-            'pt': u"Bot: Corrigindo redirecionamento duplo",
-            'ru': u"Бот: исправление двойного перенаправления",
-            'uk': u"Бот: виправлення подвійного перенаправлення",
-            'vi': u"Robot: sửa thể loại đổi hướng kép",
-            'zh': u"Bot: 修复双重重定向",
-        }
-
-        self.maint_comment = {
-            'ar': u"بوت صيانة تحويل التصنيف",
-            'cs': u'Údržba přesměrované kategorie',
-            'da': u"Bot til vedligeholdelse af kategoromdirigeringer",
-            'en': u"Category redirect maintenance bot",
-            'es': u"Bot de mantenimento de categorías redirigidas",
-            'fa': u"ربات:مرتب‌سازی رده‌های منتقل‌شده",
-            'fr': u"Robot de maintenance des redirection de catégorie",
-            'hu': u"Kategóriaátirányítás-karbantartó bot",
-            'ja': u"移行中のカテゴリのメンテナンス・ボット",
-            'no': u"Bot for vedlikehold av kategoriomdirigeringer",
-            'ksh': u"Bot för de Saachjroppe ier Ömleidunge.",
-            'pl': u"Robot porządkujący przekierowania kategorii",
-            'pt': u"Bot de manutenção de categorias de redirecionamento",
-            'vi': u"Robot theo dõi thể loại đổi hướng",
-            'zh': u"分类重定向维护机器人",
-        }
-
-        self.edit_request_text = pywikibot.translate(self.site.lang,
-            {'en': u"""\
-The following protected pages have been detected as requiring updates to \
-category links:
-%s
-~~~~
-""",
-             'fa': u"""\
-صفحات حفاظت‌شده زیر نیاز به بروزرسانی دارند \
-صفحات:
-%s
-~~~~
-""",
-            'es': u"""\
-Se han detectado las siguientes páginas protegidas y se requieren actualizaciones de \
-enlaces de categorías:
-%s
-~~~~
-""",
-            'ksh': u"""\
-Hee di Sigge sin jeschötz un möße ier Saachjroppe odder Lingks op Saachjroppe \
-aanjepaß krijje:
-%s
-~~~~
-""",
-            'pl': u"""\
-Następujące zabezpieczone strony wykryto jako wymagające \
-poprawy kategorii:
-%s
-~~~~
-""",
-            'pt': u"""\
-As seguintes páginas protegidas foram detectadas como carecendo de actualizações de \
-ligações de categorias:
-%s
-~~~~
-""",
-
-            'vi': u"""\
-Các trang đã khóa sau cần phải cập nhật \
-liên kết thể loại:
-%s
-~~~~
-""",
-            'zh': u"""\
-下列被保护页面被检测出需要更新 \
-分类链接:
-%s
-~~~~
-""",
-            })
-
-        self.edit_request_item = pywikibot.translate(self.site.lang,
-            {
-                'ar': u"* %s موجودة في %s, وهي تحويلة إلى %s",
-                'en': u"* %s is in %s, which is a redirect to %s",
-                'es': u"* %s está en %s, el cual redirecciona a %s",
-                'fa': u"%s در %s قرار دارد،که به %s انتقال یافته‌است.",
-                'fr': u"* %s est dans %s, qui est une redirection vers %s",
-                'ksh': u"* %s es en %s, un dat es en Ömleidung op %s",
-                'pl': u"* %s jest w %s, która jest przekierowaniem do %s",
-                'pt': u"* %s está em %s, que redireciona para %s",
-                'vi': u"* %s đang thuộc %s, là thể loại đổi hướng đến %s",
-            })
+        self.move_comment = 'category_redirect-change-category'
+        self.redir_comment = 'category_redirect-add-template'
+        self.dbl_redir_comment = 'category_redirect-fix-double'
+        self.maint_comment = 'category_redirect-comment'
+        self.edit_request_text = i18n.twtranslate(
+                                     self.site.lang,
+                                     'category_redirect-edit-request') + \
+                                     u'\n~~~~'
+        self.edit_request_item = i18n.twtranslate(
+                                     self.site.lang,
+                                     'category_redirect-edit-request-item')
 
     def change_category(self, article, oldCat, newCat, comment=None,
                         sortKey=None):
@@ -227,7 +103,12 @@ liên kết thể loại:
 
         """
         oldtext = article.get(get_redirect=True, force=True)
-        newtext = pywikibot.replaceCategoryInPlace(oldtext, oldCat, newCat)
+        if newCat in article.categories() or newCat == article:
+            newtext = pywikibot.replaceCategoryInPlace(oldtext, oldCat, None,
+                                                       site=self.site)
+        else:
+            newtext = pywikibot.replaceCategoryInPlace(oldtext, oldCat, newCat,
+                                                       site=self.site)
         try:
             # even if no changes, still save the page, in case it needs
             # an update due to changes in a transcluded template
@@ -243,9 +124,10 @@ liên kết thể loại:
         except pywikibot.LockedPage:
             pywikibot.output(u'Skipping locked page %s'
                              % article.title(asLink=True))
-            self.edit_requests.append((article.title(asLink=True),
-                                       oldCat.aslink(textlink=True),
-                                       newCat.aslink(textlink=True)))
+            self.edit_requests.append({
+                'title': article.title(asLink=True, textlink=True),
+                'oldcat': oldCat.title(asLink=True, textlink=True),
+                'newcat': newCat.title(asLink=True, textlink=True)})
         except pywikibot.SpamfilterError, error:
             pywikibot.output(
                 u'Changing page %s blocked by spam filter (URL=%s)'
@@ -254,9 +136,10 @@ liên kết thể loại:
             pywikibot.output(
                 u"Page %s not saved; sysop privileges required."
                              % article.title(asLink=True))
-            self.edit_requests.append((article.aslink(textlink=True),
-                                       oldCat.aslink(textlink=True),
-                                       newCat.aslink(textlink=True)))
+            self.edit_requests.append({
+                'title': article.title(asLink=True, textlink=True),
+                'oldcat': oldCat.title(asLink=True, textlink=True),
+                'newcat': newCat.title(asLink=True, textlink=True)})
         except pywikibot.PageNotSaved, error:
             pywikibot.output(u"Saving page %s failed: %s"
                              % (article.title(asLink=True), error.message))
@@ -271,6 +154,9 @@ liên kết thể loại:
                 newCat = catlib.Category(self.site,
                                          self.catprefix + newCatTitle)
 
+                oldCatLink = oldCat.title()
+                newCatLink = newCat.title()
+                comment = editSummary % locals()
                 # Move articles
                 found, moved = 0, 0
                 for result in self.query_results(list="categorymembers",
@@ -281,7 +167,7 @@ liên kết thể loại:
                     for item in result['categorymembers']:
                         article = pywikibot.Page(self.site, item['title'])
                         changed = self.change_category(article, oldCat, newCat,
-                                                       comment=editSummary)
+                                                       comment=comment)
                         if changed: moved += 1
 
                 # pass 2: look for template doc pages
@@ -297,7 +183,7 @@ liên kết thể loại:
                         except pywikibot.Error:
                             continue
                         changed = self.change_category(doc, oldCat, newCat,
-                                                       comment=editSummary)
+                                                       comment=comment)
                         if changed: moved += 1
 
                 if found:
@@ -404,8 +290,8 @@ liên kết thể loại:
         if len(log_items) < LOG_SIZE:
             return log_text
         # sort by keys and keep the first (LOG_SIZE-1) values
-        keep = [text for (key, text)
-                     in sorted(log_items.items(), reverse=True)[ : LOG_SIZE-1]]
+        keep = [text for (key, text) in
+                sorted(log_items.items(), reverse=True)[:LOG_SIZE-1]]
         log_text = "\n".join("\n".join(line for line in text) for text in keep)
         # get permalink to older logs
         try:
@@ -472,7 +358,7 @@ liên kết thể loại:
 
         # check for hard-redirected categories that are not already marked
         # with an appropriate template
-        comment = pywikibot.translate(self.site.lang, self.redir_comment)
+        comment = i18n.twtranslate(self.site.lang, self.redir_comment)
         for result in self.query_results(list='allpages',
                                          apnamespace='14', # Category:
                                          apfrom='!',
@@ -489,28 +375,29 @@ liên kết thể loại:
                 if target.namespace() == 14:
                     # this is a hard-redirect to a category page
                     newtext = (u"{{%(template)s|%(cat)s}}"
-                               % {'cat': target.titleWithoutNamespace(),
+                               % {'cat': target.title(withNamespace=False),
                                   'template': template_list[0]})
                     try:
                         page.put(newtext, comment, minorEdit=True)
                         self.log_text.append(u"* Added {{tl|%s}} to %s"
                                          % (template_list[0],
-                                            page.aslink(textlink=True)))
+                                            page.title(asLink=True,
+                                                       textlink=True)))
                     except pywikibot.Error, e:
                         self.log_text.append(
                             u"* Failed to add {{tl|%s}} to %s (%s)"
                              % (template_list[0],
-                                page.aslink(textlink=True),
+                                page.title(asLink=True, textlink=True),
                                 e))
                 else:
                     problems.append(
                         u"# %s is a hard redirect to %s"
-                         % (page.aslink(textlink=True),
-                            target.aslink(textlink=True)))
+                         % (page.title(asLink=True, textlink=True),
+                            target.title(asLink=True, textlink=True)))
 
         pywikibot.output("Done checking hard-redirect category pages.")
 
-        comment = pywikibot.translate(self.site.lang, self.move_comment)
+        comment = i18n.twtranslate(self.site.lang, self.move_comment)
         scan_data = {
             u'action': 'query',
             u'list': 'embeddedin',
@@ -541,27 +428,27 @@ liên kết thể loại:
         pywikibot.output(u"Preloading %s category redirect pages"
                          % len(catpages))
         for cat in pagegenerators.PreloadingGenerator(catpages, 120):
-            cat_title = cat.titleWithoutNamespace()
+            cat_title = cat.title(withNamespace=False)
             if "category redirect" in cat_title:
                 self.log_text.append(u"* Ignoring %s"
-                                      % cat.aslink(textlink=True))
+                                      % cat.title(asLink=True, textlink=True))
                 continue
             try:
                 text = cat.get(get_redirect=True)
             except pywikibot.Error:
                 self.log_text.append(u"* Could not load %s; ignoring"
-                                      % cat.aslink(textlink=True))
+                                      % cat.title(asLink=True, textlink=True))
                 continue
             if not cat.isCategoryRedirect():
                 self.log_text.append(u"* False positive: %s"
-                                      % cat.aslink(textlink=True))
+                                      % cat.title(asLink=True, textlink=True))
                 continue
             if cat_title not in record:
                 # make sure every redirect has a record entry
                 record[cat_title] = {today: None}
             catlist.append(cat)
             target = cat.getCategoryRedirectTarget()
-            destination = target.titleWithoutNamespace()
+            destination = target.title(withNamespace=False)
             destmap.setdefault(target, []).append(cat)
             catmap[cat] = destination
 ##            if match.group(1):
@@ -590,8 +477,8 @@ liên kết thể loại:
             if not dest.exists():
                 for d in destmap[dest]:
                     problems.append("# %s redirects to %s"
-                                    % (d.aslink(textlink=True),
-                                       dest.aslink(textlink=True)))
+                                    % (d.title(asLink=True, textlink=True),
+                                       dest.title(asLink=True, textlink=True)))
                     catlist.remove(d)
                     # do a null edit on d to make it appear in the
                     # "needs repair" category (if this wiki has one)
@@ -607,28 +494,29 @@ liên kết thể loại:
                     while newcat in catlist:
                         if newcat == d or newcat == dest:
                             self.log_text.append(u"* Redirect loop from %s"
-                                             % newcat.aslink(textlink=True))
+                                             % newcat.title(asLink=True,
+                                                            textlink=True))
                             break
                         newcat = catlib.Category(self.site,
                                                  self.catprefix+catmap[newcat])
                     else:
                         self.log_text.append(
                             u"* Fixed double-redirect: %s -> %s -> %s"
-                                % (d.aslink(textlink=True),
-                                   dest.aslink(textlink=True),
-                                   newcat.aslink(textlink=True)))
+                                % (d.title(asLink=True, textlink=True),
+                                   dest.title(asLink=True, textlink=True),
+                                   newcat.title(asLink=True, textlink=True)))
                         oldtext = d.get(get_redirect=True)
                         # remove the old redirect from the old text,
                         # leaving behind any non-redirect text
                         oldtext = template_regex.sub("", oldtext)
                         newtext = (u"{{%(redirtemp)s|%(ncat)s}}"
                                     % {'redirtemp': template_list[0],
-                                       'ncat': newcat.titleWithoutNamespace()})
+                                       'ncat': newcat.title(withNamespace=False)})
                         newtext = newtext + oldtext.strip()
                         try:
                             d.put(newtext,
-                                  pywikibot.translate(self.site.lang,
-                                                      self.dbl_redir_comment),
+                                  i18n.twtranslate(self.site.lang,
+                                                   self.dbl_redir_comment),
                                   minorEdit=True)
                         except pywikibot.Error, e:
                             self.log_text.append("** Failed: %s" % str(e))
@@ -643,12 +531,12 @@ liên kết thể loại:
 #        threadpool = ThreadList(limit=1)    # disabling multi-threads
 
         for cat in cats_to_empty:
-            cat_title = cat.titleWithoutNamespace()
+            cat_title = cat.title(withNamespace=False)
             if not self.readyToEdit(cat):
                 counts[cat_title] = None
                 self.log_text.append(
                     u"* Skipping %s; in cooldown period."
-                     % cat.aslink(textlink=True))
+                     % cat.title(asLink=True, textlink=True))
                 continue
             found, moved = self.move_contents(cat_title, catmap[cat],
                                               editSummary=comment)
@@ -665,18 +553,21 @@ liên kết thể loại:
 
         cPickle.dump(record, open(datafile, "wb"))
 
-        pywikibot.setAction(pywikibot.translate(self.site.lang,
-                                                self.maint_comment))
+        pywikibot.setAction(i18n.twtranslate(self.site.lang,
+                                             self.maint_comment))
         self.log_text.sort()
+        problems.sort()
         self.log_page.put(u"\n==%i-%02i-%02iT%02i:%02i:%02iZ==\n"
                             % time.gmtime()[:6]
                           + u"\n".join(self.log_text)
-                          + "\n" + "\n".join(problems)
-                          + "\n" + self.get_log_text())
+                          + u"\n" + u"\n".join(problems)
+                          + u"\n" + self.get_log_text())
         if self.edit_requests:
             edit_request_page.put(self.edit_request_text
-                                 % u"\n".join((self.edit_request_item % item)
-                                             for item in self.edit_requests))
+                                 % {'itemlist':
+                                    u"\n" + u"\n".join(
+                                        (self.edit_request_item % item)
+                                        for item in self.edit_requests)})
 
 def main(*args):
     global bot

@@ -16,11 +16,11 @@ All other parameters will be regarded as part of the title of a single page,
 and the bot will only work on that single page.
 """
 #
-# (C) xqt, 2010
+# (C) xqt, 2010-2011
 #
 # Distributed under the terms of the MIT license.
 #
-__version__ = '$Id: blockreview.py 8657 2010-10-16 13:33:42Z xqt $'
+__version__ = '$Id: blockreview.py 9692 2011-10-30 15:03:29Z xqt $'
 #
 
 import wikipedia as pywikibot
@@ -31,7 +31,7 @@ class BlockreviewBot:
     note_admin = {
         'de': u"\n\n== Sperrprüfungswunsch ==\nHallo %(admin)s, \n\n[[%(user)s]] wünscht diePrüfung seiner/ihrer Sperre vom %(time)s über die Dauer von %(duration)s. Kommentar war ''%(comment)s''. Bitte äußere Dich dazu auf der [[%(usertalk)s#%(section)s|Diskussionsseite]]. -~~~~"
     }
-    
+
     note_project = {
         'de': u"\n\n== [[%(user)s]] ==\n* gesperrt am %(time)s durch {{Benutzer|%(admin)s}} für eine Dauer von %(duration)s.\n* Kommentar war ''%(comment)s''.\n* [[Benutzer:%(admin)s]] wurde [[Benutzer Diskussion:%(admin)s#Sperrprüfungswunsch|benachrichtigt]].\n* [[%(usertalk)s#%(section)s|Link zur Diskussion]]\n:<small>-~~~~</small>\n;Antrag entgegengenommen"
     }
@@ -105,7 +105,7 @@ class BlockreviewBot:
             return
         unblock_tpl = self.unblock_tpl[self.site.lang]
         project_name = self.project_name[self.site.lang]
-        user = userlib.User(self.site, userPage.titleWithoutNamespace())
+        user = userlib.User(self.site, userPage.title(withNamespace=False))
         saveAdmin = saveProject = False
         talkComment = None
         for templates in userPage.templatesWithParams():
@@ -133,13 +133,13 @@ class BlockreviewBot:
                             gen = pg.PreloadingGenerator(self.SysopGenerator())
                             for sysop in gen:
                                 print sysop.title()
-                            
+
                         talkText = talkText.replace(u'{{%s}}'   % unblock_tpl,
                                                     u'{{%s|2}}' % unblock_tpl)
                         talkText = talkText.replace(u'{{%s|1}}' % unblock_tpl,
                                                     u'{{%s|2}}' % unblock_tpl)
                         talkComment = pywikibot.translate(self.site.lang, self.msg_user % self.parts)
-        
+
                         # some test stuff
                         if pywikibot.debug and self.site().loggedInAs() == u'Xqbot:':
                             testPage = pywikibot.Page(self.site, 'Benutzer:Xqt/Test')

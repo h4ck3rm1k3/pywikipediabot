@@ -1,7 +1,7 @@
 # -*- coding: utf-8  -*-
 """
 """
-__version__ = '$Id: copyright_put.py 8805 2010-12-26 16:43:08Z xqt $'
+__version__ = '$Id: copyright_put.py 9683 2011-10-30 10:50:42Z xqt $'
 
 #
 # (C) Francesco Cosoleto, 2006
@@ -146,7 +146,8 @@ def get_stats():
         sn = len(data)
         gnt += gn ; ynt += yn ; mnt += mn ; ent += en ; snt += sn
         if en > 0:
-            output += u"|%s||%s||%s KB||%s||%s||%s\n|-\n" % (page.aslink(), en, sn / 1024, gn, yn, mn)
+            output += u"|%s||%s||%s KB||%s||%s||%s\n|-\n" \
+                      % (page.title(asLink=True), en, sn / 1024, gn, yn, mn)
     output += u"""|&nbsp;||||||||
 |-
 |'''%s'''||%s||%s KB||%s||%s||%s

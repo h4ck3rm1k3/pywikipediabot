@@ -1,32 +1,32 @@
 #!/usr/bin/python
 # -*- coding: utf-8  -*-
 """
-This module provides a way for users of the Wikimedia toolserver to check the 
+This module provides a way for users of the Wikimedia toolserver to check the
 use of images from Commons on other Wikimedia wikis. It supports both running
-checkusage against the database and against the live wikis. It is very 
-efficient as it only creates one HTTP connection and one MySQL connection 
+checkusage against the database and against the live wikis. It is very
+efficient as it only creates one HTTP connection and one MySQL connection
 during its life time. It is not suitable for multithreading!
- 
+
 The CheckUsage class' constructor accept as parameters the maximum number of
 wikis that should be checked, an option to use it only live and the parameters
-to connect to the MySQL database. The top wikis in size will be checked. The 
+to connect to the MySQL database. The top wikis in size will be checked. The
 class provides multiple methods:
- 
+
 get_usage(image)
-This method will return a generator object that generates the usage of the 
+This method will return a generator object that generates the usage of the
 image, returned as the following tuple: (page_namespace, page_title,
 full_title). page_namespace is the numeric namespace, page_title the page title
 without namespace, full_title the page title including localized namespace.
- 
+
 get_usage_db(dbname, image), get_usage_live(domain, image)
 Those methods allow querying a specific wiki, respectively against the database
 and against the live wiki. They accept respectively the database name and the
-domain name. The return a generator which generates the same results as 
+domain name. The return a generator which generates the same results as
 get_usage().
- 
+
 get_usage_multi(images)
 Calls get_usage for each image and returns a dictionary with usages.
- 
+
 get_replag(dbname)
 Returns the time in seconds since the latest known edit of dbname.
 """
@@ -35,15 +35,15 @@ Returns the time in seconds since the latest known edit of dbname.
 #
 # Distributed under the terms of the MIT license.
 #
-__version__ = '$Id: checkusage.py 7867 2010-01-09 20:01:18Z btongminh $'
+__version__ = '$Id: checkusage.py 9053 2011-03-13 12:24:49Z xqt $'
 #
- 
+
 import httplib, urlparse, socket, time
 from urllib import urlencode
 import simplejson
 
 import wikipedia, family
- 
+
 try:
     import MySQLdb
 except ImportError:
@@ -53,7 +53,7 @@ try:
 except ImportError:
     pass
 __ver__ = '0.4c'
- 
+
 def strip_ns(title):
     title = title.replace(' ', '_')
     if title.find(':') != -1:
@@ -63,14 +63,14 @@ def strip_image(title):
     if title.startswith('Image:'):
         return strip_ns(title)
     return title
-    
+
 def family(domain):
     if domain is None:
         raise RuntimeError('None is not a valid family')
-    
+
     wiki = domain.split('.')
     # Standard family
-    if wiki[1] in ('wikipedia', 'wiktionary', 'wikibooks', 
+    if wiki[1] in ('wikipedia', 'wiktionary', 'wikibooks',
         'wikiquote', 'wikisource', 'wikinews', 'wikiversity'):
         return wiki[0], wiki[1]
     # Family on own domain
@@ -92,7 +92,7 @@ class HTTP(object):
         #self._conn.set_debuglevel(100)
         self._conn.connect()
 
-    def request(self, method, path, headers, data):        
+    def request(self, method, path, headers, data):
         if not headers: headers = {}
         if not data: data = ''
         headers['Connection'] = 'Keep-Alive'
@@ -143,28 +143,28 @@ class HTTP(object):
             data = simplejson.load(res)
         finally:
             res.close()
-            
+
         if 'error' in data:
             if data['error']['code'] == u'internal_api_error_DBConnectionError':
                 return self.query_api(host, path, **kwargs)
-            raise wikipedia.Error(data['error']['code'], 
+            raise wikipedia.Error(data['error']['code'],
                 data['error']['info'])
-            
+
         return data
     def close(self):
         self._conn.close()
 
 class HTTPPool(list):
-    def __init__(self, retry_timeout = 10, max_retries = -1, 
+    def __init__(self, retry_timeout = 10, max_retries = -1,
         callback = lambda *args: None):
-            
+
         self.retry_timeout = retry_timeout
         self.max_retries = -1
         self.callback = callback
         self.current_retry = 0
-        
+
         list.__init__(self, ())
-        
+
     def query_api(self, host, path, **kwargs):
         conn = self.find_conn(host)
         while True:
@@ -180,7 +180,7 @@ class HTTPPool(list):
                 self.wait()
                 conn = self.find_conn(host)
 
-            
+
     def find_conn(self, host):
         for conn in self:
             if host in conn.hosts:
@@ -199,37 +199,37 @@ class HTTPPool(list):
         conn.hosts = []
         self.append(conn)
         return self
-        
+
     def wait(self):
         if self.current_retry > self.max_retries and self.max_retries != -1:
             raise RuntimeError('Maximum retries exceeded')
         if self.current_retry:
             self.callback(self)
-        time.sleep(self.current_retry * self.retry_timeout)    
+        time.sleep(self.current_retry * self.retry_timeout)
         self.current_retry += 1
-        
+
     def close(self):
         for conn in self:
             conn.close()
         del self[:]
-        
+
 
 class CheckUsage(object):
-    def __init__(self, limit = 100, 
+    def __init__(self, limit = 100,
             mysql_default_server = 3, mysql_host_prefix = 'sql-s', mysql_host_suffix = '',
-            mysql_kwargs = {}, no_db = False, use_autoconn = False, 
-            
-            http_retry_timeout = 30, http_max_retries = -1, 
+            mysql_kwargs = {}, no_db = False, use_autoconn = False,
+
+            http_retry_timeout = 30, http_max_retries = -1,
             http_callback = lambda *args: None,
-            
+
             mysql_retry_timeout = 60,
             mysql_max_retries = -1, mysql_callback = lambda *args: None):
-                
-        self.http = None 
+
+        self.http = None
         self.http_retry_timeout = http_retry_timeout
         self.http_max_retries = http_max_retries
         self.http_callback = http_callback
-        
+
         if no_db: return
 
         self.mysql_host_prefix = mysql_host_prefix
@@ -239,18 +239,18 @@ class CheckUsage(object):
         self.mysql_retry_timeout = mysql_retry_timeout
         self.mysql_max_retries = mysql_max_retries
         self.mysql_callback = mysql_callback
-        
+
         self.connections = []
-        
+
         # Mapping database name -> mysql connection
         self.databases = {}
         # Mapping server id -> mysql connection
         self.servers = {}
         # Mapping database name -> (lang, family)
         self.sites = {}
-        
+
         self.domains = {}
-        
+
         self.unknown_families = []
         # Mapping family name -> family object
         self.known_families = {}
@@ -263,7 +263,7 @@ class CheckUsage(object):
         for dbname, domain, server in cursor.fetchall():
             if server not in self.servers:
                 self.servers[server] = self.connect_mysql(mysql_host_prefix + str(server) + mysql_host_suffix)
-            
+
             # FIXME: wikimediafoundation!
             # TODO: This is one big mess
             try:
@@ -275,7 +275,7 @@ class CheckUsage(object):
             else:
                 self.sites[dbname] = (lang, fam)
                 self.databases[dbname] = self.servers[server]
-                
+
             self.domains[dbname] = domain
 
 
@@ -286,8 +286,8 @@ class CheckUsage(object):
         if self.use_autoconn:
             database = mysql_autoconnection.connect(
                 use_unicode = False, host = host,
-                retry_timeout = self.mysql_retry_timeout, 
-                max_retries = self.mysql_max_retries, 
+                retry_timeout = self.mysql_retry_timeout,
+                max_retries = self.mysql_max_retries,
                 callback = self.mysql_callback,
                 **self.mysql_kwargs)
         else:
@@ -298,7 +298,7 @@ class CheckUsage(object):
         return database, cursor
     def connect_http(self):
         if not self.http:
-            self.http = HTTPPool(retry_timeout = self.http_retry_timeout, 
+            self.http = HTTPPool(retry_timeout = self.http_retry_timeout,
                 max_retries = self.http_max_retries, callback = self.http_callback)
 
     def get_usage(self, image):
@@ -311,14 +311,14 @@ class CheckUsage(object):
         #image = strip_image(image)
         lang, family_name = self.sites[dbname]
         family = self.known_families[family_name]
-        
+
         if family.shared_image_repository(lang) != (lang, family_name) and shared:
             left_join = 'LEFT JOIN %s.image ON (il_to = img_name) WHERE img_name IS NULL AND' % dbname
         else:
             left_join = 'WHERE';
         query = """SELECT page_namespace, page_title FROM %s.page, %s.imagelinks
     %s page_id = il_from AND il_to = %%s"""
-        self.databases[dbname][1].execute(query % (dbname, dbname, left_join), 
+        self.databases[dbname][1].execute(query % (dbname, dbname, left_join),
             (image.encode('utf-8', 'ignore'), ))
         for page_namespace, page_title in self.databases[dbname][1]:
             stripped_title = page_title.decode('utf-8', 'ignore')
@@ -330,32 +330,32 @@ class CheckUsage(object):
 
     def get_usage_live(self, site, image, shared = False):
         self.connect_http()
-        
+
         if type(site) is str:
             hostname = site
             apipath = '/w/api.php'
         else:
             hostname = site.hostname()
             apipath = site.apipath()
-        
+
         # FIXME: Use continue
         kwargs = {'action': 'query', 'iutitle': u'Image:' + image,
             'titles': u'Image:' + image, 'prop': 'info'}
         kwargs['list'] = 'imageusage'
         kwargs['iulimit'] = '500'
-        
+
         res = self.http.query_api(hostname, apipath,
             **kwargs)
         if '-1' not in res['query']['pages'] and shared:
             return
-            
+
         usages = res['query'].get('imageusage')
         if not usages: return
-        
+
         # Apparently this someday changed from dict to list?
         if type(usages) is dict:
             usages = usages.values()
-        
+
         for usage in usages:
             title = usage['title'].replace(' ', '_')
             namespace = usage['ns']
@@ -365,7 +365,7 @@ class CheckUsage(object):
                 stripped_title = title
             yield namespace, stripped_title, title
 
-    
+
     def exists(self, site, image):
         self.connect_http()
         # Check whether the image still is deleted on Commons.
@@ -375,8 +375,8 @@ class CheckUsage(object):
         # BUG: This is ugly.
         return '-1' not in self.http.query_api(site.hostname(), site.apipath(),
             action = 'query', titles = 'Image:' + image)['query']['pages']
-        
-        
+
+
     def close(self):
         if getattr(self, 'http'):
             self.http.close()
@@ -384,7 +384,6 @@ class CheckUsage(object):
         for connection, cursor in self.databases.itervalues():
             try:
                 connection.close()
-            except: 
+            except:
                 pass
 
-            

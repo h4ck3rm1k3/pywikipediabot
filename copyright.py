@@ -87,7 +87,7 @@ import re, codecs, os, time, urllib, urllib2, httplib
 import wikipedia as pywikibot
 import pagegenerators, config
 
-__version__='$Id: copyright.py 8629 2010-10-09 16:11:46Z xqt $'
+__version__='$Id: copyright.py 9804 2011-12-17 13:27:59Z xqt $'
 
 # Search keywords added to all the queries.
 no_result_with_those_words = '-Wikipedia'
@@ -246,6 +246,7 @@ editsection_names = {
     'de': u'\[Bearbeiten\]',
     'es,pt': u'\[editar\]',
     'it': u'\[modifica\]',
+    'is': u'\[breyti\]',
     'ja': u'\[編集\]',
     'zh': u'\[编辑\]',
 }
@@ -262,6 +263,7 @@ sections_to_skip = {
            u'Riferimenti bibliografici', u'Collegamenti esterni',
            u'Pubblicazioni', u'Pubblicazioni principali',
            u'Bibliografia parziale'],
+    'is': [u'Heimildir', u'Tenglar', u'Tengt efni'], 
     'ja': [u'脚注', u'脚注欄', u'脚注・出典', u'出典', u'注釈'],
     'zh': [u'參考文獻', u'参考文献', u'參考資料', u'参考资料', u'資料來源', u'资料来源',
            u'參見', u'参见', u'參閱', u'参阅'],
@@ -324,14 +326,16 @@ class URLExclusion:
             download = force_update
             try:
                 if not os.path.exists(path):
-                    print 'Creating file \'%s\' (%s)' % (pywikibot.config.shortpath(path),
-                                                         page.aslink())
+                    print 'Creating file \'%s\' (%s)' \
+                          % (pywikibot.config.shortpath(path),
+                             page.title(asLink=True))
                     download = True
                 else:
                     file_age = time.time() - os.path.getmtime(path)
                     if download or file_age > 24 * 60 * 60:
-                        print 'Updating file \'%s\' (%s)' % (
-                        pywikibot.config.shortpath(path), page.aslink())
+                        print 'Updating file \'%s\' (%s)' \
+                              % (pywikibot.config.shortpath(path),
+                                 page.title(asLink=True))
                         download = True
             except OSError:
                 raise
@@ -351,7 +355,7 @@ class URLExclusion:
                     f = codecs.open(path, 'w', 'utf-8')
                     f.write(data)
                     f.close()
-                    
+
     def update(self):
         self.download(force_update = True)
         self.scan()
@@ -1040,17 +1044,20 @@ class CheckRobot:
                 continue
             except pywikibot.IsRedirectPage:
                 newpage = page.getRedirectTarget()
-                pywikibot.output(u'Page %s redirects to \'%s\'' % (page.aslink(), newpage.title()))
+                pywikibot.output(u'Page %s redirects to \'%s\''
+                                 % (page.title(asLink=True), newpage.title()))
                 bot = CheckRobot(iter([newpage,]))
                 bot.run()
                 continue
             except pywikibot.SectionError:
-                error("Page %s has no section %s" % (page.title(), page.section()))
+                error("Page %s has no section %s"
+                      % (page.title(), page.section()))
                 continue
 
             if skip_disambig:
                 if page.isDisambig():
-                    pywikibot.output(u'Page %s is a disambiguation page' % page.aslink())
+                    pywikibot.output(u'Page %s is a disambiguation page'
+                                     % page.title(asLink=True))
                     continue
 
             pywikibot.output(page.title())

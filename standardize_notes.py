@@ -40,7 +40,7 @@ NOTE: Only use either -sql or -file or -page, but don't mix them.
 #
 # Distributed under the terms of the MIT license.
 #
-__version__ = '$Id: standardize_notes.py 8630 2010-10-09 19:32:57Z xqt $'
+__version__ = '$Id: standardize_notes.py 9042 2011-03-13 10:14:47Z xqt $'
 #
 # 2005-07-15: Find name of section containing citations: doFindRefSection().
 #             (SEWilco)
@@ -242,7 +242,7 @@ class ReplacePageGenerator:
                              won't be changed.
             * regex        - if the entries of replacements and exceptions
                              should be interpreted as regular expressions
-                             
+
         """
         mysite = pywikibot.getSite()
         import sqldump

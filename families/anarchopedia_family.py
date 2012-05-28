@@ -1,4 +1,6 @@
 # -*- coding: utf-8  -*-
+__version__ = '$Id: anarchopedia_family.py 9069 2011-03-13 16:19:29Z xqt $'
+
 import family
 
 # The Anarchopedia family
@@ -93,7 +95,7 @@ class Family(family.Family):
         self.namespaces[15]['sq'] = u'Kategori Diskutim'
 
         self.namespaces[100] = {'en':u'Focus'}
-        
+
         self.namespaces[101] = {'en':u'Focus talk'}
 
 

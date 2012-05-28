@@ -20,7 +20,7 @@ Command line options:
    -main       only check pages in the main namespace, not in the talk,
                wikipedia, user, etc. namespaces.
 """
-__version__ = '$Id: misspelling.py 8629 2010-10-09 16:11:46Z xqt $'
+__version__ = '$Id: misspelling.py 9403 2011-07-16 20:05:58Z xqt $'
 
 # (C) Daniel Herding, 2007
 #
@@ -67,7 +67,7 @@ class MisspellingRobot(solve_disambiguation.DisambiguationRobot):
 
     def __init__(self, always, firstPageTitle, main_only):
         solve_disambiguation.DisambiguationRobot.__init__(
-            self, always, [], True, self.createPageGenerator(firstPageTitle),
+            self, always, [], True, False, self.createPageGenerator(firstPageTitle),
             False, main_only)
 
     def createPageGenerator(self, firstPageTitle):
@@ -113,7 +113,7 @@ class MisspellingRobot(solve_disambiguation.DisambiguationRobot):
                     return True
 
     # Overrides the DisambiguationRobot method.
-    def setSummaryMessage(self, disambPage, new_targets, unlink):
+    def setSummaryMessage(self, disambPage, new_targets=[], unlink=False, dn=False):
         # TODO: setSummaryMessage() in solve_disambiguation now has parameters
         # new_targets and unlink. Make use of these here.
         comment = pywikibot.translate(self.mysite, self.msg) \

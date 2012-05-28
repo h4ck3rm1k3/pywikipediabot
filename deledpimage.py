@@ -15,7 +15,7 @@ Way:
 #
 # Distributed under the terms of the MIT license.
 #
-__version__ = '$Id: deledpimage.py 8518 2010-09-11 09:20:01Z xqt $'
+__version__ = '$Id: deledpimage.py 9042 2011-03-13 10:14:47Z xqt $'
 #
 
 """
@@ -42,7 +42,7 @@ content = {
     'en': u'This Non-free image NOT used in non-article namespaces, see[[Wikipedia:Non-free content#Policy]]',
     'zh': u'不是使用在条目中的非自由版权图像，根据[[Wikipedia:合理使用]]，不能在非条目名字空间展示：\n',
     }
-    
+
 msg = {
     'ar': u'روبوت: إصلاح استخدام صورة EDP: [[%s]]',
     'en': u'Robot: Fix EDP image use: [[%s]]',
@@ -60,7 +60,7 @@ templatelist = templatecat.articlesList()
 #from References of EDP template get all non-free images
 for tempalte in templatelist:
     images = [page for page in tempalte.getReferences() if page.isImage()]
-   
+
     for image in images :
         imagetitle=image.title()
         imagepage=pywikibot.ImagePage(site,imagetitle)
@@ -77,7 +77,7 @@ for tempalte in templatelist:
                 re.search('<!--(.*?)'+imagetitle+'(.*?)-->',text,re.I).group(0)
             except:
                 try:
- #                   imagetext=re.search('\[\['+imagetitle+'(.*?)\]\]',text,re.I).group(0)   
+ #                   imagetext=re.search('\[\['+imagetitle+'(.*?)\]\]',text,re.I).group(0)
                     if imagetitle not in text:
 
 # Not [[Image:]]  namespace
@@ -94,12 +94,12 @@ for tempalte in templatelist:
 
 #Image in userpage, imagepage,and all talkpage , [[Image:wiki.png]] --> [[:Image:wiki.png]]
                                 if ns==1 or ns==6 or ns==2 or ns==3 or ns==5 or ns==7 or ns==9 or ns==11 or ns==13 or ns==15 or ns==17 or ns==101:
-                 
+
                                     text = re.sub('\[\['+imagetitle+'(.*?)\]\]', '<!--'+lcontent+'\n-->'+'[['+':'+imagetitle+']]',text, re.I)
                                     pywikibot.output(c+u'FIX!\nSleep 10 s......')
                                     pimage.put(text, putmsg % imagetitle)
                                     time.sleep(10)
-                        
+
 #Image in template, categorypage,  remove
                                 elif ns==10 or ns==14:
                                     text = re.sub('\[\['+imagetitle+'(.*?)(|)\]\]', '<!--'+lcontent+imagetext+'\n-->',text, re.I)

@@ -2,10 +2,10 @@
 """
 Allows access to the bot account's watchlist.
 
-The function refresh() downloads the current watchlist and saves
-it to disk. It is run automatically when a bot first tries to save a page
-retrieved via XML Export. The watchlist can be updated manually by running
-this script. The list will also be reloaded automatically once a month.
+The function refresh() downloads the current watchlist and saves it to disk. It
+is run automatically when a bot first tries to save a page retrieved. The
+watchlist can be updated manually by running this script. The list will also
+be reloaded automatically once a month.
 
 Syntax: python watchlist [-all]
 
@@ -15,12 +15,13 @@ Command line options:
     -new  -  Load watchlists for all wikis where accounts is setting in
              user-config.py
 """
-
+#
 # (C) Daniel Herding, 2005
+# (C) Pywikipedia bot team, 2005-2012
 #
 # Distributed under the terms of the MIT license.
 #
-__version__='$Id: watchlist.py 8632 2010-10-09 21:59:27Z xqt $'
+__version__='$Id: watchlist.py 10255 2012-05-26 13:23:03Z xqt $'
 #
 
 import wikipedia as pywikibot
@@ -64,18 +65,18 @@ def isWatched(pageName, site=None):
 def refresh(site, sysop=False):
     if not site.has_api() or site.versionnumber() < 10:
         _refreshOld(site)
-    
+
     # get watchlist special page's URL
     if not site.loggedInAs(sysop=sysop):
         site.forceLogin(sysop=sysop)
-    
+
     params = {
         'action': 'query',
         'list': 'watchlist',
         'wllimit': pywikibot.config.special_page_limit,
         'wlprop': 'title',
     }
-    
+
     pywikibot.output(u'Retrieving watchlist for %s via API.' % repr(site))
     #pywikibot.put_throttle() # It actually is a get, but a heavy one.
     watchlist = []
@@ -84,7 +85,7 @@ def refresh(site, sysop=False):
         if 'error' in data:
             raise RuntimeError('ERROR: %s' % data)
         watchlist.extend([w['title'] for w in data['query']['watchlist']])
-        
+
         if 'query-continue' in data:
             params['wlstart'] = data['query-continue']['watchlist']['wlstart']
         else:
@@ -96,7 +97,7 @@ def refresh(site, sysop=False):
         f = open(pywikibot.config.datafilepath('watchlists',
                                                'watchlist-%s-%s-sysop.dat'
                                                % (site.family.name, site.lang)),
-                 'w')    
+                 'w')
     else:
         f = open(pywikibot.config.datafilepath('watchlists',
                                                'watchlist-%s-%s.dat'
@@ -126,7 +127,7 @@ def _refreshOld(site, sysop=False):
         f = open(pywikibot.config.datafilepath('watchlists',
                                                'watchlist-%s-%s-sysop.dat'
                                                % (site.family.name, site.lang)),
-                 'w')    
+                 'w')
     else:
         f = open(pywikibot.config.datafilepath('watchlists',
                                                'watchlist-%s-%s.dat'

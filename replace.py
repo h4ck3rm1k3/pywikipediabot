@@ -34,7 +34,7 @@ Furthermore, the following command line parameters are supported:
 
 -save             Saves the titles of the articles to a file instead of
                   modifying the articles. This way you may collect titles to
-                  work on in automatic mode, and process them later with 
+                  work on in automatic mode, and process them later with
                   -file. Opens the file for append, if exists.
                   If you insert the contents of the file into a wikipage, it
                   will appear as a numbered list, and may be used with -links.
@@ -43,11 +43,27 @@ Furthermore, the following command line parameters are supported:
 -savenew          Just like -save, except that overwrites the existing file.
                   Argument may also be given as "-savenew:filename".
 
+-saveexc          With this parameter a new option will appear in choices:
+                  "no+eXcept". If you press x, the text will not be replaced,
+                  and the title of page will be saved to the given exception
+                  file to exclude this page from future replacements. At the
+                  moment you may paste the contents directly into 'title' list
+                  of the exceptions dictionary of your fix (use tab to indent).
+                  Reading back the list from file will be implemented later.
+                  Argument may also be given as "-saveexc:filename".
+                  Opens the file for append, if exists.
+
+-saveexcnew       Just like -saveexc, except that overwrites the existing file.
+                  Argument may also be given as "-saveexcnew:filename".
+
+-readexc          Reserved for reading saved exceptions from a file.
+                  Not implemented yet.
+
 -addcat:cat_name  Adds "cat_name" category to every altered page.
 
 -excepttitle:XYZ  Skip pages with titles that contain XYZ. If the -regex
                   argument is given, XYZ will be regarded as a regular
-                  expression.
+                  expression. Use multiple times to ignore multiple pages.
 
 -requiretitle:XYZ Only do pages with titles that contain XYZ. If the -regex
                   argument is given, XYZ will be regarded as a regular
@@ -78,10 +94,11 @@ Furthermore, the following command line parameters are supported:
                   Default value is 60. Ignored when reading an XML file.
 
 -fix:XYZ          Perform one of the predefined replacements tasks, which are
-                  given in the dictionary 'fixes' defined inside the file
-                  fixes.py.
-                  The -regex and -nocase argument and given replacements will
-                  be ignored if you use -fix.
+                  given in the dictionary 'fixes' defined inside the files
+                  fixes.py and user-fixes.py.
+                  The -regex, -recursive and -nocase argument and given
+                  replacements and exceptions will be ignored if you use -fix
+                  and they are present in the 'fixes' dictionary.
                   Currently available predefined fixes are:
 &fixes-help;
 
@@ -99,6 +116,14 @@ other:            First argument is the old text, second argument is the new
                   argument might contain expressions like \\1 or \g<name>.
                   It is possible to introduce more than one pair of old text
                   and replacement.
+
+-replacementfile  Lines from the given file name(s) will be read as if they
+                  were added to the command line at that point. I.e. a file
+                  containing lines "a" and "b", used as
+                  python replace.py -page:X -replacementfile:file c d
+                  will replace 'a' with 'b' and 'c' with 'd'. However, using
+                  python replace.py -page:X c -replacementfile:file d will
+                  also work, and will replace 'c' with 'a' and 'b' with 'd'.
 
 Examples:
 
@@ -131,14 +156,14 @@ This command will change 'referer' to 'referrer', but not in pages which
 talk about HTTP, where the typo has become part of the standard:
 
     python replace.py referer referrer -file:typos.txt -excepttext:HTTP
-    
+
 Please type "replace.py -help | more" if you can't read the top of the help.
 """
 from __future__ import generators
 #
-# (C) Daniel Herding & the Pywikipedia team, 2004-2010
+# (C) Daniel Herding & the Pywikipedia team, 2004-2012
 #
-__version__='$Id: replace.py 9011 2011-02-25 16:08:06Z xqt $'
+__version__='$Id: replace.py 10163 2012-05-01 14:40:41Z xqt $'
 #
 # Distributed under the terms of the MIT license.
 #
@@ -147,6 +172,7 @@ import sys, re, time, codecs
 import wikipedia as pywikibot
 import pagegenerators
 import editarticle
+from pywikibot import i18n
 import webbrowser
 
 # Imports predefined replacements tasks from fixes.py
@@ -157,67 +183,6 @@ import fixes
 docuReplacements = {
     '&params;':     pagegenerators.parameterHelp,
     '&fixes-help;': fixes.help,
-}
-
-
-# Summary messages in different languages
-# NOTE: Predefined replacement tasks might use their own dictionary, see 'fixes'
-# below.
-msg = {
-    'als': u'Bot: het dr Text automatisch uustuscht: %s',
-    'ar': u'%s بوت: استبدال تلقائي للنص',
-    'be-tarask': u'Робат: аўтаматызаваная замена тэксту %s',
-    'br': u'Robot : Erlec\'hiañ testenn emgefre %s',
-    'bs': u'Bot: Automatska zamjena teksta %s',
-    'ca': u'Robot: Reemplaçament automàtic de text %s',
-    'cs': u'Robot automaticky nahradil text: %s',
-    'de': u'Bot: Automatisierte Textersetzung %s',
-    'el': u'Ρομπότ: Αυτόματη αντικατάσταση κειμένου %s',
-    'en': u'Bot: Automated text replacement %s',
-    'eo': u'Roboto: Automata tekst-anstataŭigo: %s',
-    'es': u'Robot: Reemplazo automático de texto %s',
-    'fa': u'ربات: تغییر خودکار متن %s',
-    'fi': u'Botti korvasi automaattisesti tekstin %s',
-    'fr': u'Robot : Remplacement de texte automatisé %s',
-    'frp': u'Bot : remplacement de tèxto ôtomatisâ %s',
-    'frr': u'Bot: Automatisiaret ütjwakselt tekst %s',
-    'gl': u'Bot: Substitución automática de texto %s',
-    'he': u'בוט: החלפת טקסט אוטומטית %s',
-    'hsb': u'Boćik: Awtomatiske narunanje teksta %s',
-    'hu': u'Robot: Automatikus szövegcsere %s',
-    'hy': u'Ռոբոտ․ Տեքստի ավտոմատ փոխարինում %s',
-    'ia': u'Robot: Reimplaciamento automatic de texto %s',
-    'id': u'Bot: Penggantian teks otomatis %s',
-    'is': u'Vélmenni: breyti texta %s',
-    'it': u'Bot: Sostituzione automatica %s',
-    'ja': u'ロボットによる: 文字置き換え %s',
-    'ka': u'რობოტი: ტექსტის ავტომატური შეცვლა %s',
-    'kk': u'Бот: Мәтінді өздікті алмастырды: %s',
-    'ksh': u'Bot: hät outomatesch Täx jetuusch: %s',
-    'la': u'automaton: mutans textum automatice: %s',
-    'lb': u'Bot: Automatescht Ersetze vun Text %s',
-    'lt': u'robotas: Automatinis teksto keitimas %s',
-    'mk': u'Бот: Автоматизирана замена на текст %s',
-    'ms': u'Bot: Penggantian teks automatik %s',
-    'nds': u'Bot: Text automaatsch utwesselt: %s',
-    'nds-nl': u'Bot: autematisch tekse vervungen %s',
-    'ne': u'बोट: स्वचालित रुपमा हरफहरु परिवर्तन गरिएको %s',
-    'nl': u'Robot: automatisch tekst vervangen %s',
-    'nn': u'robot: automatisk teksterstatning: %s',
-    'no': u'robot: automatisk teksterstatning: %s',
-    'pl': u'Robot automatycznie zamienia tekst %s',
-    'pt': u'Bot: Mudança automática %s',
-    'ro': u'Robot. Înlocuire automată de text %s',
-    'ru': u'Робот: Автоматизированная замена текста %s',
-    'rue': u'Робот: Автоматізована заміна тексту: %s',
-    'sl': u'Bot: Samodejna zamenjava besedila %s',
-    'sr': u'Бот: Аутоматска замена текста %s',
-    'sv': u'Bot: Automatisk textersättning: %s',
-    'tr': u'Bot: Otomatik metin değiştirme %s',
-    'tt-cyrl': u'Робот: %s текстын автомат алмаштыру',
-    'uk': u'Бот: Автоматизована заміна тексту: %s',
-    'vi': u'Rôbốt: Tự động thay thế văn bản %s',
-    'zh': u'機器人:執行文字代換作業 %s',
 }
 
 
@@ -265,7 +230,8 @@ class XmlDumpReplacePageGenerator:
                         and not self.isTextExcepted(entry.text):
                     new_text = entry.text
                     for old, new in self.replacements:
-                        new_text = pywikibot.replaceExcept(new_text, old, new, self.excsInside, self.site)
+                        new_text = pywikibot.replaceExcept(
+                            new_text, old, new, self.excsInside, self.site)
                     if new_text != entry.text:
                         yield pywikibot.Page(self.site, entry.title)
         except KeyboardInterrupt:
@@ -303,7 +269,8 @@ class ReplaceRobot:
     """
     def __init__(self, generator, replacements, exceptions={},
                  acceptall=False, allowoverlap=False, recursive=False,
-                 addedCat=None, sleep=None, editSummary='', articles=None):
+                 addedCat=None, sleep=None, editSummary='', articles=None,
+                 exctitles=None):
         """
         Arguments:
             * generator    - A generator that yields Page objects.
@@ -320,6 +287,10 @@ class ReplaceRobot:
                              touched.
             * articles     - An open file to save the page titles. If None,
                              we work on our wikisite immediately (default).
+                             Corresponds to titlefile variable of main().
+            * exctitles    - An open file to save the excepted titles. If None,
+                             we don't ask the user about saving them (default).
+                             Corresponds to excoutfile variable of main().
 
         Structure of the exceptions dictionary:
         This dictionary can have these keys:
@@ -338,6 +309,21 @@ class ReplaceRobot:
             inside-tags
                 A list of strings. These strings must be keys from the
                 exceptionRegexes dictionary in pywikibot.replaceExcept().
+            require-title
+                Opposite of title. Only pages with titles that are matched by
+                ALL of these regular expressions will be processed.
+                This is not an exception, and is here for technical reasons.
+                Listing the same regex in title and require-title will thus
+                prevent the bot of doing anything.
+            include
+                One standalone value, either the name of a dictionary in your
+                file or the name of a callable function that takes the name of
+                the fix as argument and returns a dictionary of exceptions.
+                This dictionary may have any of the five above keys (but not
+                'include' itself!), and the lists belonging to those keys will
+                be added to your exceptions. This way you may define one or
+                more basic collection of exceptions used for multiple fixes,
+                and add separate exceptions to each fix.
 
         """
         self.generator = generator
@@ -353,10 +339,13 @@ class ReplaceRobot:
         # Some function to set default editSummary should probably be added
         self.editSummary = editSummary
         self.articles = articles
-        
-        #An edit counter to split the file by 100 titles if -save or -savenew 
-        #is on, and to display the number of edited articles otherwise.
+        self.exctitles = exctitles
+
+        # An edit counter to split the file by 100 titles if -save or -savenew
+        # is on, and to display the number of edited articles otherwise.
         self.editcounter = 0
+        # A counter for saved exceptions
+        self.exceptcounter = 0
 
     def isTitleExcepted(self, title):
         """
@@ -413,6 +402,14 @@ class ReplaceRobot:
                              % (self.editcounter,
                                 (lambda x: bool(x-1) and 's were' or ' was')
                                 (self.editcounter)))
+
+    def writeExceptCounter(self):
+        """ This writes the counter of saved exceptions if applicable. """
+        if self.exctitles:
+            pywikibot.output(u'%d exception%s saved.'
+                             % (self.exceptcounter,
+                                (lambda x: bool(x-1) and 's were' or ' was')
+                                (self.exceptcounter)))
 
     def splitLine(self):
         """Returns a splitline after every 100th title. Splitline is in HTML
@@ -478,7 +475,14 @@ class ReplaceRobot:
                 pywikibot.showDiff(original_text, new_text)
                 if self.acceptall:
                     break
-                choice = pywikibot.inputChoice(
+                if self.exctitles:
+                    choice = pywikibot.inputChoice(
+                            u'Do you want to accept these changes?',
+                            ['Yes', 'No', 'no+eXcept', 'Edit',
+                             'open in Browser', 'All', 'Quit'],
+                            ['y', 'N', 'x', 'e', 'b', 'a', 'q'], 'N')
+                else:
+                    choice = pywikibot.inputChoice(
                             u'Do you want to accept these changes?',
                             ['Yes', 'No', 'Edit', 'open in Browser', 'All',
                              'Quit'],
@@ -495,29 +499,40 @@ class ReplaceRobot:
                         page.site().hostname(),
                         page.site().nice_get_address(page.title())
                     ))
-                    pywikibot.input("Press Enter when finished in browser.")
-                    original_text = page.get(get_redirect=True, force=True)
+                    i18n.input('pywikibot-enter-finished-browser')
+                    try:
+                        original_text = page.get(get_redirect=True, force=True)
+                    except pywikibot.NoPage:
+                        pywikibot.output(u'Page %s has been deleted.'
+                                         % page.title())
+                        break
                     new_text = original_text
                     continue
                 if choice == 'q':
                     self.writeEditCounter()
+                    self.writeExceptCounter()
                     return
                 if choice == 'a':
                     self.acceptall = True
+                if choice == 'x': #May happen only if self.exctitles isn't None
+                    self.exctitles.write(
+                        u"ur'^%s$',\n" % re.escape(page.title()))
+                    self.exctitles.flush()
+                    self.exceptcounter += 1
                 if choice == 'y':
                     if not self.articles:
-                        #Primary behaviour: working on wiki
+                        # Primary behaviour: working on wiki
                         page.put_async(new_text, self.editSummary)
-                        self.editcounter += 1 
-                        #Bug: this increments even if put_async fails
-                        #This is separately in two clauses of if for
-                        #future purposes to get feedback form put_async
+                        self.editcounter += 1
+                        # Bug: this increments even if put_async fails
+                        # This is separately in two clauses of if for
+                        # future purposes to get feedback form put_async
                     else:
                         #Save the title for later processing instead of editing
                         self.editcounter += 1
                         self.articles.write(u'#%s\n%s'
-                                            % (page.title(asLink=True),
-                                               self.splitLine()))
+                                    % (page.title(asLink=True, textlink=True),
+                                       self.splitLine()))
                         self.articles.flush() # For the peace of our soul :-)
                 # choice must be 'N'
                 break
@@ -544,12 +559,13 @@ class ReplaceRobot:
                     #Save the title for later processing instead of editing
                     self.editcounter += 1
                     self.articles.write(u'#%s\n%s'
-                                        % (page.title(asLink=True),
-                                           self.splitLine()))
+                                    % (page.title(asLink=True, textlink=True),
+                                       self.splitLine()))
                     self.articles.flush()
 
         #Finally:
         self.writeEditCounter()
+        self.writeExceptCounter()
 
 def prepareRegexForMySQL(pattern):
     pattern = pattern.replace('\s', '[:space:]')
@@ -605,7 +621,7 @@ def main(*args):
     allowoverlap = False
     # Do not recurse replacement
     recursive = False
-    # This is the maximum number of pages to load per query    
+    # This is the maximum number of pages to load per query
     maxquerysize = 60
     # This factory is responsible for processing command line arguments
     # that are also used by other scripts and that determine on which pages
@@ -613,15 +629,23 @@ def main(*args):
     genFactory = pagegenerators.GeneratorFactory()
     # Load default summary message.
     # BUG WARNING: This is probably incompatible with the -lang parameter.
-    editSummary = pywikibot.translate(pywikibot.getSite(), msg)
+    editSummary = i18n.twtranslate(pywikibot.getSite(), 'replace-replacing',
+                                   {'description': u''})
     # Between a regex and another (using -fix) sleep some time (not to waste
     # too much CPU
     sleep = None
     # Do not save the page titles, rather work on wiki
-    titlefile = None
-    filename = None
+    filename = None # The name of the file to save titles
+    titlefile = None # The file object itself
     # If we save, primary behaviour is append rather then new file
     append = True
+    # Default: don't write titles to exception file and don't read them.
+    excoutfilename = None # The name of the file to save exceptions
+    excoutfile = None # The file object itself
+    # excinfilename: reserved for later use (reading back exceptions)
+    # If we save exceptions, primary behaviour is append
+    excappend = True
+
 
     # Read commandline parameters.
     for arg in pywikibot.handleArgs(*args):
@@ -635,8 +659,7 @@ def main(*args):
                 xmlStart = arg[10:]
         elif arg.startswith('-xml'):
             if len(arg) == 4:
-                xmlFilename = pywikibot.input(
-                    u'Please enter the XML dump\'s filename:')
+                xmlFilename = i18n.input('pywikibot-enter-xml-filename')
             else:
                 xmlFilename = arg[5:]
         elif arg =='-sql':
@@ -647,11 +670,26 @@ def main(*args):
                     u'Which page do you want to change?'))
             else:
                 PageTitles.append(arg[6:])
+        elif arg.startswith('-saveexcnew'):
+            excappend = False
+            if len(arg) == 11:
+                excoutfilename = pywikibot.input(
+                    u'Please enter the filename to save the excepted titles' +
+                    u'\n(will be deleted if exists):')
+            else:
+                excoutfilename = arg[12:]
+        elif arg.startswith('-saveexc'):
+            if len(arg) == 8:
+                excoutfilename = pywikibot.input(
+                    u'Please enter the filename to save the excepted titles:')
+            else:
+                excoutfilename = arg[9:]
         elif arg.startswith('-savenew'):
             append = False
             if len(arg) == 8:
                 filename = pywikibot.input(
-u'Please enter the filename to save the titles \n(will be deleted if exists):')
+                    u'Please enter the filename to save the titles' +
+                    u'\n(will be deleted if exists):')
             else:
                 filename = arg[9:]
         elif arg.startswith('-save'):
@@ -660,6 +698,19 @@ u'Please enter the filename to save the titles \n(will be deleted if exists):')
                     u'Please enter the filename to save the titles:')
             else:
                 filename = arg[6:]
+        elif arg.startswith('-replacementfile'):
+            if len(arg) == len('-replacementfile'):
+                replacefile = pywikibot.input(
+                    u'Please enter the filename to read replacements from:')
+            else:
+                replacefile = arg[len('-replacementfile')+1:]
+            try:
+                commandline_replacements.extend(
+                    [x.lstrip(u'\uFEFF').rstrip('\r\n')
+                    for x in codecs.open(replacefile, 'r', 'utf-8')])
+            except IOError:
+                raise pywikibot.Error(
+               '\n%s cannot be opened. Try again :-)' % replacefile)
         elif arg.startswith('-excepttitle:'):
             exceptions['title'].append(arg[13:])
         elif arg.startswith('-requiretitle:'):
@@ -697,15 +748,21 @@ u'Please enter the filename to save the titles \n(will be deleted if exists):')
             if not genFactory.handleArg(arg):
                 commandline_replacements.append(arg)
 
+    if pywikibot.verbose:
+        pywikibot.output(u"commandline_replacements: " +
+                         ', '.join(commandline_replacements))
+
     if (len(commandline_replacements) % 2):
         raise pywikibot.Error, 'require even number of replacements.'
     elif (len(commandline_replacements) == 2 and fix is None):
         replacements.append((commandline_replacements[0],
                              commandline_replacements[1]))
         if not summary_commandline:
-            editSummary = pywikibot.translate(pywikibot.getSite(), msg ) % (
-                                   ' (-%s +%s)' % (commandline_replacements[0],
-                                                   commandline_replacements[1]))
+            editSummary = i18n.twtranslate(pywikibot.getSite(),
+                                           'replace-replacing',
+                                           {'description': ' (-%s +%s)'
+                                            % (commandline_replacements[0],
+                                               commandline_replacements[1])})
     elif (len(commandline_replacements) > 1):
         if (fix is None):
             for i in xrange (0, len(commandline_replacements), 2):
@@ -717,8 +774,10 @@ u'Please enter the filename to save the titles \n(will be deleted if exists):')
                          for i in range(0, len(commandline_replacements), 2)]
                 replacementsDescription = '(%s)' % ', '.join(
                     [('-' + pair[0] + ' +' + pair[1]) for pair in pairs])
-                editSummary = pywikibot.translate(pywikibot.getSite(), msg ) \
-                              % replacementsDescription
+                editSummary = i18n.twtranslate(pywikibot.getSite(),
+                                               'replace-replacing',
+                                               {'description':
+                                                replacementsDescription})
         else:
            raise pywikibot.Error(
                'Specifying -fix with replacements is undefined')
@@ -729,25 +788,30 @@ u'Please enter the filename to save the titles \n(will be deleted if exists):')
         replacements.append((old, new))
         while True:
             old = pywikibot.input(
-u'Please enter another text that should be replaced, or press Enter to start:')
+                    u'Please enter another text that should be replaced,' +
+                    u'\nor press Enter to start:')
             if old == '':
-                change = change + ')'
+                change += ')'
                 break
-            new = pywikibot.input(u'Please enter the new text:')
-            change = change + ' & -' + old + ' +' + new
+            new = i18n.input('pywikibot-enter-new-text')
+            change += ' & -' + old + ' +' + new
             replacements.append((old, new))
         if not summary_commandline:
-            default_summary_message =  pywikibot.translate(pywikibot.getSite(), msg) % change
+            default_summary_message = i18n.twtranslate(pywikibot.getSite(),
+                                                       'replace-replacing',
+                                                       {'description': change})
             pywikibot.output(u'The summary message will default to: %s'
                              % default_summary_message)
             summary_message = pywikibot.input(
-u'Press Enter to use this default message, or enter a description of the\nchanges your bot will make:')
+                u'Press Enter to use this default message, or enter a ' +
+                u'description of the\nchanges your bot will make:')
             if summary_message == '':
                 summary_message = default_summary_message
             editSummary = summary_message
 
     else:
         # Perform one of the predefined actions.
+        fixname = fix # Save the name for passing to exceptions function.
         try:
             fix = fixes.fixes[fix]
         except KeyError:
@@ -757,14 +821,49 @@ u'Press Enter to use this default message, or enter a description of the\nchange
         if "regex" in fix:
             regex = fix['regex']
         if "msg" in fix:
-            editSummary = pywikibot.translate(pywikibot.getSite(), fix['msg'])
+            if isinstance(fix['msg'], basestring):
+                editSummary = i18n.twtranslate(pywikibot.getSite(),
+                                               str(fix['msg']))
+            else:
+                editSummary = pywikibot.translate(pywikibot.getSite(),
+                                                  fix['msg'])
         if "exceptions" in fix:
             exceptions = fix['exceptions']
+            # Try to append common extensions for multiple fixes.
+            # It must be either a dictionary or a function that returns a dict.
+            if 'include' in exceptions:
+                incl = exceptions['include']
+                if callable(incl):
+                    baseExcDict = incl(fixname)
+                else:
+                    try:
+                        baseExcDict = incl
+                    except NameError:
+                        pywikibot.output(
+                          u'\nIncluded exceptions dictionary does not exist.' +
+                          u' Continuing with the exceptions\ngiven in fix.\n')
+                        baseExcDict = None
+                if baseExcDict:
+                    for l in baseExcDict:
+                        try:
+                            exceptions[l].extend(baseExcDict[l])
+                        except KeyError:
+                            exceptions[l] = baseExcDict[l]
+        if "recursive" in fix:
+            recursive = fix['recursive']
         if "nocase" in fix:
             caseInsensitive = fix['nocase']
-        replacements = fix['replacements']
+        try:
+            replacements = fix['replacements']
+            # enable regex/replacements as a dictionary for different langs
+            if isinstance(replacements, dict):
+                replacements = replacements[pywikibot.getSite().lang]
+        except KeyError:
+            pywikibot.output(
+                u"No replacements given in fix.")
+            return
 
-    #Set the regular expression flags
+    # Set the regular expression flags
     flags = re.UNICODE
     if caseInsensitive:
         flags = flags | re.IGNORECASE
@@ -781,7 +880,8 @@ u'Press Enter to use this default message, or enter a description of the\nchange
         oldR = re.compile(old, flags)
         replacements[i] = oldR, new
 
-    for exceptionCategory in ['title', 'require-title', 'text-contains', 'inside']:
+    for exceptionCategory in [
+                        'title', 'require-title', 'text-contains', 'inside']:
         if exceptionCategory in exceptions:
             patterns = exceptions[exceptionCategory]
             if not regex:
@@ -824,36 +924,43 @@ LIMIT 200""" % (whereClause, exceptClause)
         # syntax error, show help text from the top of this file
         pywikibot.showHelp('replace')
         return
-    if xmlFilename:
-        # XML parsing can be quite slow, so use smaller batches and
-        # longer lookahead.
-        preloadingGen = pagegenerators.PreloadingGenerator(gen,
-                                            pageNumber=20, lookahead=100)
-    else:
-        preloadingGen = pagegenerators.PreloadingGenerator(gen, 
-                        pageNumber=maxquerysize)
 
-    #Finally we open the file for page titles or set article to None
+    preloadingGen = pagegenerators.PreloadingGenerator(gen,
+                                                       pageNumber=maxquerysize)
+
+    # Finally we open the file for page titles or set parameter article to None
     if filename:
         try:
-            #This opens in strict error mode, that means bot will stop
-            #on encoding errors with ValueError. 
-            #See http://docs.python.org/library/codecs.html#codecs.open
+            # This opens in strict error mode, that means bot will stop
+            # on encoding errors with ValueError.
+            # See http://docs.python.org/library/codecs.html#codecs.open
             titlefile = codecs.open(filename, encoding='utf-8',
                                     mode=(lambda x: x and 'a' or 'w')(append))
         except IOError:
             pywikibot.output("%s cannot be opened for writing." %
                              filename)
             return
+    # The same process with exceptions file:
+    if excoutfilename:
+        try:
+            excoutfile = codecs.open(
+                            excoutfilename, encoding='utf-8',
+                            mode=(lambda x: x and 'a' or 'w')(excappend))
+        except IOError:
+            pywikibot.output("%s cannot be opened for writing." %
+                             excoutfilename)
+            return
     bot = ReplaceRobot(preloadingGen, replacements, exceptions, acceptall,
                        allowoverlap, recursive, add_cat, sleep, editSummary,
-                       titlefile)
+                       titlefile, excoutfile)
     try:
         bot.run()
     finally:
+        # Just for the spirit of programming (they were flushed)
         if titlefile:
-            #Just for the spirit of programming (it was flushed)
-            titlefile.close() 
+            titlefile.close()
+        if excoutfile:
+            excoutfile.close()
 
 
 if __name__ == "__main__":

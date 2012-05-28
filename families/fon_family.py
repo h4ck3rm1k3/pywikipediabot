@@ -1,4 +1,5 @@
 # -*- coding: utf-8  -*-
+__version__ = '$Id: fon_family.py 9071 2011-03-13 16:50:07Z xqt $'
 
 import family
 
@@ -37,4 +38,4 @@ class Family(family.Family):
         return '/mediawiki'
 
     def version(self, code):
-        return "1.12.1" 
+        return "1.15.1"

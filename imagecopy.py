@@ -75,13 +75,12 @@ Known issues/FIXMEs (no critical issues known):
 # (C) Kyle/Orgullomoore, Siebrand Mazeland 2007-2008
 #
 # Another rewrite by:
-#  (C) Multichill 2008-2010
-#
-# (C) Pywikipedia bot team, 2003-2010
+# (C) Multichill 2008-2011
+# (C) Pywikipedia bot team, 2007-2011
 #
 # Distributed under the terms of the MIT license.
 #
-__version__='$Id: imagecopy.py 8526 2010-09-11 16:45:50Z xqt $'
+__version__='$Id: imagecopy.py 9692 2011-10-30 15:03:29Z xqt $'
 #
 
 from Tkinter import *
@@ -94,6 +93,7 @@ import config, socket
 import pagegenerators, add_text
 from upload import *
 from image import *
+from pywikibot import i18n
 NL=''
 
 nowCommonsTemplate = {
@@ -186,27 +186,6 @@ nowCommonsTemplate = {
     'zh-yue': u'{{subst:Ncd|File:%s}}',
 }
 
-nowCommonsMessage = {
-    '_default': u'File is now available on Wikimedia Commons.',
-    'ar': u'الملف الآن متوفر في ويكيميديا كومنز.',
-    'de': u'Datei ist jetzt auf Wikimedia Commons verfügbar.',
-    'en': u'File is now available on Wikimedia Commons.',
-    'eo': u'Dosiero nun estas havebla en la Wikimedia-Komunejo.',
-    'fa': u'اینک پرونده در ویکی‌انبار قابل دسترسی است.',
-    'he': u'הקובץ זמין כעת בוויקישיתוף.',
-    'hu': u'A fájl most már elérhető a Wikimedia Commonson.',
-    'ia': u'Le file es ora disponibile in Wikimedia Commons.',
-    'it': u'L\'immagine è adesso disponibile su Wikimedia Commons.',
-    'kk': u'Файлды енді Wikimedia Ортаққорынан қатынауға болады.',
-    'lt': u'Failas įkeltas į Wikimedia Commons projektą.',
-    'nl': u'Dit bestand staat nu op [[w:nl:Wikimedia Commons|Wikimedia Commons]].',
-    'pl': u'Plik jest teraz dostępny na Wikimedia Commons.',
-    'pt': u'Arquivo está agora na Wikimedia Commons.',
-    'ru': u'Файл теперь доступен на Викискладе.',
-    'sr': u'Слика је сада доступна и на Викимедија Остави.',
-    'zh': u'檔案已存在於維基共享資源。',
-}
-
 moveToCommonsTemplate = {
     'ar': [u'نقل إلى كومنز'],
     'en': [u'Commons ok', u'Copy to Wikimedia Commons', u'Move to commons', u'Movetocommons', u'To commons', u'Copy to Wikimedia Commons by BotMultichill'],
@@ -225,20 +204,8 @@ moveToCommonsTemplate = {
     'zh': [u'Copy to Wikimedia Commons'],
 }
 
-imageMoveMessage = {
-    '_default': u'[[:File:%s|File]] moved to [[:commons:File:%s|commons]].',
-    'ar': u'[[:File:%s|الصورة]] تم نقلها إلى [[:commons:File:%s|كومنز]].',
-    'en': u'[[:File:%s|File]] moved to [[:commons:File:%s|commons]].',
-    'fa': u'[[:پرونده:%s|پرونده]] به [[:commons:File:%s|commons]] منتقل شد.',
-    'hu': u'[[:File:%s|Kép]] átmozgatva a [[:commons:File:%s|Commons]]ba.',
-    'nl': u'[[:File:%s|Bestand]] is verplaatst naar [[:commons:File:%s|commons]].',
-    'pl': u'[[:File:%s|Plik]] przeniesiona do [[:commons:File:%s|commons]].',
-    'ru': u'[[:File:%s|Файл]] перемещён на [[:commons:File:%s|Викисклад]].',
-    'zh': u'[[:File:%s|本檔案]]已移至[[:commons:File:%s|維基共享資源]]',
-}
-
 def pageTextPost(url,parameters):
-    gotInfo = False;    
+    gotInfo = False;
     while(not gotInfo):
         try:
             commonsHelperPage = urllib.urlopen("http://toolserver.org/~magnus/commonshelper.php", parameters)
@@ -249,7 +216,7 @@ def pageTextPost(url,parameters):
         except socket.timeout:
             pywikibot.output(u'Got a timeout, let\'s try again')
     return data
-    
+
 class imageTransfer (threading.Thread):
 
     def __init__ ( self, imagePage, newname, category):
@@ -260,7 +227,7 @@ class imageTransfer (threading.Thread):
 
     def run(self):
         tosend={'language':self.imagePage.site().language().encode('utf-8'),
-                'image':self.imagePage.titleWithoutNamespace().encode('utf-8'),
+                'image':self.imagePage.title(withNamespace=False).encode('utf-8'),
                 'newname':self.newname.encode('utf-8'),
                 'project':self.imagePage.site().family.name.encode('utf-8'),
                 'username':'',
@@ -269,17 +236,17 @@ class imageTransfer (threading.Thread):
                 'ignorewarnings':'1',
                 'doit':'Uitvoeren'
                 }
-      
+
         tosend=urllib.urlencode(tosend)
         print tosend
         CH=pageTextPost('http://www.toolserver.org/~magnus/commonshelper.php', tosend)
         print 'Got CH desc.'
-        
+
         tablock=CH.split('<textarea ')[1].split('>')[0]
         CH=CH.split('<textarea '+tablock+'>')[1].split('</textarea>')[0]
         CH=CH.replace(u'&times;', u'×')
         CH = self.fixAuthor(CH)
-        pywikibot.output(CH);        
+        pywikibot.output(CH);
 
         # I want every picture to be tagged with the bottemplate so i can check my contributions later.
         CH=u'\n\n{{BotMoveToCommons|'+ self.imagePage.site().language() + '.' + self.imagePage.site().family.name +'|year={{subst:CURRENTYEAR}}|month={{subst:CURRENTMONTHNAME}}|day={{subst:CURRENTDAY}}}}' + CH
@@ -287,7 +254,7 @@ class imageTransfer (threading.Thread):
         if self.category:
             CH = CH.replace(u'{{subst:Unc}} <!-- Remove this line once you have added categories -->', u'')
             CH = CH + u'[[Category:' + self.category + u']]'
-        
+
         bot = UploadRobot(url=self.imagePage.fileUrl(), description=CH, useFilename=self.newname, keepFilename=True, verifyDescription=False, ignoreWarning = True, targetSite = pywikibot.getSite('commons', 'commons'))
         bot.run()
 
@@ -307,10 +274,10 @@ class imageTransfer (threading.Thread):
             else:
                 addTemplate = nowCommonsTemplate['_default'] % self.newname
 
-            if self.imagePage.site().language() in nowCommonsMessage:
-                commentText = nowCommonsMessage[self.imagePage.site().language()]
-            else:
-                commentText = nowCommonsMessage['_default']
+            commentText = i18n.twtranslate(self.imagePage.site(),
+                                           'commons-file-now-available',
+                                           {'localfile': self.imagePage.title(withNamespace=False),
+                                            'commonsfile': self.newname})
 
             pywikibot.showDiff(self.imagePage.get(), imtxt+addTemplate)
             self.imagePage.put(imtxt + addTemplate, comment = commentText)
@@ -319,15 +286,20 @@ class imageTransfer (threading.Thread):
             self.preloadingGen = pagegenerators.PreloadingGenerator(self.gen)
 
             #If the image is uploaded under a different name, replace all instances
-            if self.imagePage.titleWithoutNamespace() != self.newname:
-                if self.imagePage.site().language() in imageMoveMessage:
-                    moveSummary = imageMoveMessage[self.imagePage.site().language()] % (self.imagePage.titleWithoutNamespace(), self.newname)
-                else:
-                    moveSummary = imageMoveMessage['_default'] % (self.imagePage.titleWithoutNamespace(), self.newname)
-                imagebot = ImageRobot(generator = self.preloadingGen, oldImage = self.imagePage.titleWithoutNamespace(), newImage = self.newname, summary = moveSummary, always = True, loose = True)
+            if self.imagePage.title(withNamespace=False) != self.newname:
+                moveSummary = i18n.twtranslate(self.imagePage.site(),
+                                               'commons-file-moved',
+                                               {'localfile': self.imagePage.title(withNamespace=False),
+                                                'commonsfile': self.newname})
+
+                imagebot = ImageRobot(generator=self.preloadingGen,
+                                      oldImage=self.imagePage.title(withNamespace=False),
+                                      newImage=self.newname,
+                                      summary=moveSummary, always=True,
+                                      loose=True)
                 imagebot.run()
         return
-    
+
     def fixAuthor(self, pageText):
         '''
         Fix the author field in the information template.
@@ -340,15 +312,15 @@ class imageTransfer (threading.Thread):
 
         #Find the {{self|author=
         selfMatch = selfRegex.search(pageText)
-        
+
         #Check if both are found and are equal
         if (informationMatch and selfMatch):
             if(informationMatch.group('author')==selfMatch.group('author')):
                 #Replace |Author=Original uploader was ... with |Author= ...
                 pageText = informationRegex.sub(r'|Author=\g<author>', pageText)
-                
+
         return pageText
-    
+
 
 #-label ok skip view
 #textarea
@@ -486,7 +458,7 @@ def main(args):
             category = arg [len('-cc:'):]
         else:
             genFactory.handleArg(arg)
-    
+
     generator = genFactory.getCombinedGenerator()
     if not generator:
         raise add_text.NoEnoughData('You have to specify the generator you want to use for the script!')
@@ -510,15 +482,19 @@ def main(args):
                     #No API, using the page file instead
                     (datetime, username, resolution, size, comment) = imagepage.getFileVersionHistory().pop()
                 if always:
-                    newname=imagepage.titleWithoutNamespace()
-                    CommonsPage=pywikibot.Page(pywikibot.getSite('commons', 'commons'), u'File:'+newname)
+                    newname=imagepage.title(withNamespace=False)
+                    CommonsPage=pywikibot.Page(pywikibot.getSite('commons',
+                                                                 'commons'),
+                                               u'File:%s' % newname)
                     if CommonsPage.exists():
                         skip = True
                 else:
                     while True:
-    
                         # Do the Tkdialog to accept/reject and change te name
-                        (newname, skip)=Tkdialog(imagepage.titleWithoutNamespace(), imagepage.get(), username, imagepage.permalink(), imagepage.templates()).getnewname()
+                        (newname, skip) = Tkdialog(
+                            imagepage.title(withNamespace=False),
+                            imagepage.get(), username, imagepage.permalink(),
+                            imagepage.templates()).getnewname()
 
                         if skip:
                             pywikibot.output('Skipping this image')
@@ -527,10 +503,10 @@ def main(args):
                         # Did we enter a new name?
                         if len(newname)==0:
                             #Take the old name
-                            newname=imagepage.titleWithoutNamespace()
+                            newname=imagepage.title(withNamespace=False)
                         else:
                             newname = newname.decode('utf-8')
-                        
+
                         # Check if the image already exists
                         CommonsPage=pywikibot.Page(
                                        pywikibot.getSite('commons', 'commons'),

@@ -16,40 +16,35 @@ Other options:
 -justshown  Choose _only_ images shown on the page, not those linked
 """
 
-__version__='$Id: imageharvest.py 8531 2010-09-12 12:20:11Z xqt $'
+__version__='$Id: imageharvest.py 9527 2011-09-18 12:45:29Z xqt $'
 
 import re, sys, os
 import wikipedia as pywikibot
+import urllib
+import BeautifulSoup
 import upload
 
 def get_imagelinks(url):
-    # Given a URL, get all images linked to by the page at that URL.
-    # First, we get the location for relative links from the URL.
-    relativepath = url.split("/")
-    if len(relativepath) == 1:
-        relativepath=relativepath[0]
-    else:
-        relativepath=relativepath[:len(relativepath)-1]
-        relativepath="/".join(relativepath)
+    """Given a URL, get all images linked to by the page at that URL."""
+
     links = []
     uo = pywikibot.MyURLopener
     file = uo.open(url)
-    text = file.read()
+    soup = BeautifulSoup.BeautifulSoup(file.read())
     file.close()
-    text = text.lower()
     if not shown:
-        R=re.compile("href\s*=\s*[\"'](.*?)[\"']")
+        tagname = "a"
     elif shown == "just":
-        R=re.compile("src\s*=s*[\"'](.*?)[\"']")
+        tagname = "img"
     else:
-        R=re.compile("[\"'](.*?)[\"']")
-    for link in R.findall(text):
-        ext = os.path.splitext(link)[1].lower().strip('.')
-        if ext in fileformats:
-            if re.compile("://").match(text):
-                links += [link]
-            else:
-                links += [relativepath+"/"+link]
+        tagname = ["a", "img"]
+
+    for tag in soup.findAll(tagname):
+        link = tag.get("src", tag.get("href", None))
+        if link:
+            ext = os.path.splitext(link)[1].lower().strip('.')
+            if ext in fileformats:
+                 links.append(urllib.basejoin(url, link))
     return links
 
 def main(give_url, image_url, desc):

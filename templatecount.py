@@ -30,9 +30,11 @@ Lists all the category pages that transclude {{cfd}} and {{cfdu}}.
 
 """
 #
+# (C) Pywikipedia bot team, 2006-2012
+#
 # Distributed under the terms of the MIT license.
 #
-__version__ = '$Id: templatecount.py 8631 2010-10-09 21:01:00Z xqt $'
+__version__ = '$Id: templatecount.py 9897 2012-02-14 10:22:35Z xqt $'
 
 import re, sys, string
 import datetime
@@ -47,28 +49,32 @@ class TemplateCountRobot:
         #Nothing
     def countTemplates(self, templates, namespaces):
         mysite = pywikibot.getSite()
-        mytpl  = mysite.template_namespace()+':'
-        finalText = [u'Number of transclusions per template', u'-' * 36]
         total = 0
         # The names of the templates are the keys, and the numbers of
         # transclusions are the values.
         templateDict = {}
-        for template in templates:
-            gen = pagegenerators.ReferringPageGenerator(
-                pywikibot.Page(mysite, mytpl + template),
+        pg = pagegenerators
+        getall = templates
+        mytpl  = mysite.template_namespace()+':'
+        for template in getall:
+            gen = pg.ReferringPageGenerator(pywikibot.Page(mysite,
+                                                           mytpl + template),
                 onlyTemplateInclusion = True)
             if namespaces:
-                gen = pagegenerators.NamespaceFilterPageGenerator(gen,
-                                                                  namespaces)
+                gen = pg.NamespaceFilterPageGenerator(gen, namespaces)
             count = 0
             for page in gen:
                 count += 1
             templateDict[template] = count
-            finalText.append(u'%s: %d' % (template, count))
+
             total += count
-        for line in finalText:
-            pywikibot.output(line, toStdout=True)
-        pywikibot.output(u'TOTAL: %d' % total, toStdout=True)
+        pywikibot.output(u'\nNumber of transclusions per template',
+                         toStdout=True)
+        pywikibot.output(u'-' * 36, toStdout=True)
+        for key in templateDict.keys():
+            pywikibot.output(u'%-10s: %5d' % (key, templateDict[key]),
+                             toStdout=True)
+        pywikibot.output(u'TOTAL     : %5d' % total, toStdout=True)
         pywikibot.output(u'Report generated on %s'
                          % datetime.datetime.utcnow().isoformat(),
                          toStdout=True)
@@ -80,7 +86,7 @@ class TemplateCountRobot:
         # The names of the templates are the keys, and lists of pages
         # transcluding templates are the values.
         templateDict = {}
-        finalText = [u'List of pages transcluding templates:']
+        finalText = [u'', u'List of pages transcluding templates:']
         for template in templates:
             finalText.append(u'* %s' % template)
         finalText.append(u'-' * 36)

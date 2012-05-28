@@ -1,0 +1,18 @@
+2012-05-28 17:47:36 r10259 Python 2.6.6 login.py
+2012-05-28 18:33:31 r10259 Python 2.6.6 category.py "listify"
+2012-05-28 18:33:51 r10259 Python 2.6.6 category.py "listify" "Category:Candidates_for_speedy_deletion_as_importance_or_significance_not_asserted"
+2012-05-28 18:34:36 r10259 Python 2.6.6 category.py "listify" "-catr" "Category:Candidates_for_speedy_deletion_as_importance_or_significance_not_asserted"
+2012-05-28 18:35:15 r10259 Python 2.6.6 category.py "listify" "-recurse" "-match" "Category:Candidates_for_speedy_deletion_as_importance_or_significance_not_asserted"
+2012-05-28 18:35:27 r10259 Python 2.6.6 category.py "listify" "-recurse"
+2012-05-28 20:09:09 r10259 Python 2.6.6 category.py "tree" "-recurse"
+2012-05-28 20:16:36 r10259 Python 2.6.6 pagegenerators.py
+2012-05-28 20:16:45 r10259 Python 2.6.6 pagegenerators.py "-cat"
+2012-05-28 20:17:48 r10259 Python 2.6.6 pagegenerators.py "-catr:Category:Candidates_for_speedy_deletion_as_importance_or_significance_not_asserted"
+2012-05-28 20:19:02 r10259 Python 2.6.6 pagegenerators.py "-catr:Candidates_for_speedy_deletion_as_importance_or_significance_not_asserted"
+2012-05-28 20:22:15 r10259 Python 2.6.6 ExportDeleted.py
+2012-05-28 20:22:50 r10259 Python 2.6.6 ExportDeleted.py
+2012-05-28 20:23:04 r10259 Python 2.6.6 ExportDeleted.py
+2012-05-28 20:31:07 r10259 Python 2.6.6 ExportDeleted.py
+2012-05-28 20:31:29 r10259 Python 2.6.6 ExportDeleted.py
+2012-05-28 20:32:42 r10259 Python 2.6.6 ExportDeleted.py
+2012-05-28 20:33:09 r10259 Python 2.6.6 ExportDeleted.py

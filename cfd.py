@@ -93,9 +93,9 @@ def main():
             dest = m.result.group(2)
             thisDay = findDay(src, day)
             if (mode == "Move" and thisDay != "None"):
-                summary = "Robot - Moving category " + src + " to " + dest + " per [[WP:CFD|CFD]] at " + thisDay + "."
+                summary = "Robot - Moving category " + src + " to [[:Category:" + dest + "]] per [[WP:CFD|CFD]] at " + thisDay + "."
             elif (mode == "Speedy"):
-                summary = "Robot - Speedily moving category " + src + " to " + dest + " per [[WP:CFDS|CFDS]]."
+                summary = "Robot - Speedily moving category " + src + " to [[:Category:" + dest + "]] per [[WP:CFDS|CFDS]]."
             else:
                 continue
             # If the category is redirect, we do NOT want to move articles to

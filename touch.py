@@ -44,17 +44,22 @@ class TouchBot:
                 # whether or not getting a redirect throws an exception
                 # depends on the variable self.touch_redirects.
                 text = page.get(get_redirect = self.touch_redirects)
-                page.put(text)
+                page.put(text, "Pywikibot touch script")
             except pywikibot.NoPage:
-                pywikibot.output(u"Page %s does not exist?!" % page.aslink())
+                pywikibot.output(u"Page %s does not exist."
+                                 % page.title(asLink=True))
             except pywikibot.IsRedirectPage:
-                pywikibot.output(u"Page %s is a redirect; skipping." % page.aslink())
+                pywikibot.output(u"Page %s is a redirect; skipping."
+                                 % page.title(asLink=True))
             except pywikibot.LockedPage:
-                pywikibot.output(u"Page %s is locked?!" % page.aslink())
+                pywikibot.output(u"Page %s is locked."
+                                 % page.title(asLink=True))
             except pywikibot.PageNotSaved:
-                pywikibot.output(u"Page %s not saved" % page.aslink())
+                pywikibot.output(u"Page %s not saved."
+                                 % page.title(asLink=True))
 
-def main():
+
+def main(*args):
     # Disable cosmetic changes because we don't want to modify any page
     # content, so that we don't flood the histories with minor changes.
     config.cosmetic_changes = False
@@ -66,7 +71,7 @@ def main():
     # used to read the words from the page title. The words will later be
     # joined with spaces to retrieve the full title.
     pageTitle = []
-    for arg in pywikibot.handleArgs():
+    for arg in pywikibot.handleArgs(*args):
         if genFactory.handleArg(arg):
             continue
         if arg == '-redir':
@@ -81,7 +86,7 @@ def main():
             page = pywikibot.Page(pywikibot.getSite(), ' '.join(pageTitle))
             gen = iter([page])
         else:
-            pywikibot.showHelp('touch')
+            pywikibot.showHelp()
             return
     preloadingGen = pagegenerators.PreloadingGenerator(gen)
     bot = TouchBot(preloadingGen, redirs)

@@ -1,4 +1,5 @@
 # -*- coding: utf-8  -*-
+__version__ = '$Id: lyricwiki_family.py 9069 2011-03-13 16:19:29Z xqt $'
 
 import family
 
@@ -33,7 +34,7 @@ class Family(family.Family):
         self.namespaces[503] = { '_default': u'Blog talk', }
 
     def version(self, code):
-        return "1.15.1"
+        return "1.16.2"
 
     def scriptpath(self, code):
         return ''

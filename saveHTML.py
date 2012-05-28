@@ -23,12 +23,14 @@ Features, not bugs:
 """
 
 # (C) 2004 Thomas R. Koll, <tomk32@tomk32.de>
+# (C) Pywikipedia bot team, 2004-2011
 #
 # Distributed under the terms of the MIT license.
 #
-__version__ = '$Id: saveHTML.py 7650 2009-11-15 13:17:01Z alexsh $'
+__version__ = '$Id: saveHTML.py 9482 2011-08-29 16:32:37Z xqt $'
 
-import wikipedia,httplib,StringIO,re,sys,md5,os, string
+import httplib, StringIO, re, sys, md5, os, string
+import wikipedia as pywikibot
 from htmlentitydefs import *
 
 def extractArticle(data):
@@ -124,14 +126,14 @@ def extractImages(data):
 
 
 def main():
-    mysite = wikipedia.getSite()
+    mysite = pywikibot.getSite()
     sa = []
     output_directory = ""
     save_images = False
     overwrite_images = False
     overwrite_articles = False
 
-    for arg in wikipedia.handleArgs():
+    for arg in pywikibot.handleArgs():
         if arg.startswith("-lang:"):
             lang = arg[6:]
         elif arg.startswith("-file:"):
@@ -162,7 +164,7 @@ def main():
             sa.append(arg.replace(" ", "_"))
 
     headers = {"Content-type": "application/x-www-form-urlencoded",
-               "User-agent": wikipedia.useragent}
+               "User-agent": pywikibot.useragent}
     print "opening connection to", mysite.hostname(),
     conn = httplib.HTTPConnection(mysite.hostname())
     print " done"
@@ -200,14 +202,14 @@ def main():
                     print "skipping existing " + i['image']
                     continue
                 print 'downloading ' + i['image'],
-                uo = wikipedia.MyURLopener
+                uo = pywikibot.MyURLopener
                 file = uo.open( "http://upload.wikimedia.org/wikipedia/"
                                 +mysite.lang + '/' + i['path'] + i['image'])
                 content = file.read()
                 if (len(content) < 500):
                     uo.close()
                     print "downloading from commons",
-                    uo = wikipedia.MyURLopener
+                    uo = pywikibot.MyURLopener
                     file = uo.open( "http://commons.wikimedia.org/upload/"
                                     + i['path'] + i['image'])
                     #print "http://commons.wikimedia.org/upload/", i['path'] , i['image'], file

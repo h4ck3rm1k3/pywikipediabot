@@ -1,5 +1,5 @@
-
-__version__ = '$Id: wxpython_interface.py 7217 2009-09-06 15:52:15Z alexsh $'
+# -*- coding: utf-8  -*-
+__version__ = '$Id: wxpython_interface.py 10045 2012-03-26 00:17:53Z valhallasw $'
 
 import sys; sys.path.append('..')
 
@@ -9,10 +9,11 @@ import wx
 
 app = wx.App()
 
+
 class UI(terminal_interface.UI):
     def __init__(self):
         pass
-    
+
     def input(self, question, password = False):
         """
         Works like raw_input(), but returns a unicode string instead of ASCII.
@@ -21,7 +22,7 @@ class UI(terminal_interface.UI):
         question.
         """
         # TODO: hide input if password = True
-        
+
         self.output(question)
         if password:
             answer = wx.PasswordEntryDialog( None, question, '','')
@@ -42,7 +43,7 @@ class UI(terminal_interface.UI):
                 options[i] = '%s[%s]%s' % (option[:pos], option[pos], option[pos+1:])
             else:
                 options[i] = '%s [%s]' % (option, hotkey)
-        
+
         while True:
             prompt = '%s\n(%s)' % (question, ', '.join(options))
             self.output('%s (%s)' % (question, ', '.join(options)))
@@ -50,15 +51,15 @@ class UI(terminal_interface.UI):
             answer.ShowModal()
             answer = answer.GetValue()
             self.output(answer+'\n')
-            
+
             if answer.lower() in hotkeys or answer.upper() in hotkeys:
                 return answer
             elif default and answer=='':# empty string entered
                 return default
+
 
 if __name__ == '__main__':
     ui = UI()
     print ui.input('Test?')
 
 app.MainLoop()
-

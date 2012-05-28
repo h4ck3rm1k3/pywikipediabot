@@ -1,4 +1,6 @@
 # -*- coding: utf-8  -*-
+__version__ = '$Id: southernapproach_family.py 9071 2011-03-13 16:50:07Z xqt $'
+
 import family, config
 
 # ZRHwiki, formerly known as SouthernApproachWiki, a wiki about Zürich Airport.

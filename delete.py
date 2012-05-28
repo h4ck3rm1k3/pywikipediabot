@@ -25,92 +25,14 @@ Delete everything in the category "To delete" without prompting.
 
     python delete.py -cat:"To delete" -always
 """
-__version__ = '$Id: delete.py 8805 2010-12-26 16:43:08Z xqt $'
+__version__ = '$Id: delete.py 9504 2011-09-04 11:49:02Z xqt $'
 #
 # Distributed under the terms of the MIT license.
 #
 import wikipedia as pywikibot
+from pywikibot import i18n
 import config, catlib
 import pagegenerators
-
-# Summary messages for deleting from a category.
-msg_simple_delete = {
-    'ar': u'بوت: حذف قائمة من الملفات.',
-    'cs': u'Robot smazal podle seznamu',
-    'en': u'Bot: Deleting a list of files.',
-    'fa': u'ربات:حذف فهرستی از صفحه‌ها',
-    'fr': u'Robot: Suppression d’une liste de fichiers.',
-    'he': u'בוט: מוחק רשימת דפים מתוך קובץ.',
-    'nl': u'Bot: verwijdert een lijst met pagina\'s.',
-    'pl': u'Robot usuwa pliki z listy.',
-    'pt': u'Bot: Apagando um lista de arquivos.',
-    'ru': u'Бот: Удаление списка файлов.',
-    'sv': u'Bot: Tar bort fillista.',
-    'uk': u'Бот: Видалення списку файлів.',
-}
-msg_delete_category = {
-    'ar': u'روبوت - حذف كل الصفحات من التصنيف %s',
-    'cs': u'Robot smazal obsah kategorie %s',
-    'de': u'Bot: Lösche alle Seiten in Kategorie %s',
-    'en': u'Bot: Deleting all pages from category %s',
-    'fa': u'ربات:حذف تمام صفحه‌های رده %s',
-    'fr': u'Robot - Suppresion de toutes les pages de la actégorie %s',
-    'he': u'בוט: מוחק את כל הדפים מהקטגוריה %s.',
-    'fr': u'Bot: Supprime toutes pages de la catégorie %s',
-    'lt': u'robotas: Trinami visi puslapiai iš kategorijos %s',
-    'nl': u'Bot: verwijdert alle pagina\'s uit categorie %s',
-    'pl': u'Robot usuwa wszystkie artykuły z kategorii %s',
-    'pt': u'Bot: Apagando todas as páginas da categoria %s',
-    'ru': u'Бот: Удаление всех страниц из категории %s',
-    'sv': u'Bot: Tar bort alla sidor i kategori %s',
-    'uk': u'Бот: Видалення усіх сторінок з категорії %s',
-}
-msg_delete_links = {
-    'ar': u'روبوت - حذف كل الصفحات الموصولة من %s',
-    'cs': u'Robot smazal vše odkazované z %s',
-    'de': u'Bot: Lösche alle Seiten in %s verlinkten Seiten',
-    'en': u'Bot: Deleting all pages linked from %s',
-    'fa': u'ربات: حذف تمام صفحه‌هایی که در %s پیوند شده‌اند',
-    'fr': u'Robot : Supprime toutes les pages liées depuis %s',
-    'he': u'בוט: מוחק את כל הדפים המקושרים מהדף %s.',
-    'lt': u'robotas: Trinami visi puslapiai į kuriuos yra nuoroda iš %s',
-    'nl': u'Bot: verwijdert alle pagina\'s met een verwijzing naar %s',
-    'pl': u'Robot usuwa wszystkie artykuły zlinkowane z %s',
-    'pt': u'Bot: Apagando todas as páginas ligadas a %s',
-    'ru': u'Бот: Удаление всех страниц связанных с %s',
-    'sv': u'Bot: Tar bort alla sidor länkade från %s',
-    'uk': u'Бот: Видалення усіх сторінок, пов\'язаних із %s',
-}
-msg_delete_ref = {
-    'ar': u'روبوت - حذف كل الصفحات الراجعة من %s',
-    'cs': u'Robot smazal vše odkazující na %s',
-    'de': u'Bot: Lösche alle auf %s linkenden Seiten',
-    'en': u'Bot: Deleting all pages referring from %s',
-    'fa': u'ربات:حذف تمام صفحه‌هایی که به %s پیوند داده‌اند',
-    'fr': u'Robot : Supprime toutes les pages référant à %s',
-    'he': u'בוט: מוחק את כל הדפים המקשרים לדף %s.',
-    'lt': u'robotas: Trinami visi puslapiai rodantys į %s',
-    'nl': u'Bot: verwijdert alle pagina\'s met referentie van %s',
-    'pl': u'Robot usuwa wszystkie artykuły odnoszące się do %s',
-    'pt': u'Bot: Apagando todas as páginas afluentes a %s',
-    'ru': u'Бот: Удаление всех страниц, относящихся к %s',
-    'uk': u'Бот: Видалення усіх сторінок, що відносяться до %s',
-}
-msg_delete_images = {
-    'ar': u'روبوت -حذف كل الصور في الصفحة %s',
-    'cs': u'Robot smazal všechny obrázky z %s',
-    'en': u'Bot: Deleting all images on page %s',
-    'fa': u'ربات: حذف تمام تصویرهای به کار رفته در صفحه %s',
-    'fr': u'Robot : Supprime tous les fichiers sur la page %s',
-    'he': u'בוט: מוחק את כל התמונות בדף %s.',
-    'nl': u'Bot: verwijdert alle media op pagina %s',
-    'pl': u'Robot usuwa wszystkie obrazy w artykule %s',
-    'pt': u'Bot: Apagando todas as imagens da página %s',
-    'ru': u'Бот: Удаление всех изображений на странице %s',
-    'sv': u'Bot: Tar bort alla bilder på sida %s',
-    'uk': u'Бот: Видалення усіх зображень із сторінки %s',
-}
-
 
 class DeletionRobot:
     """ This robot allows deletion of pages en masse. """
@@ -206,42 +128,46 @@ def main():
     mysite = pywikibot.getSite()
     if doSinglePage:
         if not summary:
-            summary = pywikibot.input(u'Enter a reason for the deletion:')
+            summary = pywikibot.input(u'Enter a reason for the %sdeletion:'
+                                      % ['', 'un'][undelete])
         page = pywikibot.Page(mysite, pageName)
         gen = iter([page])
     elif doCategory:
         if not summary:
-            summary = pywikibot.translate(mysite, msg_delete_category) \
-                      % pageName
+            summary = i18n.twtranslate(mysite, 'delete-from-category',
+                                       {'page': pageName})
         ns = mysite.category_namespace()
         categoryPage = catlib.Category(mysite, ns + ':' + pageName)
         gen = pagegenerators.CategorizedPageGenerator(
             categoryPage, recurse=deleteSubcategories)
     elif doLinks:
         if not summary:
-            summary = pywikibot.translate(mysite, msg_delete_links) % pageName
+            summary = i18n.twtranslate(mysite, 'delete-linked-pages',
+                                       {'page': pageName})
         pywikibot.setAction(summary)
         linksPage = pywikibot.Page(mysite, pageName)
         gen = pagegenerators.LinkedPageGenerator(linksPage)
     elif doRef:
         if not summary:
-            summary = pywikibot.translate(mysite, msg_delete_ref) % pageName
+            summary = i18n.twtranslate(mysite, 'delete-referring-pages',
+                                       {'page': pageName})
         refPage = pywikibot.Page(mysite, pageName)
         gen = pagegenerators.ReferringPageGenerator(refPage)
     elif fileName:
         if not summary:
-            summary = pywikibot.translate(mysite, msg_simple_delete)
+            summary = i18n.twtranslate(mysite, 'delete-from-file')
         gen = pagegenerators.TextfilePageGenerator(fileName)
     elif doImages:
         if not summary:
-            summary = pywikibot.translate(mysite, msg_delete_images)
-        gen = pagegenerators.ImagesPageGenerator(pywikibot.Page(mysite,
-                                                                pageName))
+            summary = i18n.twtranslate(mysite, 'delete-images',
+                                       {'page': pageName})
+        page = pywikibot.Page(mysite, pageName)
+        gen = pagegenerators.ImagesPageGenerator(page)
 
     if gen:
         pywikibot.setAction(summary)
-        # We are just deleting pages, so we have no need of using a preloading page generator
-        # to actually get the text of those pages.
+        # We are just deleting pages, so we have no need of using a preloading
+        # page generator to actually get the text of those pages.
         bot = DeletionRobot(gen, summary, always, undelete)
         bot.run()
     else:

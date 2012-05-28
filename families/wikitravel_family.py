@@ -6,7 +6,7 @@ import family, config
 # Translation used on all wikitravels for the 'article' text.
 # A language not mentioned here is not known by the robot
 
-__version__ = '$Id: wikitravel_family.py 7551 2009-10-27 21:12:35Z alexsh $'
+__version__ = '$Id: wikitravel_family.py 9986 2012-03-10 17:46:47Z xqt $'
 
 class Family(family.Family):
     def __init__(self):
@@ -406,12 +406,12 @@ class Family(family.Family):
         ]
 
         # for Wikitravel Shared (wts:)
-            # Which languages have a special order for putting interlanguage links,
-            # and what order is it? If a language is not in interwiki_putfirst,
-            # alphabetical order on language code is used. For languages that are in
-            # interwiki_putfirst, interwiki_putfirst is checked first, and
-            # languages are put in the order given there. All other languages are put
-            # after those, in code-alphabetical order.
+        # Which languages have a special order for putting interlanguage links,
+        # and what order is it? If a language is not in interwiki_putfirst,
+        # alphabetical order on language code is used. For languages that are
+        # in interwiki_putfirst, interwiki_putfirst is checked first, and
+        # languages are put in the order given there. All other languages are
+        # put after those, in code-alphabetical order.
         self.interwiki_putfirst = {
             'ar': self.alphabetic,
             'ca': self.alphabetic,
@@ -458,7 +458,7 @@ class Family(family.Family):
         }
         self.crossnamespace[14] = {
             'wts': {
-                '_default': [0], 
+                '_default': [0],
             },
         }
 

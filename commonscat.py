@@ -45,12 +45,12 @@ TODO:
 
 #
 # (C) Multichill, 2008-2009
-# (C) Xqt, 2010
-# (C) Pywikipedia bot team, 2008-2010
+# (C) Xqt, 2009-2012
+# (C) Pywikipedia bot team, 2008-2012
 #
 # Distributed under the terms of the MIT license.
 #
-__version__ = '$Id: commonscat.py 8954 2011-02-15 12:12:05Z amir $'
+__version__ = '$Id: commonscat.py 10091 2012-04-08 11:47:11Z xqt $'
 #
 
 import wikipedia as pywikibot
@@ -65,17 +65,24 @@ docuReplacements = {
 commonscatTemplates = {
     '_default': (u'Commonscat', []),
     'af' : (u'CommonsKategorie', [u'commonscat']),
+    'an' : (u'Commonscat', [u'Commons cat']),
     'ar' : (u'تصنيف كومنز', [u'Commonscat', u'تصنيف كومونز',
                              u'Commons cat', u'CommonsCat']),
-    'az' : (u'CommonsKat', []),
+    'az' : (u'CommonsKat', [u'Commonscat']),
     'bn' : (u'কমন্সক্যাট', [u'Commonscat']),
+    'ca' : (u'Commonscat', [u'Commons cat', u'Commons category']),
     'crh' : (u'CommonsKat', [u'Commonscat']),
     'cs' : (u'Commonscat', [u'Commons cat']),
-    'da' : (u'Commonscat', [u'Commons cat', u'Commonskat', u'Commonscat2']),
+    'da' : (u'Commonscat', [u'Commons cat', u'Commons category',
+                            u'Commonscat left', u'Commonscat2']),
     'de' : (u'Commonscat', [u'Commons cat',]),
-    'en' : (u'Commons category', [u'Commoncat', u'Commons2', u'Cms-catlist-up',
-                                  u'Catlst commons', u'Commonscategory',
-                                  u'Commonscat', u'Commons cat']),
+    'en' : (u'Commons category', [u'Commoncat', u'Commonscat', u'Commons cat',
+                                  u'Commons+cat', u'Commonscategory',
+                                  u'Commons and category', u'Commonscat-inline',
+                                  u'Commons category-inline', u'Commons2',
+                                  u'Cms-catlist-up', u'Catlst commons',
+                                  u'Commonscat show2',
+                                  u'Sister project links']),
     'es' : (u'Commonscat', [u'Ccat', u'Commons cat', u'Categoría Commons',
                             u'Commonscat-inline']),
     'eu' : (u'Commonskat', [u'Commonscat']),
@@ -83,13 +90,14 @@ commonscatTemplates = {
                            u'انبار رده', u'Commons category',u'انبار-رده']),
     'fr' : (u'Commonscat', [u'CommonsCat', u'Commons cat',
                             u'Commons category']),
-    'frp' : (u'Commonscat', [u'CommonsCat']), 
+    'frp' : (u'Commonscat', [u'CommonsCat']),
     'ga' : (u'Catcómhaoin', [u'Commonscat']),
     'hi' : (u'Commonscat', [u'Commons2', u'Commons cat', u'Commons category']),
     'hu' : (u'Commonskat', [u'Közvagyonkat']),
     'hy' : (u'Commons cat', [u'Commonscat']),
     'id' : (u'Commonscat', [u'Commons cat', u'Commons2',
                             u'CommonsCat', u'Commons category']),
+    'is' : (u'CommonsCat', [u'Commonscat']),
     'ja' : (u'Commonscat', [u'Commons cat', u'Commons category']),
     'jv' : (u'Commonscat', [u'Commons cat']),
     'kaa' : (u'Commons cat', [u'Commonscat']),
@@ -99,18 +107,24 @@ commonscatTemplates = {
     'mk' : (u'Ризница-врска', [u'Commonscat', u'Commons cat', u'CommonsCat',
                                u'Commons2', u'Commons category']),
     'ml' : (u'Commonscat', [u'Commons cat', u'Commons2']),
+    'ms' : (u'Kategori Commons', [u'Commonscat', u'Commons category']),
     'nn' : (u'Commonscat', [u'Commons cat']),
     'os' : (u'Commonscat', [u'Commons cat']),
     'pt' : (u'Commonscat', [u'Commons cat']),
     'ro' : (u'Commonscat', [u'Commons cat']),
     'ru' : (u'Commonscat', [u'Викисклад-кат', u'Commons category']),
+    'simple' : (u'Commonscat' ,[u'Commons cat',  u'Commons cat multi',
+                                u'Commons category', u'Commons category multi',
+                                u'CommonsCompact', u'Commons-inline']),
+    'sh' : (u'Commonscat', [u'Commons cat']),
     'sl' : (u'Kategorija v Zbirki', [u'Commonscat', u'Kategorija v zbirki',
                                      u'Commons cat', u'Katzbirke']),
     'sv' : (u'Commonscat', [u'Commonscat-rad', u'Commonskat', u'Commons cat',
                             u'Commonscatbox', u'Commonscat-box']),
     'sw' : (u'Commonscat', [u'Commons2', u'Commons cat']),
     'te' : (u'Commonscat', [u'Commons cat']),
-    'tr' : (u'CommonsKat', [u'Commonscat', u'Commons cat']),
+    'tr' : (u'Commons kategori', [u'CommonsKat', u'Commonscat',
+                                  u'Commons cat']),
     'uk' : (u'Commonscat', [u'Commons cat', u'Category', u'Commonscat-inline']),
     'vi' : (u'Commonscat', [u'Commons2', u'Commons cat', u'Commons category',
                             u'Commons+cat']),
@@ -125,8 +139,7 @@ ignoreTemplates = {
     'be-x-old' : [u'Commons'],
     'cs' : [u'Commons', u'Sestřičky', u'Sisterlinks'],
     'da' : [u'Commons', u'Commons left', u'Commons2', u'Commonsbilleder',
-            u'Commonscat left', u'Commonscat2', u'GalleriCommons',
-            u'Søsterlinks'],
+            u'Commonskat', u'Commonscat2', u'GalleriCommons', u'Søsterlinks'],
     'de' : [u'Commons', u'ZhSZV', u'Bauwerk-stil-kategorien',
             u'Bauwerk-funktion-kategorien', u'KsPuB',
             u'Kategoriesystem Augsburg-Infoleiste'],
@@ -145,23 +158,28 @@ ignoreTemplates = {
     'fr' : [u'Commons', u'Commons-inline', (u'Autres projets', 'commons=')],
     'fy' : [u'Commons', u'CommonsLyts'],
     'hr' : [u'Commons', (u'WProjekti', 'commonscat=')],
+    'is' : [u'Systurverkefni', u'Commons'],
     'it' : [(u'Ip', 'commons='), (u'Interprogetto', 'commons=')],
     'ja' : [u'CommonscatS', u'SisterlinksN', u'Interwikicat'],
+    'ms' : [u'Commons', u'Sisterlinks', u'Commons cat show2'],
     'nds-nl' : [u'Commons'],
     'nl' : [u'Commons', u'Commonsklein', u'Commonscatklein', u'Catbeg',
             u'Catsjab', u'Catwiki'],
     'om' : [u'Commons'],
     'pt' : [u'Correlatos'],
-    'ru' : [u'Навигация', (u'Навигация для категорий', 'commons=')],
+    'simple': [u'Sisterlinks'],
+    'ru' : [u'Навигация', u'Навигация для категорий'],
     'tt' : [u'Навигация'],
 }
 
 msg_change = {
     'cs': u'Robot změnil šablonu Commonscat z [[:Commons:Category:%(oldcat)s|%(oldcat)s]] na [[:Commons:Category:%(newcat)s|%(newcat)s]]',
+    'da': u'Robot: Ændrer commonscat link fra [[:Commons:Category:%(oldcat)s|%(oldcat)s]] til [[:Commons:Category:%(newcat)s|%(newcat)s]]',
     'de': u'Bot: Ändere commonscat link von [[:Commons:Category:%(oldcat)s|%(oldcat)s]] zu [[:Commons:Category:%(newcat)s|%(newcat)s]]',
     'en': u'Bot: Changing commonscat link from [[:Commons:Category:%(oldcat)s|%(oldcat)s]] to [[:Commons:Category:%(newcat)s|%(newcat)s]]',
     'fr': u'Robot: Changé commonscat link de [[:Commons:Category:%(oldcat)s|%(oldcat)s]] à [[:Commons:Category:%(newcat)s|%(newcat)s]]',
     'frr':u'Bot: Feranere commonscat link faan [[:Commons:Category:%(oldcat)s|%(oldcat)s]] tu [[:Commons:Category:%(newcat)s|%(newcat)s]]',
+    'is': u'Vélmenni: Breyti Commonscat tengli frá [[:Commons:Category:%(oldcat)s|%(oldcat)s]] í [[:Commons:Category:%(newcat)s|%(newcat)s]]',
     'pdc': u'Waddefresser: commonscat Gleecher vun [[:Commons:Category:%(oldcat)s|%(oldcat)s]] nooch [[:Commons:Category:%(newcat)s|%(newcat)s]] geennert',
     'ru': u'Бот: Изменение commonscat-ссылки с [[:Commons:Category:%(oldcat)s|%(oldcat)s]] на [[:Commons:Category:%(newcat)s|%(newcat)s]]',
     'sk': u'Robot zmenil šablónu Commonscat z [[:Commons:Category:%(oldcat)s|%(oldcat)s]] na [[:Commons:Category:%(newcat)s|%(newcat)s]]',
@@ -383,21 +401,23 @@ u'Cannot change %s because of spam blacklist entry %s'
         if not linktitle and (page.title().lower() in oldcat.lower() or
                               oldcat.lower() in page.title().lower()):
             linktitle = oldcat
-        if linktitle and newcat <> page.titleWithoutNamespace():
+        if linktitle and newcat <> page.title(withNamespace=False):
             newtext = re.sub(u'(?i)\{\{%s\|?[^{}]*(?:\{\{.*\}\})?\}\}'
                              % oldtemplate,
                              u'{{%s|%s|%s}}' % (newtemplate, newcat, linktitle),
                              page.get())
-        elif newcat == page.titleWithoutNamespace():
+        elif newcat == page.title(withNamespace=False):
             newtext = re.sub(u'(?i)\{\{%s\|?[^{}]*(?:\{\{.*\}\})?\}\}'
                              % oldtemplate,
                              u'{{%s}}' % newtemplate,
                              page.get())
-        else:
+        elif oldcat.strip() != newcat: #strip trailing white space
             newtext = re.sub(u'(?i)\{\{%s\|?[^{}]*(?:\{\{.*\}\})?\}\}'
                              %oldtemplate,
                              u'{{%s|%s}}' % (newtemplate, newcat),
                              page.get())
+        else: # nothing left to do
+            return
         if self.summary:
             comment = self.summary
         else:
@@ -449,9 +469,9 @@ u'Cannot change %s because of spam blacklist entry %s'
                     if len(template[1]) > 2:
                         commonscatNote = template[1][2]
                 else:
-                    commonscatTarget = wikipediaPage.titleWithoutNamespace()
-                return (commonscatTemplate, commonscatTarget, commonscatLinktext,
-                        commonscatNote)
+                    commonscatTarget = wikipediaPage.title(withNamespace=False)
+                return (commonscatTemplate, commonscatTarget,
+                        commonscatLinktext, commonscatNote)
         return None
 
     def checkCommonscatLink (self, name = ""):
@@ -475,7 +495,7 @@ u'Cannot change %s because of spam blacklist entry %s'
                 if pywikibot.verbose:
                     pywikibot.output(u"getCommonscat: The category is a redirect")
                 return self.checkCommonscatLink(
-                    commonsPage.getRedirectTarget().titleWithoutNamespace())
+                    commonsPage.getRedirectTarget().title(withNamespace=False))
             elif "Category redirect" in commonsPage.templates():
                 if pywikibot.verbose:
                     pywikibot.output(
@@ -490,7 +510,7 @@ u'Cannot change %s because of spam blacklist entry %s'
                         u"getCommonscat: The category is disambiguation")
                 return u''
             else:
-                return commonsPage.titleWithoutNamespace()
+                return commonsPage.title(withNamespace=False)
         except pywikibot.BadTitle:
             #Funky title so not correct
             return u''

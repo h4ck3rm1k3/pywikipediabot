@@ -9,10 +9,11 @@ Library to work with category pages on Wikipedia
 # (C) Russell Blau, 2005
 # (C) Cyde Weys, 2005-2007
 # (C) Leonardo Gregianin, 2005-2007
+# (C) Pywikipedia bot team, 2007-2012
 #
 # Distributed under the terms of the MIT license.
 #
-__version__ = '$Id: catlib.py 8961 2011-02-15 21:19:15Z amir $'
+__version__ = '$Id: catlib.py 10062 2012-03-30 12:45:34Z xqt $'
 #
 import re, time, urllib, query
 import wikipedia
@@ -40,6 +41,7 @@ msg_created_for_renaming = {
     'nds':u'Kat-Bot: herschaven von %s. Schriever: %s',
     'nl':u'Bot: hernoemd van %s. Auteurs: %s',
     'nn':u'robot: flytta frå %s. Bidragsytarar: %s',
+    'no':u'Bot: Flytta fra %s. Bidragsytere: %s',
     'pl':u'Robot przenosi z %s. Autorzy: %s',
     'pt':u'Bot: Movido de %s. Autor: %s',
     'zh':u'機器人: 已從 %s 移動。原作者是 %s',
@@ -97,7 +99,9 @@ class Category(wikipedia.Page):
         else:
             return '[[%s]]' % titleWithSortKey
 
-    def _getAndCacheContents(self, recurse=False, purge=False, startFrom=None, cache=None):
+    def _getAndCacheContents(self, recurse=False, purge=False, startFrom=None,
+                             cache=None, sortby=None, sortdir=None,
+                             endsort=None):
         """
         Cache results of _parseCategory for a second call.
 
@@ -133,10 +137,13 @@ class Category(wikipedia.Page):
                         # contents of subcategory are cached by calling
                         # this method recursively; therefore, do not cache
                         # them again
-                        for item in subcat._getAndCacheContents(newrecurse, purge, cache=cache):
+                        for item in subcat._getAndCacheContents(
+                                newrecurse, purge, cache=cache, sortby=sortby,
+                                sortdir=sortdir, endsort=endsort):
                             yield item
         else:
-            for tag, page in self._parseCategory(purge, startFrom):
+            for tag, page in self._parseCategory(purge, startFrom, sortby,
+                                                 sortdir, endsort):
                 if tag == ARTICLE:
                     self.articleCache.append(page)
                     if not page in cache:
@@ -151,23 +158,31 @@ class Category(wikipedia.Page):
                             # contents of subcategory are cached by calling
                             # this method recursively; therefore, do not cache
                             # them again
-                            for item in page._getAndCacheContents(newrecurse, purge, cache=cache):
+                            for item in page._getAndCacheContents(newrecurse, purge, cache=cache,
+                                             sortby=sortby, sortdir=sortdir):
                                 yield item
             if not startFrom:
                 self.completelyCached = True
 
-    def _getContentsNaive(self, recurse=False, startFrom=None):
+    def _getContentsNaive(self, recurse=False, startFrom=None, sortby=None,
+                          sortdir=None, endsort=None):
         """
         Simple category content yielder. Naive, do not attempts to
         cache anything
         """
-        for tag, page in self._parseCategory(startFrom=startFrom):
+        for tag, page in self._parseCategory(startFrom=startFrom,
+                                             sortby=sortby, sortdir=sortdir,
+                                             endsort=endsort):
             yield tag, page
             if tag == SUBCATEGORY and recurse:
-                for item in page._getContentsNaive(recurse=True):
+                for item in page._getContentsNaive(recurse=True,
+                                                   sortby=sortby,
+                                                   sortdir=sortdir,
+                                                   endsort=endsort):
                     yield item
 
-    def _parseCategory(self, purge=False, startFrom=None):
+    def _parseCategory(self, purge=False, startFrom=None, sortby=None,
+                       sortdir=None, endsort=None):
         """
         Yields all articles and subcategories that are in this category by API.
 
@@ -185,7 +200,7 @@ class Category(wikipedia.Page):
             for tag, page in self._oldParseCategory(purge, startFrom):
                 yield tag, page
             return
-        
+
         currentPageOffset = None
         params = {
             'action': 'query',
@@ -194,6 +209,10 @@ class Category(wikipedia.Page):
             'cmprop': ['title', 'ids', 'sortkey', 'timestamp'],
             #'': '',
         }
+        if sortby:
+            params['cmsort'] = sortby
+        if sortdir:
+            params['cmdir'] = sortdir
         while True:
             if wikipedia.config.special_page_limit > 500:
                 params['cmlimit'] = 500
@@ -201,15 +220,20 @@ class Category(wikipedia.Page):
                 params['cmlimit'] = wikipedia.config.special_page_limit
 
             if currentPageOffset:
-                params['cmcontinue'] = currentPageOffset
+                params.update(currentPageOffset)
                 wikipedia.output('Getting [[%s]] list from %s...'
-                                 % (self.title(), currentPageOffset[:-1])) # cmcontinue last key is '|'
-            elif startFrom:
-                params['cmstartsortkey'] = startFrom
-                wikipedia.output('Getting [[%s]] list starting at %s...'
-                                 % (self.title(), startFrom))
+                                 % (self.title(), "%s=%s" % currentPageOffset.popitem()))
             else:
-                wikipedia.output('Getting [[%s]]...' % self.title())
+                msg = 'Getting [[%s]] list' % self.title()
+                if startFrom:
+                    startFrom = startFrom.upper() # category sort keys are uppercase
+                    params['cmstartsortkey'] = startFrom
+                    msg += ' starting at %s' % startFrom
+                if endsort:
+                    endsort = endsort.upper() # category sort keys are uppercase
+                    params['cmendsortkey'] = endsort
+                    msg += ' ending at %s' % endsort
+                wikipedia.output(msg + u'...')
 
             wikipedia.get_throttle()
             data = query.GetData(params, self.site())
@@ -230,7 +254,7 @@ class Category(wikipedia.Page):
                     break
             # try to find a link to the next list page
             if 'query-continue' in data and count < params['cmlimit']:
-                currentPageOffset = data['query-continue']['categorymembers']['cmcontinue']
+                currentPageOffset = data['query-continue']['categorymembers']
             else:
                 break
 
@@ -339,7 +363,8 @@ class Category(wikipedia.Page):
             else:
                 break
 
-    def subcategories(self, recurse=False, startFrom=None, cacheResults=False):
+    def subcategories(self, recurse=False, startFrom=None, cacheResults=False,
+                            sortby=None, sortdir=None):
         """
         Yields all subcategories of the current category.
 
@@ -349,7 +374,7 @@ class Category(wikipedia.Page):
         equivalent to recurse = False, recurse = 1 gives first-level
         subcategories of subcategories but no deeper, etcetera).
 
-        cacheResults - cache the category contents: useful if you need to 
+        cacheResults - cache the category contents: useful if you need to
         do several passes on the category members list. The simple cache
         system is *not* meant to be memory or cpu efficient for large
         categories
@@ -360,11 +385,12 @@ class Category(wikipedia.Page):
             gen = self._getAndCacheContents
         else:
             gen = self._getContentsNaive
-        for tag, subcat in gen(recurse=recurse, startFrom=startFrom):
+        for tag, subcat in gen(recurse=recurse, startFrom=startFrom, sortby=sortby,
+                               sortdir=sortdir):
             if tag == SUBCATEGORY:
                 yield subcat
 
-    def subcategoriesList(self, recurse=False):
+    def subcategoriesList(self, recurse=False, sortby=None, sortdir=None):
         """
         Creates a list of all subcategories of the current category.
 
@@ -374,11 +400,12 @@ class Category(wikipedia.Page):
         The elements of the returned list are sorted and unique.
         """
         subcats = []
-        for cat in self.subcategories(recurse):
+        for cat in self.subcategories(recurse, sortby=sortby, sortdir=sortdir):
             subcats.append(cat)
         return unique(subcats)
 
-    def articles(self, recurse=False, startFrom=None, cacheResults=False):
+    def articles(self, recurse=False, startFrom=None, cacheResults=False,
+                       sortby=None, sortdir=None, endsort=None):
         """
         Yields all articles of the current category.
 
@@ -386,7 +413,7 @@ class Category(wikipedia.Page):
         Recurse can be a number to restrict the depth at which subcategories
         are included.
 
-        cacheResults - cache the category contents: useful if you need to 
+        cacheResults - cache the category contents: useful if you need to
         do several passes on the category members list. The simple cache
         system is *not* meant to be memory or cpu efficient for large
         categories
@@ -398,11 +425,12 @@ class Category(wikipedia.Page):
             gen = self._getAndCacheContents
         else:
             gen = self._getContentsNaive
-        for tag, page in gen(recurse=recurse, startFrom=startFrom):
+        for tag, page in gen(recurse=recurse, startFrom=startFrom,
+                             sortby=sortby, sortdir=sortdir, endsort=endsort):
             if tag == ARTICLE:
                 yield page
 
-    def articlesList(self, recurse=False):
+    def articlesList(self, recurse=False, sortby=None, sortdir=None):
         """
         Creates a list of all articles of the current category.
 
@@ -413,7 +441,7 @@ class Category(wikipedia.Page):
         The elements of the returned list are sorted and unique.
         """
         articles = []
-        for article in self.articles(recurse):
+        for article in self.articles(recurse, sortby=sortby, sortdir=sortdir):
             articles.append(article)
         return unique(articles)
 
@@ -443,6 +471,16 @@ class Category(wikipedia.Page):
         for tag, title in self._parseCategory():
             return False
         return True
+
+    def isHiddenCategory(self):
+        """Return True if the category is hidden."""
+        text = self.get()
+        hidden = re.search('__HIDDENCAT__', text)
+
+        if hidden:
+            return True
+        else:
+            return False
 
     def copyTo(self, catname):
         """
@@ -487,18 +525,43 @@ class Category(wikipedia.Page):
             wikipedia.output('Moving text from %s to %s.' % (self.title(), targetCat.title()))
             authors = ', '.join(self.contributingUsers())
             creationSummary = wikipedia.translate(wikipedia.getSite(), msg_created_for_renaming) % (self.title(), authors)
-            newtext = self.get()
-        for regexName in cfdTemplates:
-            matchcfd = re.compile(r"{{%s.*?}}" % regexName, re.IGNORECASE)
-            newtext = matchcfd.sub('',newtext)
-            matchcomment = re.compile(r"<!--BEGIN CFD TEMPLATE-->.*<!--END CFD TEMPLATE-->", re.IGNORECASE | re.MULTILINE | re.DOTALL)
-            newtext = matchcomment.sub('',newtext)
-            pos = 0
-            while (newtext[pos:pos+1] == "\n"):
-                pos = pos + 1
-            newtext = newtext[pos:]
+            newtext = remove_cfd_templates(cfdTemplates, self.get())
         targetCat.put(newtext, creationSummary)
         return True
+
+def remove_cfd_templates(cfdTemplates, pageText):
+    for regexName in cfdTemplates:
+        matchcfd = re.compile(r"{{%s.*?}}" % regexName, re.IGNORECASE)
+        pageText = matchcfd.sub('',pageText)
+        matchcomment = re.compile(r"<!--BEGIN CFD TEMPLATE-->.*<!--END CFD TEMPLATE-->", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+        pageText = matchcomment.sub('',pageText)
+        pos = 0
+        while (pageText[pos:pos+1] == "\n"):
+            pos = pos + 1
+        pageText = pageText[pos:]
+    return pageText
+
+def add_category(article, category, comment=None, createEmptyPages=False):
+    """
+    Given an article and a category, adds the article to the category.
+    """
+    cats = article.categories(get_redirect=True)
+    if not category in cats:
+        cats.append(category)
+        try:
+            text = article.get()
+        except wikipedia.NoPage:
+            if createEmptyPages:
+                text = ''
+            else:
+                raise
+
+        text = wikipedia.replaceCategoryLinks(text, cats)
+        try:
+            article.put(text, comment=comment)
+        except wikipedia.EditConflict:
+            wikipedia.output(u'Skipping %s because of edit conflict' % article.title())
+
 
 #def Category(code, name):
 #    """Factory method to create category link objects from the category name"""
@@ -507,7 +570,8 @@ class Category(wikipedia.Page):
 #    # Prepend it
 #    return Category(code, "%s:%s" % (ns, name))
 
-def change_category(article, oldCat, newCat, comment=None, sortKey=None, inPlace=False):
+def change_category(article, oldCat, newCat, comment=None, sortKey=None,
+                    inPlace=False):
     """
     Given an article which is in category oldCat, moves it to
     category newCat. Moves subcategories of oldCat as well.
@@ -519,34 +583,34 @@ def change_category(article, oldCat, newCat, comment=None, sortKey=None, inPlace
     changesMade = False
 
     if not article.canBeEdited():
-        wikipedia.output("Can't edit %s, skipping it..." % article.aslink())
+        wikipedia.output("Can't edit %s, skipping it..."
+                         % article.title(asLink=True))
         return False
-    if inPlace == True:
+    if inPlace or article.namespace() == 10:
         oldtext = article.get(get_redirect=True)
         newtext = wikipedia.replaceCategoryInPlace(oldtext, oldCat, newCat)
         if newtext == oldtext:
             wikipedia.output(
-                u'No changes in made in page %s.' % article.aslink())
+                u'No changes in made in page %s.' % article.title(asLink=True))
             return False
         try:
             article.put(newtext, comment)
             return True
         except wikipedia.EditConflict:
-            wikipedia.output(
-                u'Skipping %s because of edit conflict' % article.aslink())
+            wikipedia.output(u'Skipping %s because of edit conflict'
+                             % article.title(asLink=True))
         except wikipedia.LockedPage:
-            wikipedia.output(u'Skipping locked page %s' % article.aslink())
+            wikipedia.output(u'Skipping locked page %s'
+                             % article.title(asLink=True))
         except wikipedia.SpamfilterError, error:
-            wikipedia.output(
-                u'Changing page %s blocked by spam filter (URL=%s)'
-                             % (article.aslink(), error.url))
+            wikipedia.output(u'Changing page %s blocked by spam filter (URL=%s)'
+                             % (article.title(asLink=True), error.url))
         except wikipedia.NoUsername:
-            wikipedia.output(
-                u"Page %s not saved; sysop privileges required."
-                             % article.aslink())
+            wikipedia.output(u'Page %s not saved; sysop privileges required.'
+                             % article.title(asLink=True))
         except wikipedia.PageNotSaved, error:
-            wikipedia.output(u"Saving page %s failed: %s"
-                             % (article.aslink(), error.message))
+            wikipedia.output(u'Saving page %s failed: %s'
+                             % (article.title(asLink=True), error.message))
         return False
 
     # This loop will replace all occurrences of the category to be changed,
@@ -570,7 +634,8 @@ def change_category(article, oldCat, newCat, comment=None, sortKey=None, inPlace
             newCatList.append(cat)
 
     if not changesMade:
-        wikipedia.output(u'ERROR: %s is not in category %s!' % (article.aslink(), oldCat.title()))
+        wikipedia.output(u'ERROR: %s is not in category %s!'
+                         % (article.title(asLink=True), oldCat.title()))
     else:
         text = article.get(get_redirect=True)
         try:
@@ -594,7 +659,7 @@ def change_category(article, oldCat, newCat, comment=None, sortKey=None, inPlace
                     u'Skipping %s because page is locked' % article.title())
         except wikipedia.PageNotSaved, error:
             wikipedia.output(u"Saving page %s failed: %s"
-                             % (article.aslink(), error.message))
+                             % (article.title(asLink=True), error.message))
 
 def categoryAllElementsAPI(CatName, cmlimit = 5000, categories_parsed = [], site = None):
     #action=query&list=categorymembers&cmlimit=500&cmtitle=Category:License_tags
@@ -602,7 +667,7 @@ def categoryAllElementsAPI(CatName, cmlimit = 5000, categories_parsed = [], site
     Category to load all the elements in a category using the APIs. Limit: 5000 elements.
     """
     wikipedia.output("Loading %s..." % CatName)
-    
+
     params = {
         'action'    :'query',
         'list'      :'categorymembers',

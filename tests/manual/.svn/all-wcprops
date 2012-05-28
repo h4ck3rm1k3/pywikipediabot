@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/pywikipedia/!svn/ver/9836/trunk/pywikipedia/tests/manual
+END
+test_generate_family_file.py
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svnroot/pywikipedia/!svn/ver/9836/trunk/pywikipedia/tests/manual/test_generate_family_file.py
+END
+test_xml.py
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/pywikipedia/!svn/ver/9836/trunk/pywikipedia/tests/manual/test_xml.py
+END

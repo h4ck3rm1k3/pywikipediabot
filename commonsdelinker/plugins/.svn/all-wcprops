@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svnroot/pywikipedia/!svn/ver/7129/trunk/pywikipedia/commonsdelinker/plugins
+END
+books.py
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svnroot/pywikipedia/!svn/ver/7128/trunk/pywikipedia/commonsdelinker/plugins/books.py
+END
+skipped_pages.py
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svnroot/pywikipedia/!svn/ver/7128/trunk/pywikipedia/commonsdelinker/plugins/skipped_pages.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svnroot/pywikipedia/!svn/ver/7128/trunk/pywikipedia/commonsdelinker/plugins/__init__.py
+END
+replace_with_dummy.py
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svnroot/pywikipedia/!svn/ver/7129/trunk/pywikipedia/commonsdelinker/plugins/replace_with_dummy.py
+END
+debug.py
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svnroot/pywikipedia/!svn/ver/7128/trunk/pywikipedia/commonsdelinker/plugins/debug.py
+END
