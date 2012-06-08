@@ -4076,7 +4076,7 @@ class Family:
         return '%s?title=%s&action=history&limit=%d&useskin=monobook' % (self.path(code), name, limit)
 
     def export_address(self, code):
-        return '%s?title=%s:Export&useskin=monobook' % (self.path(code), self.special_namespace_url('_default'))
+        return '%s?title=%s:Export&history=1&useskin=monobook' % (self.path(code), self.special_namespace_url('_default'))
 
     def globalusers_address(self, code, target='', limit=500, offset='', group=''):
         return '%s?title=%s:GlobalUsers&username=%s&limit=%s&offset=%s&group=%s&useskin=monobook' % (self.path(code), self.special_namespace_url(code), target, limit, offset, group)

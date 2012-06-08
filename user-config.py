@@ -14,6 +14,7 @@ mylang = 'en'
 # The dictionary usernames should contain a username for each site where you
 # have a bot account.
 usernames['wikipedia']['en'] = u'Mdupont'
+usernames['speedydeletion']['en'] = u'H4ck3rm1k3'
 
 
 ############## LOGFILE SETTINGS ##############
