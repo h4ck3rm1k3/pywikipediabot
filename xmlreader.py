@@ -316,16 +316,20 @@ Consider installing the python-celementtree package.''')
             source = open(self.filename)
         context = iterparse(source, events=("start", "end", "start-ns"))
         self.root = None
-
-        for event, elem in context:
-            if event == "start-ns" and elem[0] == "":
-                self.uri = elem[1]
-                continue
-            if event == "start" and self.root is None:
-                self.root = elem
-                continue
-            for rev in self._parse(event, elem):
-                yield rev
+        print  "in context %s" % context
+        print  context
+        try :
+            for event, elem in context:
+                if event == "start-ns" and elem[0] == "":
+                    self.uri = elem[1]
+                    continue
+                if event == "start" and self.root is None:
+                    self.root = elem
+                    continue
+                for rev in self._parse(event, elem):
+                    yield rev
+        except :
+            print "error"
 
     def _parse_only_latest(self, event, elem):
         """Parser that yields only the latest revision"""

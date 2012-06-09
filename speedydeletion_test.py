@@ -11,8 +11,8 @@ import xmlreader
 
 from shove import Shove
 
-mem_store = Shove()
-file_store = Shove('file://mystore')
+
+file_store = Shove('file://mystore_update')
 
 
 def main(*args):
@@ -34,35 +34,38 @@ def main(*args):
     outsite.forceLogin()
 
     mysite = pywikibot.getSite()
-    dump = xmlreader.XmlDump(xmlfilename)
+    dump = xmlreader.XmlDump(xmlfilename) #, allrevisions=True
     count = 0
     for entry in dump.parse():
+
+        print entry.username
+#        print entry.revisionid
+
         if entry.title != "Main Page" :
             page = pywikibot.Page(mysite, entry.title)
-#            pywikibot.output(u'Looking at %s' % entry.title)
+
 
             try :
                 if (file_store[entry.title] ) :
-                    count = count +1
-                    #pywikibot.output(u'was cached %s' % entry.title)
+                    pywikibot.output(u'skipping at %s' % entry.title)
+                    count = count +1                    
             except:
                 try :
+                    pywikibot.output(u'updating %s' % entry.title)
                     outpage = pywikibot.Page(outsite, entry.title)
-                    if outpage.exists():
-                        pywikibot.output(u'is there at %s' % entry.title)
-                    else:
-                        pywikibot.output(u'is not there  %s' % entry.title)
-                        contents = entry.text
-                        usernames = entry.username
-                        contents = contents +  "\n{{wikipedia-deleted|%s}}" % usernames
-                        outpage.put(contents)
+                    get  = page.get()
+                    contents = entry.text
+                    usernames = entry.username
+                    print ("http://%s%s" % ( outpage.site().hostname(),        outpage.site().nice_get_address(outpage.title())        ))
+                    contents = contents +  "\n{{wikipedia-deleted|%s}}" % usernames
+                    status = outpage.put(contents, "adding the username %s" % usernames)
                     file_store[entry.title] = entry.title
                 finally:
                     count = count + 1
             finally:
                 count = count + 1
-                #print "done with %s %d" % (entry.title, count)
-
+                print "done with %s %d" % (entry.title, count)
+                
 if __name__ == "__main__":
     try:
         main()
