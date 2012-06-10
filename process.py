@@ -25,17 +25,23 @@ for infile in glob.glob( os.path.join(path, '*') ):
         if (stat >0) :
             sys.exit (stat)
 
-        #os.system("python speedydeletion.py ../wikiteamgit/data/%s" % fn);
-
-
-#        cmd = "python speedydeletion.py ../wikiteamgit/data/%s" % fn
         dn="enwikipediaorg_w-%s-wikidump/" % ts
-        cmd = "mv ../wikiteamgit/data/%s ../wikiteamgit/data/done/" % dn
-        print cmd
-        stat = os.system(cmd)
-        print stat
-        if (stat >0) :
-            sys.exit(stat)
+        target= "../wikiteamgit/data/done/%s" % dn
+        if not(os.path.exists(target)):
+            cmd = "mv ../wikiteamgit/data/%s ../wikiteamgit/data/done/" % dn
+            print cmd
+            stat = os.system(cmd)
+            print stat
+            if (stat >0) :
+                sys.exit(stat)
+        else:
+            cmd = "rm -rf ../wikiteamgit/data/%s" % dn
+            print cmd
+            stat = os.system(cmd)
+            print stat
+            if (stat >0) :
+                sys.exit(stat)
+
         
     else:
         print "no match %s" % infile

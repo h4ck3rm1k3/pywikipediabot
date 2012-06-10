@@ -2,39 +2,42 @@ import os
 import glob
 import re
 import sys
+import signal
+import sys
+
+def signal_handler(signal, frame):
+        print 'You pressed Ctrl+C!'
+        sys.exit(1)
+
+signal.signal(signal.SIGINT, signal_handler)
+#print 'Press Ctrl+C'
+#signal.pause()
 
 
+path = '../wikiteamgit/data/done'
 
-path = '../wikiteamgit/data/'
 for infile in glob.glob( os.path.join(path, '*') ):
-#    print "current file is: " + infile
     match = re.search(r'(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)',infile)
     match = re.search(r'w\-(\d+)\-wiki',infile)
-#    match = re.search(r'.+(dddddddddddddd).+',infile)
-#    match = re.search(r'.+(\dddddddddddddd).+',infile)
     if (match) :
         print "match %s" % match
         print "g1 %s" % match.group(1)
-#        print "g0 %s" % match.group(0)
         ts=match.group(1)
         fn="enwikipediaorg_w-%s-wikidump/enwikipediaorg_w-%s-history.xml" % (ts, ts)
-        cmd = "python speedydeletion.py ../wikiteamgit/data/%s" % fn
+        cmd = "python speedydeletion_test.py ../wikiteamgit/data/done/%s" % fn
         print cmd
         stat=os.system(cmd)
-        print stat
         if (stat >0) :
+            print "exiting"
             sys.exit (stat)
 
-        #os.system("python speedydeletion.py ../wikiteamgit/data/%s" % fn);
-
-
-#        cmd = "python speedydeletion.py ../wikiteamgit/data/%s" % fn
         dn="enwikipediaorg_w-%s-wikidump/" % ts
-        cmd = "mv ../wikiteamgit/data/%s ../wikiteamgit/data/done/" % dn
+        cmd = "mv ../wikiteamgit/data/done/%s ../wikiteamgit/data/done2/" % dn
         print cmd
         stat = os.system(cmd)
-        print stat
+
         if (stat >0) :
+            print "exiting"
             sys.exit(stat)
         
     else:
