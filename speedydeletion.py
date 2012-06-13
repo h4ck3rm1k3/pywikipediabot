@@ -33,35 +33,42 @@ def main(*args):
     outsite = pywikibot.getSite("en",importsite)
     outsite.forceLogin()
 
-    mysite = pywikibot.getSite()
     dump = xmlreader.XmlDump(xmlfilename)
     count = 0
     for entry in dump.parse():
+#        print  file_store[entry.title] 
+        title=entry.title.encode("ascii","ignore")
         if entry.title != "Main Page" :
-            page = pywikibot.Page(mysite, entry.title)
-#            pywikibot.output(u'Looking at %s' % entry.title)
-
             try :
-                if (file_store[entry.title] ) :
+                if (file_store[title] ) :
                     count = count +1
-                    #pywikibot.output(u'was cached %s' % entry.title)
-            except:
+#                    pywikibot.output(u'was cached %s' % entry.title)
+                else:
+                    pywikibot.output(u'not exists %s' % entry.title)
+            except KeyError :
+                print sys.exc_type, ":", "%s is not in the list." % sys.exc_value
+                pywikibot.output(u'key error %s' % entry.title)
                 try :
                     outpage = pywikibot.Page(outsite, entry.title)
                     if outpage.exists():
-                        pywikibot.output(u'is there at %s' % entry.title)
+                        pywikibot.output(u'there is an article %s' % entry.title)
+                        file_store[title] = 1
                     else:
                         pywikibot.output(u'is not there  %s' % entry.title)
                         contents = entry.text
                         usernames = entry.username
                         contents = contents +  "\n{{wikipedia-deleted|%s}}" % usernames
                         outpage.put(contents)
-                    file_store[entry.title] = entry.title
+                    try :
+                        file_store[title] = 1
+                    except:
+                        pywikibot.output(u'could not save %s! to the list of article' % entry.title)
                 finally:
                     count = count + 1
             finally:
                 count = count + 1
                 #print "done with %s %d" % (entry.title, count)
+
 
 if __name__ == "__main__":
     try:
