@@ -38,6 +38,12 @@ def main(*args):
     for entry in dump.parse():
 #        print  file_store[entry.title] 
         title=entry.title.encode("ascii","ignore")
+        
+
+        m = re.search("Wikipedia:" , entry.title)
+        if  m:
+            pywikibot.output(u'skipping %s' % entry.title)
+            next;
         if entry.title != "Main Page" :
             try :
                 if (file_store[title] ) :

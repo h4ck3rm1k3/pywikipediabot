@@ -5,7 +5,7 @@ import sys
 
 
 
-path = '../wikiteamgit/data/'
+path = '../wikiteam/data/'
 for infile in glob.glob( os.path.join(path, '*') ):
 #    print "current file is: " + infile
     match = re.search(r'(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)',infile)
@@ -18,7 +18,9 @@ for infile in glob.glob( os.path.join(path, '*') ):
 #        print "g0 %s" % match.group(0)
         ts=match.group(1)
         fn="enwikipediaorg_w-%s-wikidump/enwikipediaorg_w-%s-history.xml" % (ts, ts)
-        cmd = "python speedydeletion.py ../wikiteamgit/data/%s" % fn
+        pn="enwikipediaorg_w-%s-wikidump*" % (ts)
+        zn="wtarchive%s*" % (ts)
+        cmd = "python speedydeletion.py ../wikiteam/data/%s" % fn
         print cmd
         stat=os.system(cmd)
         print stat
@@ -26,16 +28,27 @@ for infile in glob.glob( os.path.join(path, '*') ):
             sys.exit (stat)
 
         dn="enwikipediaorg_w-%s-wikidump/" % ts
-        target= "../wikiteamgit/data/done/%s" % dn
+        target= "../wikiteam/data/done/%s" % dn
         if not(os.path.exists(target)):
-            cmd = "mv ../wikiteamgit/data/%s ../wikiteamgit/data/done/" % dn
+            cmd = "rm -rf ../wikiteam/data/%s" % pn
+            # removing the old data, we have it on archive.org
+#            cmd = "mv ../wikiteam/data/%s ../wikiteam/data/done/" % dn
             print cmd
             stat = os.system(cmd)
             print stat
             if (stat >0) :
                 sys.exit(stat)
+
+            cmd = "rm -rf ../wikiteam/data/%s" % zn
+            print cmd
+            stat = os.system(cmd)
+            print stat
+            if (stat >0) :
+                sys.exit(stat)
+
+
         else:
-            cmd = "rm -rf ../wikiteamgit/data/%s" % dn
+            cmd = "rm -rf ../wikiteam/data/%s" % dn
             print cmd
             stat = os.system(cmd)
             print stat
