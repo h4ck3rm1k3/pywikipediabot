@@ -6,14 +6,16 @@
 # The family of sites we are working on. wikipedia.py will import
 # families/xxx_family.py so if you want to change this variable,
 # you need to write such a file.
-family = 'wikipedia'
+#family = 'wikipedia'
+family = 'speedydeletion'
+
 
 # The language code of the site we're working on.
 mylang = 'en'
 
 # The dictionary usernames should contain a username for each site where you
 # have a bot account.
-usernames['wikipedia']['en'] = u'Mdupont'
+#usernames['wikipedia']['en'] = u'Mdupont'
 usernames['speedydeletion']['en'] = u'H4ck3rm1k3'
 
 
