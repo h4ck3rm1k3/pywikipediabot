@@ -27,10 +27,15 @@ __version__='$Id: upload.py 9782 2011-11-28 22:16:59Z platonides $'
 #
 
 import os, sys, time
+sys.path.append('/home/mdupont/experiments/wikipedia/pywikipediabot')
+
+
 import urllib
 import mimetypes
 import wikipedia as pywikibot
 import config, query
+
+
 
 def post_multipart(site, address, fields, files, cookies):
     """ Post fields and files to an http host as multipart/form-data.
@@ -309,17 +314,17 @@ u"WARNING: No check length to retrieved data is possible.")
                     elif k == 'filetype-unwanted-type':
                         pywikibot.output("\tFile %s type is unwatched type."
                                          % v)
-                answer = pywikibot.inputChoice(u"Do you want to ignore?",
-                                               ['Yes', 'No'], ['y', 'N'], 'N')
-                if answer == "y":
-                    self.ignoreWarning = 1
-                    self.useFilename = filename
-                    self.keepFilename = True
-                    return self.upload_image(debug,
-                                             sessionKey=data['sessionkey'])
-                else:
-                    pywikibot.output("Upload aborted.")
-                    return
+                # answer = pywikibot.inputChoice(u"Do you want to ignore?",
+                #                                ['Yes', 'No'], ['y', 'N'], 'N')
+                # if answer == "y":
+                #     self.ignoreWarning = 1
+                #     self.useFilename = filename
+                #     self.keepFilename = True
+                #     return self.upload_image(debug,
+                #                              sessionKey=data['sessionkey'])
+                # else:
+                pywikibot.output("Upload aborted.")
+                #    return
             #No any warning, upload and online complete.
             elif data['result'] == u'Success':
                 pywikibot.output(u"Upload successful.")
