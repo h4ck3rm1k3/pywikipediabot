@@ -28,7 +28,7 @@ __version__='$Id: upload.py 9782 2011-11-28 22:16:59Z platonides $'
 
 import os, sys, time
 sys.path.append('/home/mdupont/experiments/wikipedia/pywikipediabot')
-
+import tempfile
 
 import urllib
 import mimetypes
@@ -203,32 +203,16 @@ u"WARNING: No check length to retrieved data is possible.")
                 u"The filename on the target wiki will default to: %s"
                 % filename)
             ok = False
+            ext = os.path.splitext(filename)[1].lower().strip('.')
             # FIXME: these 2 belong somewhere else, presumably in family
             forbidden = '/' # to be extended
             allowed_formats = (u'gif', u'jpg', u'jpeg', u'mid', u'midi',
                                u'ogg', u'png', u'svg', u'xcf', u'djvu',
                                u'ogv', u'oga', u'tif', u'tiff')
             # ask until it's valid
-            while not ok:
-                ok = True
-                newfn = pywikibot.input(
-                            u'Enter a better name, or press enter to accept:')
-                if newfn == "":
-                    newfn = filename
-                ext = os.path.splitext(newfn)[1].lower().strip('.')
-                for c in forbidden:
-                    if c in newfn:
-                        print "Invalid character: %s. Please try again" % c
-                        ok = False
-                if ext not in allowed_formats and ok:
-                    choice = pywikibot.inputChoice(
-                        u"File format is not one of [%s], but %s. Continue?"
-                        % (u' '.join(allowed_formats), ext),
-                        ['yes', 'no'], ['y', 'N'], 'N')
-                    if choice == 'n':
-                        ok = False
-            if newfn != '':
-                filename = newfn
+            ok = True
+            filename = tempfile.gettempprefix()
+
         # MediaWiki doesn't allow spaces in the file name.
         # Replace them here to avoid an extra confirmation form
         filename = filename.replace(' ', '_')
@@ -418,17 +402,12 @@ u"WARNING: No check length to retrieved data is possible.")
 
                 if self.targetSite.mediawiki_message('uploadwarning'
                                                      ) in returned_html:
-                    answer = pywikibot.inputChoice(
-                        u"You have recevied an upload warning message. Ignore?",
-                        ['Yes', 'No'], ['y', 'N'], 'N')
-                    if answer == "y":
-                        self.ignoreWarning = 1
-                        self.keepFilename = True
-                        return self._uploadImageOld(debug)
+                    answer = "y"
+                    self.ignoreWarning = 1
+                    self.keepFilename = True
+                    return self._uploadImageOld(debug)
                 else:
-                    answer = pywikibot.inputChoice(
-u'Upload of %s probably failed. Above you see the HTML page which was returned by MediaWiki. Try again?'
-                        % filename, ['Yes', 'No'], ['y', 'N'], 'N')
+                    answer = "y"
                     if answer == "y":
                         return self._uploadImageOld(debug)
                     else:
@@ -436,12 +415,12 @@ u'Upload of %s probably failed. Above you see the HTML page which was returned b
         return filename
 
     def run(self):
-        while not self.urlOK():
+        if not self.urlOK():
             if not self.url:
                 pywikibot.output(u'No input filename given')
             else:
                 pywikibot.output(u'Invalid input filename given. Try again.')
-            self.url = pywikibot.input(u'File or URL where image is now:')
+            self.url = "blah"
         return self.upload_image()
 
 
