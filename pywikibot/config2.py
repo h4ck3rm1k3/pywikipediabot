@@ -582,11 +582,11 @@ upload_to_commons = False
 # control the rate of server access.  Set minthrottle to non-zero to use a
 # throttle on read access.
 minthrottle = 0
-maxthrottle = 60
+maxthrottle = 20
 
 # Slow down the robot such that it never makes a second page edit within
 # 'put_throttle' seconds.
-put_throttle = 10
+put_throttle = 4
 
 # Sometimes you want to know when a delay is inserted. If a delay is larger
 # than 'noisysleep' seconds, it is logged on the screen.
@@ -600,7 +600,7 @@ noisysleep = 3.0
 # Non-Wikimedia wikis may or may not support this feature; for families
 # that do not use it, it is recommended to set minthrottle (above) to
 # at least 1 second.
-maxlag = 5
+maxlag = 40
 
 # Maximum of pages which can be retrieved by special pages. Increase this if
 # you heavily use redirect.py with action "double", and especially if you're

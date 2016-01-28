@@ -14,7 +14,7 @@ class Family(family.SingleSiteFamily):
 
     """Family class for templatetesting Wikia."""
 
-    name = u'templatetesting'
+    name = u'templatetestingwikia'
     domain = 'templatetesting.wikia.com'
 
     @deprecated('APISite.version()')

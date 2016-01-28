@@ -196,13 +196,14 @@ class SyncSites(object):
                 pywikibot.output("\n %s DIFFERS" % site)
                 self.differences[site].append(pagename)
 
-        if self.options.replace:
-            page2.text = txt1
-            page2.save(self.put_message(site))
-        else:
-            sys.stdout.write('.')
-            sys.stdout.flush()
-
+                if self.options.replace:
+                    page2.text = txt1
+                    page2.save(self.put_message(site))
+                else:
+                    sys.stdout.write('.')
+                    sys.stdout.flush()
+            else:
+                pywikibot.output("\n %s SKIP" % site)
 
 def main(*args):
     my_args = pywikibot.handle_args(args)
