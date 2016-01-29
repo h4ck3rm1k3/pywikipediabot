@@ -600,7 +600,7 @@ noisysleep = 3.0
 # Non-Wikimedia wikis may or may not support this feature; for families
 # that do not use it, it is recommended to set minthrottle (above) to
 # at least 1 second.
-maxlag = 40
+maxlag = 400
 
 # Maximum of pages which can be retrieved by special pages. Increase this if
 # you heavily use redirect.py with action "double", and especially if you're

@@ -165,7 +165,13 @@ def main(*args):
         historytable = page.getVersionHistoryTable()
 
         pywikibot.log("Putting page text.")
-        targetpage.put(text, summary=summary)
+        try :
+            targetpage.put(text, summary=summary)
+        except pywikibot.exceptions.SpamfilterError as e:
+            print e            
+        #except Exception as e:
+            
+
 
         pywikibot.log("Putting edit history.")
         edithistpage.put(historytable, summary=summary)
