@@ -198,7 +198,14 @@ class SyncSites(object):
 
                 if self.options.replace:
                     page2.text = txt1
-                    page2.save(self.put_message(site))
+                    try:
+                        page2.save(self.put_message(site))
+                    except pywikibot.exceptions.SpamfilterError as e :
+                        print e
+	  	    except pywikibot.exceptions.OtherPageSaveError as e :
+	                print e 
+		    #except Exception as e:
+	            #    print e
                 else:
                     sys.stdout.write('.')
                     sys.stdout.flush()

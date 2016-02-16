@@ -37,10 +37,14 @@ Copy the template "Query service" from the Toolserver wiki to wikitech:
 #
 # (C) Merlijn van Deen, 2014
 # (C) Pywikibot team, 2015
+# (C) James Michael DuPont h4ck3rm1k3, 2016
 #
 # Distributed under the terms of the MIT license.
 #
 from __future__ import absolute_import, unicode_literals
+
+import sys
+sys.setrecursionlimit(10000)
 
 __version__ = '$Id$'
 #
