@@ -144,7 +144,13 @@ def main(*args):
         summary = "Moved page from %s" % page.title(asLink=True)
         targetpage = pywikibot.Page(tosite, prefix + page.title())
         edithistpage = pywikibot.Page(tosite, prefix + page.title() + '/edithistory')
+        ns = str(page.namespace())
 
+        if ns in ('Wikipedia:','Project:','User:','User talk:') :
+            continue
+
+        pywikibot.output(u"check page: %s ns: %s)" % (page.title(asLink=True),ns))
+        
         if targetpage.exists() and not overwrite:
             pywikibot.output(
                 u"Skipped %s (target page %s exists)" % (

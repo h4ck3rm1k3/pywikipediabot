@@ -48,7 +48,7 @@ import subprocess
 import pprint
 
 def main(*args):
-
+    # usage : python ~/experiments/pywikibot_new/pwb.py import_dump -import:page3.xml -site:referata
     print "ARGS:%s\n" % sys.argv
 
     genFactory = pywikibot.pagegenerators.GeneratorFactory()
