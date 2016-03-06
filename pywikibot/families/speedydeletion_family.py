@@ -10,15 +10,21 @@ from pywikibot.tools import deprecated
 
 # The Template Testing Wikia Search family
 # user-config.py: usernames['wikia']['wikia'] = 'User name'
-class Family(family.SubdomainFamily):
+class Family(family.SingleSiteFamily, family.WikiaFamily):
 
     """Family class for speedydeletion Wikia."""
 
     name = u'speedydeletion'
+    code = 'en'
     domain = 'speedydeletion.wikia.com'
 
     def __init__(self):
         """Constructor."""
+        
+        self.langs = {
+            'en': u'speedydeletion.wikia.com',
+        }
+        
         self.languages_by_size = [
             'en', 'sv', 'nl', 'de', 'fr', 'ru', 'it', 'es', 
             'vi', 
@@ -143,16 +149,21 @@ class Family(family.SubdomainFamily):
 
         ]
         super(Family, self).__init__()
-   
+        
+        
+
     @deprecated('APISite.version()')
     def version(self, code):
         """Return the version for this family."""
-        return "1.19.20"
+        return "1.19.24"
 
     def scriptpath(self, code):
-        """Return the script path for this family."""
-        return ''
+         """Return the script path for this family."""
+         return ''
 
     def apipath(self, code):
-        """Return the path to api.php for this family."""
-        return '/api.php'
+         """Return the path to api.php for this family."""
+         return '/api.php'
+
+    # def protocol(self, code):
+    #     return 'http'        
