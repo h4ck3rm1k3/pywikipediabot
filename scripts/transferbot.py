@@ -165,11 +165,16 @@ def main(*args):
                             targetpage.title(asLink=True)))
 
         pywikibot.log("Getting page text.")
-        text = page.get(get_redirect=True)
-        text += ("<noinclude>\n\n<small>This page was moved from %s. It's "
-                 "edit history can be viewed at %s</small></noinclude>"
-                 % (page.title(asLink=True, insite=targetpage.site),
-                    edithistpage.title(asLink=True, insite=targetpage.site)))
+        try :
+            text = page.get(get_redirect=True)
+        except pywikibot.exceptions.NoPage as e:
+            print "nopage"
+            continue
+            
+            text += ("<noinclude>\n\n<small>This page was moved from %s. It's "
+             "edit history can be viewed at %s</small></noinclude>"
+             % (page.title(asLink=True, insite=targetpage.site),
+                edithistpage.title(asLink=True, insite=targetpage.site)))
 
         pywikibot.log("Getting edit history.")
         historytable = page.getVersionHistoryTable()
@@ -178,13 +183,19 @@ def main(*args):
         try :
             targetpage.put(text, summary=summary)
         except pywikibot.exceptions.SpamfilterError as e:
-            print e            
+            print text
+            print e
+
         #except Exception as e:
             
 
 
         pywikibot.log("Putting edit history.")
-        edithistpage.put(historytable, summary=summary)
+        try :
+            edithistpage.put(historytable, summary=summary)
+        except pywikibot.exceptions.SpamfilterError as e:
+            print historytable
+            print e            
 
 
 if __name__ == "__main__":
