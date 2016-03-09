@@ -4832,7 +4832,11 @@ class APISite(BaseSite):
             elif result["edit"]["result"] == "Failure":
                 if "captcha" in result["edit"]:
                     captcha = result["edit"]["captcha"]
-                    req['captchaid'] = captcha['id']
+                    if 'id' in captcha:
+                        req['captchaid'] = captcha['id']
+                    else:
+                        req['captchaid'] = "UNKNOWN"
+                        
                     if captcha["type"] == "math":
                         # TODO: Should the input be parsed through eval in py3?
                         req['captchaword'] = input(captcha["question"])
