@@ -1054,10 +1054,15 @@ class BaseSite(ComparableMixin):
         """
         self._pagemutex.acquire()
         try:
+            count =1
             while page.title(withSection=False) in self._locked_pages:
                 if not block:
                     raise PageInUse(page.title(withSection=False))
                 time.sleep(.25)
+                count = count + 1
+                if count > 20 :
+                    pywikibot.warn(u"waiting too long for lock %s" % count, _logger)
+                    raise PageInUse(page.title(withSection=False))
             self._locked_pages.append(page.title(withSection=False))
         finally:
             self._pagemutex.release()
